@@ -1,3 +1,4 @@
+import { dataInfo, isReal } from '../data/info';
 import { avg } from './format';
 import { CELL_KM2 } from './geo';
 import { DISTRICT_NAMES, DISTRICT_ORDER } from './mask';
@@ -107,7 +108,8 @@ export function cellsCsv(cells: readonly Cell[]): string {
       x.cov.toFixed(2), x.seasons, p ? x.conf : '',
     ].map(esc).join(',');
   });
-  return ['# TrendeX sample data, not real measurements', CSV_COLS.join(','), ...rows].join('\n') + '\n';
+  const head = isReal() ? `# TrendeX, NASA MODIS MOD13A3 summer NDVI 2000–2025, pipeline ${dataInfo.pipelineVersion}` : '# TrendeX sample data, not real measurements';
+  return [head, CSV_COLS.join(','), ...rows].join('\n') + '\n';
 }
 
 export function downloadText(filename: string, text: string, type = 'text/csv') {

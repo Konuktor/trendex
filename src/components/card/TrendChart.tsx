@@ -1,3 +1,4 @@
+import { isReal } from '../../data/info';
 import { scaleLinear } from 'd3-scale';
 import { area, line } from 'd3-shape';
 import { bandAt, ticks, trendAt, yDomain, type ChartModel } from '../../lib/chart';
@@ -28,7 +29,7 @@ export function TrendChart({
   domain,
   labels = true,
   xTicks = [0, 5, 10, 15, 20, 25],
-  title = 'Peak-season greenness',
+  title = isReal() ? 'Summer greenness' : 'Peak-season greenness',
 }: Props) {
   const pl = 36;
   const pr = 10;

@@ -2,8 +2,9 @@ import { avg } from './format';
 import { H, V, YEARS, YR } from './noise';
 import type { Cell, Trend } from './types';
 
-/** Sample peak-season NDVI series 2000–2025 for one cell. */
-export function series(x: Pick<Cell, 'c' | 'r' | 'd' | 'pct' | 'slope' | 'cov'>): number[] {
+/** NDVI series 2000–2025 for one cell: the real series from the API when present, else the sample generator. */
+export function series(x: Pick<Cell, 'c' | 'r' | 'd' | 'pct' | 'slope' | 'cov'> & { series?: number[] }): number[] {
+  if (x.series && x.series.length === YEARS) return x.series.slice();
   const base = 0.3 + (0.3 * x.pct) / 100;
   const sl = (x.slope / 100) * base;
   const amp = 0.014 + 0.04 * (1 - x.cov);

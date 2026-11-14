@@ -1,3 +1,4 @@
+import { dataInfo, isReal } from '../data/info';
 import { answer, type Answer } from './answer';
 import { selectDrawn, selectZone } from './zones';
 import { DISTRICT_NAMES } from './mask';
@@ -146,5 +147,6 @@ export function queueCsv(rows: readonly QueueRow[]): string {
       .map(esc)
       .join(','),
   );
-  return ['# TrendeX inspection queue, sample data. A prioritisation for field checks, not an instruction.', head.join(','), ...lines].join('\n') + '\n';
+  const top = isReal() ? `# TrendeX inspection queue (NASA MODIS, pipeline ${dataInfo.pipelineVersion}). A prioritisation for field checks, not an instruction.` : '# TrendeX inspection queue, sample data. A prioritisation for field checks, not an instruction.';
+  return [top, head.join(','), ...lines].join('\n') + '\n';
 }

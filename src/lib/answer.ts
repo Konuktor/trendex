@@ -160,13 +160,13 @@ export function answer(sel: Selection, data: DataSet): Answer {
         badge: 'Excluded',
         water: why.startsWith('Water'),
         reason: why,
-        detail: why.startsWith('Water')
+        detail: landCoverDetail(Z) ?? (why.startsWith('Water')
           ? 'Open water covers most of the zone (ESA WorldCover 2021)'
           : why.startsWith('Glacier')
             ? 'Snow, ice and bare rock cover 83% of the zone'
             : why.startsWith('Irrigated')
               ? 'Cropland 58%, settlement 21%, grassland 17% (ESA WorldCover 2021)'
-              : 'Settlement 34%, cropland 41%, grassland 22% (ESA WorldCover 2021)',
+              : 'Settlement 34%, cropland 41%, grassland 22% (ESA WorldCover 2021)'),
         head: 'Not a pasture, so this area has no level or trend.',
         expl: 'Land where grassland covers less than half of the ground is left out of every comparison and every share on this map.',
         next: 'Nothing to check here. If this land is grazed in practice, flag the land-cover mask for review.',
@@ -332,4 +332,23 @@ export function answer(sel: Selection, data: DataSet): Answer {
       text: seasonText,
     },
   };
+}
+
+const LC_NAMES: Record<string, string> = {
+  grassland: 'grassland', cropland: 'cropland', settlement: 'settlement', water: 'open water', bare: 'snow, ice and bare ground', forest: 'forest',
+};
+
+/** "Open water 92%, grassland 6% (MODIS MCD12Q1 2020)" from the cells' real land-cover shares; null on sample data. */
+export function landCoverDetail(Z: readonly Cell[]): string | null {
+  const withLc = Z.filter((x) => x.landCover);
+  if (!withLc.length) return null;
+  const sums: Record<string, number> = {};
+  for (const x of withLc) for (const [k, v] of Object.entries(x.landCover ?? {})) sums[k] = (sums[k] ?? 0) + (v ?? 0);
+  const parts = Object.entries(sums)
+    .map(([k, v]) => [k, v / withLc.length] as const)
+    .filter(([, v]) => v >= 0.01)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([k, v], i) => (i === 0 ? LC_NAMES[k][0].toUpperCase() + LC_NAMES[k].slice(1) : LC_NAMES[k]) + ' ' + Math.round(v * 100) + '%');
+  return parts.join(', ') + ' (MODIS MCD12Q1 2020)';
 }

@@ -9,6 +9,8 @@ import { MethodsRoute } from './routes/MethodsRoute';
 
 export function App() {
   const setTour = useApp((s) => s.setTour);
+  const loadError = useApp((s) => s.loadError);
+  const retry = useApp((s) => s.retry);
   return (
     <div className="flex h-full min-h-[640px] flex-col overflow-hidden">
       <TopBar onTour={() => setTour(1)} />
@@ -22,6 +24,17 @@ export function App() {
           <Route path="*" element={<Navigate to="/map" replace />} />
         </Routes>
         <Tour />
+        {loadError && (
+          <div role="alert" className="absolute inset-0 z-40 flex items-center justify-center bg-white/90">
+            <div className="card flex max-w-sm flex-col items-center gap-3 p-6 text-center">
+              <h2 className="text-md font-semibold">Could not load data</h2>
+              <p className="text-sm text-text-2">{loadError}</p>
+              <button type="button" className="btn-secondary" onClick={retry}>
+                Try again
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

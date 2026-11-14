@@ -1,3 +1,4 @@
+import { isReal } from '../data/info';
 import { useEffect, useId, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Download } from 'lucide-react';
@@ -70,7 +71,7 @@ export function TrendsRoute() {
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h1 className="text-xl font-semibold">Trends</h1>
             <p className="text-sm text-text-2">
-              Peak-season greenness (NDVI), 2000–2025, for pastures in {scopeName}. Sample data.
+              {isReal() ? 'Summer (May–Sep) greenness (NDVI), 2000–2025, NASA MODIS,' : 'Peak-season greenness (NDVI), 2000–2025,'} for pastures in {scopeName}.{isReal() ? '' : ' Sample data.'}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -123,11 +124,11 @@ export function TrendsRoute() {
 
             <section className="card flex flex-col gap-3 p-4 md:p-6">
               <div className="flex flex-wrap items-baseline justify-between gap-1">
-                <h2 className="text-md font-semibold">Average peak-season greenness, {scopeName}</h2>
-                <span className="text-xs text-text-2">Mean of {num(v.t.cells)} pasture cells · 2000–2025 · Sample data</span>
+                <h2 className="text-md font-semibold">Average {isReal() ? 'summer' : 'peak-season'} greenness, {scopeName}</h2>
+                <span className="text-xs text-text-2">Mean of {num(v.t.cells)} pasture cells · 2000–2025{isReal() ? '' : ' · Sample data'}</span>
               </div>
               <div ref={chartRef} className="w-full">
-                <TrendChart model={v.t.model} trend={v.t.trend} width={chartW} height={280} title={`Average peak-season greenness, ${scopeName},`} />
+                <TrendChart model={v.t.model} trend={v.t.trend} width={chartW} height={280} title={`Average ${isReal() ? 'summer' : 'peak-season'} greenness, ${scopeName},`} />
               </div>
             </section>
 
@@ -196,7 +197,7 @@ export function TrendsRoute() {
             <section className="flex flex-col gap-4">
               <div className="flex items-baseline justify-between">
                 <h2 className="text-md font-semibold">Districts, sorted by slope</h2>
-                <span className="text-xs text-text-2">All panels share one y-scale · Sample data</span>
+                <span className="text-xs text-text-2">All panels share one y-scale{isReal() ? '' : ' · Sample data'}</span>
               </div>
               <div ref={gridRef} className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {v.panels.map((p) => {
@@ -223,7 +224,7 @@ export function TrendsRoute() {
                         domain={v.shared}
                         labels={false}
                         xTicks={[0, 25]}
-                        title={`${p.name} average peak-season greenness`}
+                        title={`${p.name} average ${isReal() ? 'summer' : 'peak-season'} greenness`}
                       />
                       <div>
                         <button

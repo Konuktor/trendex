@@ -1,3 +1,4 @@
+import { isReal } from '../data/info';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Download, Info } from 'lucide-react';
@@ -33,7 +34,7 @@ export function QueueRoute() {
         <header className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h1 className="text-xl font-semibold">Inspection queue</h1>
-            <p className="text-sm text-text-2">Areas with a reliable decline, ranked for field checks in the 2026 season. Sample data.</p>
+            <p className="text-sm text-text-2">Areas with a reliable decline, ranked for field checks in the 2026 season.{isReal() ? '' : ' Sample data.'}</p>
           </div>
           <button
             type="button"

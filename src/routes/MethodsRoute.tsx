@@ -3,6 +3,7 @@ import { ArrowDown } from 'lucide-react';
 import { useApp } from '../store';
 import { runChecks } from '../lib/checks';
 import { NOT_ACCOUNTED } from '../lib/labels';
+import { dataInfo } from '../data/info';
 
 const SECTIONS = [
   { id: 'measure', title: 'What we measure' },
@@ -13,6 +14,16 @@ const SECTIONS = [
   { id: 'limits', title: 'What this does not know' },
   { id: 'ai', title: 'AI use disclosure' },
 ] as const;
+
+const FLOW_REAL: { title: string; body: string }[] = [
+  { title: 'Summer greenness', body: 'NASA MODIS MOD13A3 monthly NDVI (1 km): the mean of clear May–September months, each year 2000–2025, averaged over the pasture part of each 10 km cell.' },
+  { title: 'Pasture mask', body: 'Remove water, snow and ice, built-up land, cropland and forest (MODIS MCD12Q1, 2020) and slopes steeper than 35° (NASADEM). A 10 km cell counts as pasture when the remaining land covers at least half of it.' },
+  { title: 'Clear seasons', body: 'Count the summers with at least 3 clear months. Fewer than 16 of 26 means no trend.' },
+  { title: 'Level and trend', body: 'Level: a score from greenness, year-to-year stability, green-season length and gentle terrain, ranked among all pastures here. Trend: Theil–Sen slope in % per year with a Mann–Kendall test, corrected for autocorrelation and for testing many cells at once.' },
+  { title: 'Confidence', body: 'High, medium or low from the number of clear summers, whether the trend is reliable, and whether the level holds under other weightings.' },
+  { title: 'Zones and outlines', body: 'Neighbouring cells of the same class form a zone. A drawn outline averages the cells inside it.' },
+  { title: 'Answer card', body: 'Level, trend, confidence, the reasons, this season, better areas nearby and a suggested next step.' },
+];
 
 const FLOW: { title: string; body: string }[] = [
   { title: 'Peak-season greenness', body: 'MODIS NDVI, maximum of clear June–August observations, each year 2000–2025.' },
@@ -47,6 +58,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
 
 export function MethodsRoute() {
   const data = useApp((s) => s.data);
+  const real = useApp((s) => s.real);
   const load = useApp((s) => s.load);
   useEffect(() => {
     void load();
@@ -74,18 +86,27 @@ export function MethodsRoute() {
           <header className="flex flex-col gap-2">
             <h1 className="text-xl font-semibold">Methods & limits</h1>
             <p className="text-md text-text-2">
-              How TrendeX turns satellite records into a plain answer, how it was checked, and what it cannot see.
-              All pasture figures in this pilot are sample data.
+              How TrendeX turns satellite records into a plain answer, how it was checked, and what it cannot see.{' '}
+              {real ? 'Figures come from NASA satellite records, 2000–2025.' : 'All pasture figures in this pilot are sample data.'}
             </p>
           </header>
 
           <Section id="measure" title="1. What we measure">
-            <p>
-              For each pasture area TrendeX reads one number per year: peak-season greenness, the highest
-              normalised difference vegetation index (NDVI) seen in clear June–August observations. NDVI rises with the
-              amount of green, living plant cover. Over 26 seasons (2000–2025) it shows how much green cover a
-              pasture tends to carry and which way that has moved.
-            </p>
+            {real ? (
+              <p>
+                For each pasture area TrendeX reads one number per year: summer greenness, the mean normalised
+                difference vegetation index (NDVI) of clear May–September months from NASA MODIS (MOD13A3, 1 km).
+                NDVI rises with the amount of green, living plant cover. Over 26 summers (2000–2025) it shows how much
+                green cover a pasture tends to carry and which way that has moved.
+              </p>
+            ) : (
+              <p>
+                For each pasture area TrendeX reads one number per year: peak-season greenness, the highest
+                normalised difference vegetation index (NDVI) seen in clear June–August observations. NDVI rises with the
+                amount of green, living plant cover. Over 26 seasons (2000–2025) it shows how much green cover a
+                pasture tends to carry and which way that has moved.
+              </p>
+            )}
             <p>
               Greenness is not forage quality, biomass or species mix. A pasture can stay green while the plants
               animals prefer are replaced by ones they avoid. TrendeX points to where a field check is worth the trip;
@@ -99,7 +120,7 @@ export function MethodsRoute() {
 
           <Section id="answer" title="2. How the answer is built">
             <ol className="flex flex-col items-stretch" aria-label="Steps from satellite record to answer">
-              {FLOW.map((f, i) => (
+              {(real ? FLOW_REAL : FLOW).map((f, i) => (
                 <li key={f.title} className="flex flex-col items-center">
                   <div className="card w-full p-4">
                     <div className="flex items-baseline gap-2">
@@ -108,7 +129,7 @@ export function MethodsRoute() {
                     </div>
                     <p className="mt-1 text-sm text-text-2">{f.body}</p>
                   </div>
-                  {i < FLOW.length - 1 && <ArrowDown size={16} strokeWidth={1.5} className="my-1 text-text-3" aria-hidden="true" />}
+                  {i < (real ? FLOW_REAL : FLOW).length - 1 && <ArrowDown size={16} strokeWidth={1.5} className="my-1 text-text-3" aria-hidden="true" />}
                 </li>
               ))}
             </ol>
@@ -116,27 +137,37 @@ export function MethodsRoute() {
 
           <Section id="formula" title="3. The formula">
             <h3 className="text-md font-semibold">Level</h3>
-            <p>
-              The mean peak-season greenness of each pasture cell is ranked against every other pasture cell in Naryn
-              oblast and the Suusamyr valley. The percentile is split into thirds: low, moderate and good. Level is
-              always relative to other pastures here, never an absolute standard.
-            </p>
+            {real ? (
+              <p>
+                Every 1 km pasture square gets a score from four parts, each ranked against all pastures in Naryn
+                oblast: summer greenness (weight 0.4), year-to-year stability (0.2), green-season length (0.2) and
+                gentle terrain (0.2). A cell’s level is the mean score of its pasture, ranked against every other
+                pasture cell in Naryn oblast and the Suusamyr valley and split into thirds: low, moderate and good.
+                Level is always relative to other pastures here, never an absolute standard.
+              </p>
+            ) : (
+              <p>
+                The mean peak-season greenness of each pasture cell is ranked against every other pasture cell in Naryn
+                oblast and the Suusamyr valley. The percentile is split into thirds: low, moderate and good. Level is
+                always relative to other pastures here, never an absolute standard.
+              </p>
+            )}
             <h3 className="text-md font-semibold">Trend</h3>
             <p>
               The trend is the Theil–Sen slope of the 26 yearly values, expressed in % of the area’s mean per year.
               A trend is <b className="font-semibold">reliable</b> when the Mann–Kendall test gives p &lt; 0.05 and at
-              least 16 of 26 seasons were clear. Otherwise it is <b className="font-semibold">not reliable</b>. A
+              least 16 of 26 seasons were clear{real ? ' (on this record the test is corrected for autocorrelation by the Hamed–Rao method and for testing every cell at once by the Benjamini–Hochberg false discovery rate, q < 0.05)' : ''}. Otherwise it is <b className="font-semibold">not reliable</b>. A
               slope of −1.1% per year or steeper (or +1.1% or steeper) is shown in the darker colour.
             </p>
             <p className="rounded-lg border border-border-strong bg-panel p-3 text-sm">
-              In this pilot the series are sample data, and the slope and its 95% interval come from an ordinary
-              least-squares fit, which behaves like Theil–Sen on smooth series. The production pipeline uses Theil–Sen
-              with Mann–Kendall as described above.
+              {real
+                ? 'Cell trends come from the TrendeX pipeline (Theil–Sen with Mann–Kendall, as above). For a drawn outline or a district average this page fits an ordinary least-squares line with a 95% interval to the averaged series, which behaves like Theil–Sen on smooth series.'
+                : 'In this pilot the series are sample data, and the slope and its 95% interval come from an ordinary least-squares fit, which behaves like Theil–Sen on smooth series. The production pipeline uses Theil–Sen with Mann–Kendall as described above.'}
             </p>
             <h3 className="text-md font-semibold">Confidence</h3>
             <ul className="flex list-disc flex-col gap-1 pl-5">
               <li><b className="font-medium">Low</b>: fewer than 16 of 26 clear seasons.</li>
-              <li><b className="font-medium">High</b>: a reliable trend and more than about 20 of 26 clear seasons.</li>
+              <li><b className="font-medium">High</b>: a reliable trend and more than about 20 of 26 clear seasons{real ? ', and a level that does not change under other weightings' : ''}.</li>
               <li><b className="font-medium">Medium</b>: everything else.</li>
               <li>A drawn outline that covers fewer than 3 cells drops one step, because the interval is wide.</li>
             </ul>
@@ -150,8 +181,9 @@ export function MethodsRoute() {
 
           <Section id="checks" title="4. Checks">
             <p>
-              Known places compared with what the map says. Expectations here are illustrative for the sample data;
-              the real checks will use field notes from district pasture committees.
+              {real
+                ? 'Known places compared with what the map says. Expectations are illustrative; field notes from district pasture committees will replace them. Mismatches are kept visible rather than tuned away.'
+                : 'Known places compared with what the map says. Expectations here are illustrative for the sample data; the real checks will use field notes from district pasture committees.'}
             </p>
             {checks ? (
               <div className="card overflow-hidden">
@@ -183,7 +215,7 @@ export function MethodsRoute() {
             {checks && (
               <p className="text-sm text-text-2">
                 {checks.length - mismatches} of {checks.length} match.{' '}
-                {mismatches > 0 &&
+                {mismatches > 0 && !real &&
                   'A mismatch is kept visible rather than tuned away: near Suusamyr village the year-to-year swings are larger than the slope, so the record shows no reliable direction even though the valley floor next to it does.'}
               </p>
             )}
@@ -201,14 +233,23 @@ export function MethodsRoute() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
+                  {(real
+                    ? [
+                        ['NASA MODIS MOD13A3', 'v061, 1 km, monthly (LP DAAC)', 'Summer NDVI and clear-season counts'],
+                        ['NASA MODIS MCD12Q1', 'v061, IGBP LC_Type1, 2020', 'Pasture mask: water, snow and ice, built-up, cropland, forest; land-cover shares'],
+                        ['NASADEM', '30 m (LP DAAC)', 'Slope: terrain part of the level and the steep-slope mask'],
+                        ['NASA GPM IMERG', 'Final V07, monthly (GES DISC)', 'Precipitation context in the TrendeX data cube'],
+                        ['geoBoundaries', 'gbOpen KGZ ADM2', 'The 5 official Naryn districts and the oblast outline'],
+                        ['TrendeX pipeline', dataInfo.pipelineVersion, 'Everything above, joined on the 0.12° × 0.09° grid. Data cube: huggingface.co/datasets/TrendeX90/naryn-cube'],
+                      ]
+                    : [
                     ['MODIS MOD13Q1', 'Collection 6.1, 250 m, 16-day', 'Peak-season NDVI and clear-season counts'],
                     ['ESA WorldCover', 'v200 (2021), 10 m', 'Pasture mask: grassland share, cropland, settlement, water, bare'],
                     ['CHIRPS', 'v2.0, daily', 'Weather-year context for unusual seasons'],
                     ['Copernicus DEM', 'GLO-30', 'Elevation, glacier and bare-rock screening, hillshade context'],
                     ['geoBoundaries', 'gbOpen KGZ ADM1 / ADM2', 'Oblast and district boundaries'],
                     ['TrendeX pipeline', '0.1.0 (sample data)', 'Everything above, joined on the 0.12° × 0.09° grid'],
-                  ].map(([a, b, c]) => (
+                  ]).map(([a, b, c]) => (
                     <tr key={a} className="border-b border-hairline last:border-0">
                       <td className="px-3 py-2 align-top font-medium">{a}</td>
                       <td className="px-3 py-2 align-top">{b}</td>
@@ -236,7 +277,7 @@ export function MethodsRoute() {
 
           <Section id="ai" title="7. AI use disclosure">
             <p>
-              This interface and its sample data generator were written with the help of an AI coding assistant
+              {real ? 'This interface and the data pipeline were' : 'This interface and its sample data generator were'} written with the help of an AI coding assistant
               (Claude), working from a written specification and a reviewed prototype. Every answer on the map is
               produced by fixed, documented rules in the code; no language model runs when you use TrendeX, and no
               AI model decides which areas are ranked or flagged.

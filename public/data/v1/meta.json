@@ -1,0 +1,86 @@
+{
+ "dataStatus": "production",
+ "pipelineVersion": "1.0.0+c323445f4abe",
+ "generatedAt": "2026-11-14T16:26:54Z",
+ "dataComputedAt": "2026-11-14T14:53:58+00:00",
+ "years": [
+  2000,
+  2025
+ ],
+ "grid": {
+  "cols": 40,
+  "rows": 22,
+  "lon0": 73.6,
+  "lat0": 42.55,
+  "dlon": 0.12,
+  "dlat": 0.09
+ },
+ "sources": {
+  "ndvi": "NASA MODIS MOD13A3 v061 (Terra, monthly 1 km NDVI), LP DAAC",
+  "landCover": "NASA MODIS MCD12Q1 v061 (IGBP LC_Type1, 2020), LP DAAC",
+  "precip": "NASA GPM IMERG Final V07 monthly, GES DISC",
+  "dem": "NASADEM (30 m), LP DAAC",
+  "boundaries": "geoBoundaries gbOpen KGZ ADM2 (5 official Naryn districts)"
+ },
+ "method": {
+  "series": "Summer (May–Sep) mean NDVI of the pasture 1-km cells in each 10-km cell, 2000–2025; rare gaps interpolated.",
+  "level": "TrendeX level score (greenness, year-to-year stability, green-season length, gentle terrain; 1-km percentiles, weights 0.4/0.2/0.2/0.2) averaged per 10-km cell; pct = rank among pasture cells; level = thirds of that rank.",
+  "trend": "Theil–Sen slope (% of mean per year); reliable if Hamed–Rao Mann–Kendall passes Benjamini–Hochberg FDR q < 0.05 across pasture cells and ≥ 16 valid summers.",
+  "strong": "reliable and |slope| ≥ 1.1 %/yr",
+  "conf": "Low if cov < 0.6; High if reliable, cov > 0.78 and level stable under alternative weights; else Medium.",
+  "kind": "pasture if pasture 1-km cells cover ≥ 50% of the 10-km cell; masks: water, snow/ice, built-up, cropland, forest (MCD12Q1) and mean slope > 35°."
+ },
+ "stats": {
+  "n_cells": 447,
+  "n_pasture": 439,
+  "kinds": {
+   "pasture": 439,
+   "excluded": 8,
+   "nodata": 0
+  },
+  "trend": {
+   "dec": 4,
+   "inc": 41,
+   "nr": 394
+  },
+  "strong": 3,
+  "conf": {
+   "High": 10,
+   "Medium": 429,
+   "Low": 0
+  },
+  "districts": {
+   "NA": 83,
+   "AT": 146,
+   "JU": 66,
+   "KO": 73,
+   "AK": 64,
+   "SU": 15
+  }
+ },
+ "cubeManifest": {
+  "synthetic": false,
+  "partial": false,
+  "datasets": {
+   "MOD13A3": "061, doi:10.5067/MODIS/MOD13A3.061",
+   "MYD13A3": "061, doi:10.5067/MODIS/MYD13A3.061",
+   "MOD11A2": "061, doi:10.5067/MODIS/MOD11A2.061",
+   "MOD10A2": "61, doi:10.5067/MODIS/MOD10A2.061",
+   "MCD12Q1": "061, doi:10.5067/MODIS/MCD12Q1.061",
+   "NASADEM_HGT": "001, doi:10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+   "GPM_3IMERGM": "07, doi:10.5067/GPM/IMERG/3B-MONTH/07",
+   "GLDAS_NOAH025_M": "2.1, doi:10.5067/SXAVCZFAQLNO"
+  },
+  "sources_used": {
+   "MCD12Q1": "LP DAAC (earthaccess)",
+   "NASADEM": "LP DAAC (earthaccess)",
+   "MOD13A3": "LP DAAC (earthaccess)",
+   "MYD13A3": "LP DAAC (earthaccess)",
+   "MOD11A2": "LP DAAC (earthaccess)",
+   "MOD10A2": "LP DAAC (earthaccess)"
+  }
+ },
+ "defaultCellId": "3,4",
+ "lowCellId": null,
+ "excludedCellId": "31,16"
+}

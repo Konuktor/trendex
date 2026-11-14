@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { source } from './data/source';
+import { isReal } from './data/info';
 import type { DataSet, District, Layer, LonLat, MatrixFilter, StudyMask } from './lib/types';
 
 export type SelectionRef = { type: 'zone'; id: string } | { type: 'drawn'; poly: LonLat[] } | null;
@@ -54,7 +55,12 @@ export function selectionKey(sel: SelectionRef): string | null {
 interface AppState {
   data: DataSet | null;
   mask: StudyMask | null;
+  /** true when running on the real (production) data, false on sample data */
+  real: boolean;
+  /** load error message, null when fine */
+  loadError: string | null;
   load: () => Promise<void>;
+  retry: () => void;
 
   layer: Layer;
   setLayer: (l: Layer) => void;
@@ -88,10 +94,20 @@ interface AppState {
 export const useApp = create<AppState>((set, get) => ({
   data: null,
   mask: null,
+  real: false,
+  loadError: null,
   async load() {
     if (get().data) return;
-    const { data, mask } = await source.getCells();
-    set((s) => ({ data, mask, sel: s.sel ?? (data.demo ? { type: 'zone', id: data.demo } : null) }));
+    try {
+      const { data, mask } = await source.getCells();
+      set((s) => ({ data, mask, real: isReal(), loadError: null, sel: s.sel ?? (data.demo ? { type: 'zone', id: data.demo } : null) }));
+    } catch (e) {
+      set({ loadError: e instanceof Error ? e.message : String(e) });
+    }
+  },
+  retry() {
+    set({ loadError: null });
+    void get().load();
   },
 
   layer: 'trend',

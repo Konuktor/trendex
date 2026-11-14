@@ -1,3 +1,4 @@
+import { useApp } from '../store';
 import { NavLink } from 'react-router-dom';
 import { Play } from 'lucide-react';
 
@@ -29,6 +30,7 @@ function Tabs({ mobile }: { mobile?: boolean }) {
 }
 
 export function TopBar({ onTour }: { onTour?: () => void }) {
+  const real = useApp((s) => s.real);
   return (
     <header className="z-30 flex flex-none flex-col bg-white">
       <div className="flex h-bar items-center gap-8 border-b border-hairline pl-5 pr-4">
@@ -37,8 +39,10 @@ export function TopBar({ onTour }: { onTour?: () => void }) {
         </NavLink>
         <Tabs />
         <div className="ml-auto flex items-center gap-3">
-          <span className="hidden text-sm text-text-2 lg:inline">Naryn oblast · peak season 2000–2025</span>
-          <span className="tag">Sample data</span>
+          <span className="hidden text-sm text-text-2 lg:inline">
+            {real ? 'Naryn oblast · summer 2000–2025 · NASA MODIS' : 'Naryn oblast · peak season 2000–2025'}
+          </span>
+          {!real && <span className="tag">Sample data</span>}
           <button type="button" className="btn-secondary" onClick={onTour} data-tour="tour-button">
             <Play size={14} strokeWidth={1.5} aria-hidden="true" />
             Demo tour

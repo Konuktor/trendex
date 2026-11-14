@@ -25,6 +25,14 @@ export interface Cell {
   cov: number;
   seasons: number;
   conf: Confidence;
+  /** Real data only: 26 yearly summer NDVI values 2000–2025 (gaps already filled). */
+  series?: number[];
+  /** Real data only: land-cover shares in the cell (MODIS MCD12Q1 2020). */
+  landCover?: Partial<Record<'grassland' | 'cropland' | 'settlement' | 'water' | 'bare' | 'forest', number>>;
+  /** Real data only: TrendeX level score 0–100, trend p and FDR q values. */
+  score?: number;
+  p_value?: number;
+  q_value?: number | null;
 }
 
 export type BoundaryFeature = Feature<Polygon | MultiPolygon, { shapeName: string } & Record<string, unknown>>;

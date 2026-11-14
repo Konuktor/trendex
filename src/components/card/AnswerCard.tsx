@@ -1,3 +1,4 @@
+import { isReal } from '../../data/info';
 import { AlertTriangle, Check, ChevronRight, Info, Plus, X } from 'lucide-react';
 import type { Answer, BetterRow, NonPastureAnswer, PastureAnswer } from '../../lib/answer';
 import { LEVEL_NAME, NOT_ACCOUNTED, RELATIVE_NOTE, TREND_NAME } from '../../lib/labels';
@@ -91,8 +92,8 @@ function PastureDetails({ a, act, chartWidth }: { a: PastureAnswer; act: CardAct
     <>
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-sm font-medium">Peak-season greenness (NDVI)</h3>
-          <span className="text-xs text-text-2">2000–2025 · Sample data</span>
+          <h3 className="text-sm font-medium">{isReal() ? 'Summer greenness (NDVI, May–Sep mean)' : 'Peak-season greenness (NDVI)'}</h3>
+          <span className="text-xs text-text-2">{isReal() ? '2000–2025 · NASA MODIS MOD13A3' : '2000–2025 · Sample data'}</span>
         </div>
         <TrendChart model={a.chart} trend={a.trend} width={chartWidth} />
       </section>
