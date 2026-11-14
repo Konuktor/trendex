@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrendeX · Map prototype</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:20px;color:#171717;background:#fff;font-variant-numeric:tabular-nums}
+button,input,select{font-family:inherit}
+a{color:#171717}
+:focus-visible{outline:2px solid #171717;outline-offset:2px}
+#app{position:relative;height:100vh;min-height:640px;display:flex;flex-direction:column;overflow:hidden}
+header{height:48px;flex:none;display:flex;align-items:center;gap:32px;padding:0 16px 0 20px;border-bottom:1px solid #E5E5E5;background:#fff;z-index:30}
+.wm{font-size:16px;font-weight:600;letter-spacing:-0.01em;text-decoration:none;color:#171717}
+nav{display:flex;gap:4px;align-self:stretch}
+nav a{display:flex;align-items:center;padding:0 12px;font-size:14px;font-weight:500;color:#525252;text-decoration:none;transition:color 150ms ease}
+nav a:hover{color:#171717}
+nav a[aria-current]{color:#171717;box-shadow:inset 0 -2px 0 #171717}
+.hr{margin-left:auto;display:flex;align-items:center;gap:12px}
+.tag{font-size:12px;line-height:16px;color:#525252;border:1px solid #E5E5E5;border-radius:4px;padding:1px 6px}
+.btn{height:32px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:background 150ms ease;text-decoration:none;white-space:nowrap}
+.b1{border:0;background:#171717;color:#fff}.b1:hover{background:#262626}.b1:disabled{background:#A3A3A3;cursor:default}
+.b2{border:1px solid #E5E5E5;background:#fff;color:#171717}.b2:hover{background:#FAFAFA}
+.bt{border:0;background:none;color:#525252;padding:0 8px;height:24px;font-size:13px;cursor:pointer;border-radius:4px}
+.bt:hover{color:#171717;background:#F5F5F5}
+.body{flex:1;min-height:0;display:flex}
+.rail{width:280px;flex:none;border-right:1px solid #E5E5E5;background:#FAFAFA;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:24px;z-index:5}
+.lbl{font-size:11px;line-height:16px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:#525252}
+.small{font-size:12px;line-height:16px;color:#525252}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;padding:2px;background:#F0F0F0;border:1px solid #E5E5E5;border-radius:6px;height:32px}
+.seg button{border:0;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:#525252}
+.seg button[aria-pressed="true"]{background:#fff;color:#171717;box-shadow:0 0 0 1px #E5E5E5}
+.mx{display:grid;grid-template-columns:64px repeat(3,minmax(0,1fr));gap:4px;align-items:center}
+.mxc{position:relative;height:40px;border:0;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:box-shadow 150ms ease,opacity 150ms ease}
+.mxc:hover{box-shadow:0 0 0 1px #171717}
+.mxc span.v{background:#fff;font-size:12px;line-height:16px;font-weight:500;padding:0 4px;border-radius:3px}
+.mxc .dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:#171717;box-shadow:0 0 0 1.5px #fff}
+.rw{display:flex;align-items:center;gap:12px;width:100%;padding:8px;border:1px solid transparent;border-radius:6px;background:transparent;cursor:pointer;text-align:left;transition:background 150ms ease}
+.rw:hover{background:#F5F5F5}
+.rw[aria-pressed="true"]{background:#fff;border-color:#D4D4D4}
+.minibar{width:64px;height:8px;display:flex;gap:1px;border-radius:2px;overflow:hidden;flex:none}
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+.strip{height:40px;flex:none;display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:1px solid #E5E5E5;font-size:13px;color:#525252;white-space:nowrap;overflow:hidden;background:#fff;z-index:4}
+.strip b{color:#171717;font-weight:500}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:6px}
+.mapwrap{position:relative;flex:1;min-height:0;background:#F3F3F3}
+#map{position:absolute;inset:0}
+.toolbar{position:absolute;left:16px;top:16px;z-index:8;display:flex;align-items:flex-start;gap:8px}
+.search{position:relative;width:320px;margin:0}
+.search input{width:100%;height:32px;padding:0 32px;border:1px solid #D4D4D4;border-radius:6px;background:#fff;color:#171717;font-size:13px}
+.search input::placeholder{color:#8A8A8A}
+.search svg{position:absolute;left:10px;top:9px;pointer-events:none}
+.sugg{position:absolute;left:0;right:0;top:36px;padding:4px;background:#fff;border:1px solid #E5E5E5;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.08);display:flex;flex-direction:column}
+.sugg button{display:flex;align-items:center;justify-content:space-between;gap:12px;height:36px;padding:0 8px;border:0;border-radius:6px;background:#fff;cursor:pointer;text-align:left;font-size:13px}
+.sugg button:hover{background:#F5F5F5}
+.drawbar{height:32px;display:flex;align-items:center;gap:6px;padding:0 4px 0 12px;border:1px solid #D4D4D4;border-radius:6px;background:#fff;font-size:13px}
+.drawbar .b1{height:24px;padding:0 10px;border-radius:4px}
+.status{position:absolute;left:16px;bottom:16px;z-index:6;max-width:420px;padding:6px 10px;background:#fff;border:1px solid #E5E5E5;border-radius:6px;font-size:12px;line-height:16px;color:#525252}
+.maplibregl-ctrl-bottom-left{left:0;bottom:44px}
+.maplibregl-ctrl-group{border-radius:6px!important;box-shadow:none!important;border:1px solid #E5E5E5}
+.maplibregl-ctrl-scale{border-color:#525252;color:#525252;font-family:Inter,sans-serif;font-size:11px;background:rgba(255,255,255,.8)}
+.maplibregl-ctrl-attrib{font-family:Inter,sans-serif;font-size:11px}
+.drawer{position:absolute;right:0;top:48px;bottom:0;width:400px;background:#fff;border-left:1px solid #E5E5E5;box-shadow:-12px 0 24px rgba(0,0,0,.04);display:flex;flex-direction:column;z-index:20}
+.drawer[hidden]{display:none}
+.dh{flex:none;display:flex;align-items:flex-start;gap:12px;padding:20px 24px 16px;border-bottom:1px solid #E5E5E5}
+.dh h2{margin:0;font-size:20px;line-height:28px;font-weight:600;letter-spacing:-0.01em}
+.badge{flex:none;display:flex;align-items:center;gap:6px;height:24px;padding:0 8px;border:1px solid #D4D4D4;border-radius:6px;font-size:12px;font-weight:500}
+.bars{display:flex;align-items:flex-end;gap:2px;height:10px}.bars i{display:block;width:3px;border-radius:1px}
+.x{flex:none;width:32px;height:32px;margin:-4px -8px 0 0;border:0;border-radius:6px;background:#fff;color:#525252;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.x:hover{background:#F5F5F5}
+.db{flex:1;min-height:0;overflow-y:auto;padding:20px 24px 24px;display:flex;flex-direction:column;gap:24px}
+.note{flex:none;display:flex;align-items:flex-start;gap:8px;padding:12px 24px;border-top:1px solid #E5E5E5;font-size:12px;line-height:16px;color:#525252}
+.box{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid #E5E5E5;border-radius:8px}
+.chip{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:13px;font-weight:500}
+.hs{width:10px;height:10px;border-radius:2px;background:repeating-linear-gradient(45deg,#A1A1AA 0px,#A1A1AA 1px,#fff 1px,#fff 3px);box-shadow:0 0 0 1px #A1A1AA}
+.warn{display:flex;gap:10px;padding:12px;background:#F5F5F5;border:1px solid #D4D4D4;border-radius:8px;font-size:13px;line-height:18px}
+.why{display:flex;gap:10px;font-size:13px;line-height:18px}
+.why .s{flex:none;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:1px solid #D4D4D4;border-radius:4px;font-weight:600;line-height:1}
+.near{display:flex;align-items:center;gap:12px;padding:8px;margin:0 -8px;width:calc(100% + 16px);border:0;border-radius:6px;background:#fff;cursor:pointer;text-align:left}
+.near:hover{background:#F5F5F5}
+.nx{display:flex;flex-direction:column;gap:12px;padding:16px;background:#FAFAFA;border:1px solid #E5E5E5;border-radius:8px}
+.tour{position:absolute;z-index:40;width:296px;background:#fff;border:1px solid #E5E5E5;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:16px;display:flex;flex-direction:column;gap:8px}
+.tour[hidden]{display:none}
+.hint{position:absolute;right:416px;top:16px;z-index:6;padding:8px 12px;background:#fff;border:1px solid #E5E5E5;border-radius:8px;font-size:13px;color:#525252;box-shadow:0 4px 12px rgba(0,0,0,.05)}
+.hint[hidden]{display:none}
+@media (max-width:900px){.rail{display:none}.drawer{width:100%;top:auto;height:55%;border-left:0;border-top:1px solid #E5E5E5;border-radius:12px 12px 0 0}.search{width:200px}nav{display:none}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+<a class="wm" href="#">TrendeX</a>
+<nav aria-label="Main">
+<a href="#" aria-current="page">Map</a>
+<a href="https://claude.ai/artifact/PyQM3YPPUUKHVoMRFREcND" target="_blank" rel="noopener">Trends</a>
+<a href="https://claude.ai/artifact/PyQM3YPPUUKHVoMRFREcND" target="_blank" rel="noopener">Inspection queue</a>
+<a href="https://claude.ai/artifact/PyQM3YPPUUKHVoMRFREcND" target="_blank" rel="noopener">Methods &amp; limits</a>
+</nav>
+<div class="hr">
+<span style="font-size:13px;color:#525252">Naryn oblast · peak season 2000–2025</span>
+<span class="tag">Sample data</span>
+<button type="button" class="btn b2" data-act="tour"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>Demo tour</button>
+</div>
+</header>
+<div class="body">
+<aside class="rail" id="rail" aria-label="Layers and filters"></aside>
+<main>
+<div class="strip" id="strip"></div>
+<div class="mapwrap">
+<div id="map" aria-label="Map of Naryn oblast pastures"></div>
+<div class="toolbar">
+<form class="search" id="searchForm" role="search">
+<label for="q" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search a place or coordinates</label>
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#525252" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+<input id="q" type="text" autocomplete="off" placeholder="Search a place or 42.15, 74.02">
+<div class="sugg" id="sugg" hidden></div>
+</form>
+<div id="drawCtl"></div>
+</div>
+<div class="hint" id="hint" hidden>Click a zone, search a place, or draw an area</div>
+<div class="status" id="status">Loading the map…</div>
+</div>
+</main>
+</div>
+<aside class="drawer" id="drawer" aria-label="Answer card" hidden></aside>
+<div class="tour" id="tour" role="dialog" aria-label="Demo tour" hidden></div>
+</div>
+
+<script>
+var TX_LIBS=['https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js','https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js','https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.js'];
+function txLoadLib(i){if(i>=TX_LIBS.length){var el=document.getElementById('status');el.hidden=false;el.textContent='The map library could not load. If this file is open in a preview window, open it in Chrome or Safari instead. Otherwise check that unpkg.com or cdn.jsdelivr.net is reachable.';return;}
+var s=document.createElement('script');s.src=TX_LIBS[i];s.onload=function(){TX_START();};s.onerror=function(){s.remove();txLoadLib(i+1);};document.head.appendChild(s);}
+window.addEventListener('DOMContentLoaded',function(){txLoadLib(0);});
+</script>
+<script>
+function TX_START(){
+'use strict';
+var LON0=73.6,LAT0=42.55,DLON=0.12,DLAT=0.09,COLS=40,ROWS=22;
+var BOX=[[LON0,LAT0],[LON0+COLS*DLON,LAT0],[LON0+COLS*DLON,LAT0-ROWS*DLAT],[LON0,LAT0-ROWS*DLAT]];
+var CANVAS_URL='https://claude.ai/artifact/PyQM3YPPUUKHVoMRFREcND';
+var ADM1_URLS=['https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/main/releaseData/gbOpen/KGZ/ADM1/geoBoundaries-KGZ-ADM1_simplified.geojson','https://raw.githubusercontent.com/wmgeolab/geoBoundaries/main/releaseData/gbOpen/KGZ/ADM1/geoBoundaries-KGZ-ADM1_simplified.geojson'];
+var ADM2_URLS=['https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/main/releaseData/gbOpen/KGZ/ADM2/geoBoundaries-KGZ-ADM2_simplified.geojson','https://raw.githubusercontent.com/wmgeolab/geoBoundaries/main/releaseData/gbOpen/KGZ/ADM2/geoBoundaries-KGZ-ADM2_simplified.geojson'];
+
+/* ---------- helpers ---------- */
+function $(s){return document.querySelector(s);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});}
+function H(x,y,s){var h=(x*374761393+y*668265263+s*982451653)|0;h=Math.imul(h^(h>>>13),1274126177);h=h^(h>>>16);return ((h>>>0)%10000)/10000;}
+function V(x,y,s,sc){var gx=x/sc,gy=y/sc,x0=Math.floor(gx),y0=Math.floor(gy),fx=gx-x0,fy=gy-y0,sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);var a=H(x0,y0,s),b=H(x0+1,y0,s),c=H(x0,y0+1,s),d=H(x0+1,y0+1,s);return a+(b-a)*sx+(c-a)*sy+(a-b-c+d)*sx*sy;}
+function avg(a,f){var s=0;a.forEach(function(x){s+=f(x);});return a.length?s/a.length:0;}
+function maj(a,f){var m={},best=null,bn=-1;a.forEach(function(x){var k=f(x);m[k]=(m[k]||0)+1;if(m[k]>bn){bn=m[k];best=k;}});return best;}
+function num(v){return String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function signed(n){return (n>0?'+':n<0?'−':'±')+Math.abs(n).toFixed(1);}
+function ord(n){var s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+function norm(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();}
+function cellCenter(c,r){return [LON0+(c+0.5)*DLON,LAT0-(r+0.5)*DLAT];}
+function toCell(lon,lat){return {c:(lon-LON0)/DLON,r:(LAT0-lat)/DLAT};}
+
+var DN={SU:'Suusamyr valley',JU:'Jumgal',KO:'Kochkor',AK:'Ak-Talaa',NA:'Naryn',AT:'At-Bashy'};
+var LV={low:{bg:'#DCEBD3',fg:'#171717',name:'Low'},moderate:{bg:'#86C07F',fg:'#171717',name:'Moderate'},good:{bg:'#2F7D3E',fg:'#FFFFFF',name:'Good'}};
+var HATCH='repeating-linear-gradient(45deg,#A1A1AA 0px,#A1A1AA 1px,#D4D4D8 1px,#D4D4D8 4px)';
+var DOTS='radial-gradient(circle,#A1A1AA 0.9px,rgba(255,255,255,0) 1.2px) 0 0/4px 4px,#FFFFFF';
+var YR=[0.2,-0.1,0.3,0.1,-0.2,0.4,0.0,-0.3,-0.9,0.2,0.5,0.1,-0.2,0.3,-0.8,0.2,0.4,-0.1,0.3,0.0,0.2,-1.0,0.3,-0.7,0.1,-0.4];
+var PLACES=[['Suusamyr','Суусамыр',42.18,73.96],['Kyzyl-Oi','Кызыл-Ой',41.95,74.17],['Chaek','Чаек',41.93,74.50],['Ming-Kush','Мин-Куш',41.68,74.47],['Son-Kul','Сон-Куль',41.83,75.13],['Kochkor','Кочкор',42.215,75.755],['Baetov','Баетов',41.26,74.95],['Naryn','Нарын',41.428,75.991],['Eki-Naryn','Эки-Нарын',41.66,76.40],['At-Bashy','Ат-Башы',41.17,75.807],['Ak-Sai','Ак-Сай',40.95,75.75],['Tash-Rabat','Таш-Рабат',40.82,75.29],['Kara-Suu','Кара-Суу',41.55,76.90],['Ak-Shyirak','Ак-Шыйрак',41.80,78.10]].map(function(p){var k=toCell(p[3],p[2]);return {en:p[0],ru:p[1],lat:p[2],lon:p[3],c:k.c,r:k.r};});
+var LAKES=[{lat:41.83,lon:75.13,a:15,b:9.5},{lat:40.615,lon:75.30,a:12,b:5.5}];
+
+/* ---------- geometry ---------- */
+function ringHas(ring,x,y){var ins=false;for(var i=0,j=ring.length-1;i<ring.length;j=i++){var xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))ins=!ins;}return ins;}
+function polyHas(p,x,y){if(!ringHas(p[0],x,y))return false;for(var k=1;k<p.length;k++)if(ringHas(p[k],x,y))return false;return true;}
+function geomHas(g,x,y){if(!g)return false;if(g.type==='Polygon')return polyHas(g.coordinates,x,y);if(g.type==='MultiPolygon')return g.coordinates.some(function(p){return polyHas(p,x,y);});return false;}
+function bboxOf(g){var b=[180,90,-180,-90];function walk(a){if(typeof a[0]==='number'){if(a[0]<b[0])b[0]=a[0];if(a[1]<b[1])b[1]=a[1];if(a[0]>b[2])b[2]=a[0];if(a[1]>b[3])b[3]=a[1];}else a.forEach(walk);}walk(g.coordinates);return b;}
+function inLake(lon,lat){return LAKES.some(function(L){var dx=(lon-L.lon)*111.32*Math.cos(L.lat*Math.PI/180),dy=(lat-L.lat)*110.57;return (dx/L.a)*(dx/L.a)+(dy/L.b)*(dy/L.b)<=1;});}
+function polyAreaKm(pts){var lat0=avg(pts,function(p){return p[1];}),k=111.32*Math.cos(lat0*Math.PI/180),a=0;for(var i=0,j=pts.length-1;i<pts.length;j=i++)a+=(pts[j][0]*k+pts[i][0]*k)*(pts[j][1]*110.57-pts[i][1]*110.57);return Math.abs(a/2);}
+function fetchFirst(urls){var i=0;return new Promise(function(res){function next(){if(i>=urls.length)return res(null);var u=urls[i++];var ctl=new AbortController(),t=setTimeout(function(){ctl.abort();},9000);
+fetch(u,{signal:ctl.signal}).then(function(r){clearTimeout(t);if(!r.ok)throw 0;return r.json();}).then(function(j){if(j&&j.features&&j.features.length)res(j);else next();}).catch(function(){clearTimeout(t);next();});}next();});}
+
+/* ---------- mask: real boundaries, else approximate ---------- */
+function realMask(adm1,adm2){
+var naryn=adm1.features.filter(function(f){return norm(f.properties.shapeName).indexOf('naryn')>=0;})[0];if(!naryn)return null;
+var chuy=adm1.features.filter(function(f){var n=norm(f.properties.shapeName);return n.indexOf('chu')>=0&&n.indexOf('chuy')>=0||n.indexOf('chui')>=0||n.indexOf('chuy')>=0;})[0];
+var d2=(adm2?adm2.features:[]).map(function(f){return {f:f,n:norm(f.properties.shapeName),bb:bboxOf(f.geometry)};});
+var m={},used={},c,r;
+for(r=0;r<ROWS;r++)for(c=0;c<COLS;c++){var p=cellCenter(c,r),lon=p[0],lat=p[1];
+if(geomHas(naryn.geometry,lon,lat)){var d='NA';for(var i=0;i<d2.length;i++){var x=d2[i];if(lon<x.bb[0]||lon>x.bb[2]||lat<x.bb[1]||lat>x.bb[3])continue;if(!geomHas(x.f.geometry,lon,lat))continue;used[i]=1;var n=x.n;
+d=n.indexOf('bash')>=0?'AT':(n.indexOf('jumgal')>=0||n.indexOf('dzhumgal')>=0||n.indexOf('djumgal')>=0)?'JU':n.indexOf('kochkor')>=0?'KO':n.indexOf('tala')>=0?'AK':'NA';break;}m[c+','+r]=d;}
+else if(lon<74.7&&lat>41.95&&lat<42.32&&(!chuy||geomHas(chuy.geometry,lon,lat)))m[c+','+r]='SU';}
+return {m:m,oblast:naryn,districts:Object.keys(used).map(function(i){return d2[i].f;})};}
+function approxMask(){var TOP=[3,2,2,2,2,3,3,2,2,2,1,1,1,1,1,1,1,1,1,2,2,2,2,3,3,3,4,4,4,5,5,5,6,6,7,7,8,8,9,10],BOT=[7,7,8,8,8,7,13,14,15,16,17,17,18,18,19,19,20,20,20,20,21,21,21,21,21,20,20,20,20,19,19,19,18,18,17,17,16,15,14,13];
+var m={},c,r;for(r=0;r<ROWS;r++)for(c=0;c<COLS;c++){if(r<TOP[c]||r>BOT[c])continue;m[c+','+r]=c<=5?'SU':(r<=8&&c<=13)?'JU':(r<=7&&c<=24)?'KO':(c<=15&&r>=9)?'AK':(r>=14)?'AT':'NA';}return {m:m,oblast:null,districts:[]};}
+
+/* ---------- sample data ---------- */
+function cellKeyOf(lat,lon){var k=toCell(lon,lat);return Math.floor(k.c)+','+Math.floor(k.r);}
+function buildData(M){
+var bot={},cells=[],keys=Object.keys(M.m);keys.forEach(function(k){var a=k.split(','),c=+a[0],r=+a[1];bot[c]=Math.max(bot[c]===undefined?-1:bot[c],r);});
+var settle={},sk=[[42.215,75.755,'Irrigated cropland and settlement'],[42.215,75.875,'Irrigated cropland and settlement'],[41.428,75.991,'Settlement and cropland'],[41.17,75.807,'Settlement and cropland']];
+sk.forEach(function(s){settle[cellKeyOf(s[0],s[1])]=s[2];});
+var low=cellKeyOf(40.95,75.75),demo='3,4';
+keys.forEach(function(k){var a=k.split(','),c=+a[0],r=+a[1],d=M.m[k],p=cellCenter(c,r);
+var water=inLake(p[0],p[1]),kind='pasture',why='';
+if(water){kind='excluded';why='Water: '+(p[1]>41.2?'Lake Son-Kul':'Lake Chatyr-Kul');}
+else if(settle[k]){kind='excluded';why=settle[k];}
+else if(V(c,r,7,4)>0.72&&(r>=bot[c]-1||c>=35)){kind='excluded';why='Glacier and bare rock';}
+else if(H(c,r,11)<0.03&&k!==demo&&k!==low){kind='nodata';why='Snow or cloud in most seasons';}
+var L=0.55*V(c,r,1,5)+0.25*V(c,r,2,2.5)+0.2*H(c,r,3);L+=({SU:0.1,KO:-0.12,AK:-0.08,AT:0.05,JU:0,NA:0.02})[d];
+var sc=toCell(75.13,41.83),dl=Math.sqrt((c+0.5-sc.c)*(c+0.5-sc.c)+(r+0.5-sc.r)*(r+0.5-sc.r));if(dl<4)L+=0.1;
+var T=(V(c,r,4,6)-0.5)*1.9+(H(c,r,5)-0.5)*0.55;T+=({SU:-0.42,KO:-0.22,AK:-0.15,AT:0.05,JU:0,NA:0.08})[d];
+var cov=0.56+0.44*V(c,r,8,3);if(k===demo){T=-0.7;cov=0.9;}if(k===low)cov=0.5;
+cells.push({c:c,r:r,k:k,d:d,kind:kind,why:why,L:L,T:T,cov:cov,water:water,lon:p[0],lat:p[1]});});
+var past=cells.filter(function(x){return x.kind==='pasture';});
+var Ls=past.map(function(x){return x.L;}).sort(function(a,b){return a-b;}),q1=Ls[Math.floor(Ls.length/3)],q2=Ls[Math.floor(Ls.length*2/3)];
+var byKey={};cells.sort(function(a,b){return a.r-b.r||a.c-b.c;});
+cells.forEach(function(x){if(x.k===demo)x.L=(q1+q2)/2;
+x.pct=Math.round(100*Ls.filter(function(v){return v<x.L;}).length/Ls.length);
+x.level=x.L<q1?'low':x.L<q2?'moderate':'good';x.slope=Math.round(x.T*16)/10;x.seasons=Math.round(x.cov*26);
+var rel=x.cov>=0.6;x.trend=(rel&&x.T<-0.4)?'dec':(rel&&x.T>0.42)?'inc':'nr';x.strong=(x.trend==='dec'&&x.T<-0.66)||(x.trend==='inc'&&x.T>0.66);
+x.conf=x.cov<0.6?'Low':(x.trend!=='nr'&&x.cov>0.78)?'High':'Medium';if(x.kind==='nodata')x.seasons=5+Math.floor(H(x.c,x.r,12)*4);byKey[x.k]=x;});
+return {cells:cells,past:past,byKey:byKey,demo:byKey[demo]?demo:(past[0]&&past[0].k),low:byKey[low]?low:null,excl:byKey[cellKeyOf(42.215,75.755)]?cellKeyOf(42.215,75.755):null};}
+function series(x){var base=0.30+0.30*x.pct/100,sl=x.slope/100*base,amp=0.014+0.04*(1-x.cov),v=[],i;for(i=0;i<26;i++)v.push(base+sl*(i-12.5)+(H(x.c*31+i,x.r*17+i,21)-0.5)*2*amp+(V(i,x.c*3+x.r,22,3)-0.5)*amp+base*0.06*YR[i]+base*0.04*(H(i,x.d.charCodeAt(0)+x.d.charCodeAt(1),23)-0.5));return v;}
+function fit(v){var mv=avg(v,function(a){return a;}),sxy=0,sxx=0,i;for(i=0;i<26;i++){sxy+=(i-12.5)*(v[i]-mv);sxx+=(i-12.5)*(i-12.5);}var b=sxy/sxx,ss=0;for(i=0;i<26;i++){var e=v[i]-(mv+b*(i-12.5));ss+=e*e;}var se=Math.sqrt(ss/24/sxx),sp=b/mv*100,ci=1.96*se/mv*100;return {sp:sp,ci:ci,dir:(sp+ci<0)?'dec':(sp-ci>0)?'inc':'nr'};}
+function trendName(t){return t==='dec'?'Reliable decline':t==='inc'?'Reliable growth':'Not reliable';}
+function trendBg(t,s){if(t==='dec')return s?'#C2410C':'#FDBA74';if(t==='inc')return s?'#0E7490':'#99D5E0';return HATCH;}
+function cls(x,layer){if(x.water)return null;if(x.kind==='excluded')return 'excl';if(x.kind==='nodata')return 'nodata';if(layer==='level')return 'L'+x.level;if(x.cov<0.6)return 'nr';return x.trend+(x.strong?'S':'');}
+function zkey(x,layer){if(x.water)return 'water';if(layer!=='level'&&x.kind==='pasture'&&x.cov<0.6)return 'lowc';return cls(x,layer);}
+function dirOf(dx,dy){var a=Math.atan2(-dy,dx)*180/Math.PI;return ['E','NE','N','NW','W','SW','S','SE'][((Math.round(a/45)%8)+8)%8];}
+function nearest(cx,cy){var best=null,bd=1e9;PLACES.forEach(function(p){var d=Math.sqrt((p.c-cx)*(p.c-cx)+(p.r-cy)*(p.r-cy));if(d<bd){bd=d;best=p;}});return {p:best,d:bd};}
+function placeName(cx,cy,always){var n=nearest(cx,cy);if(!always&&n.d<1.6)return 'Around '+n.p.en;return n.p.en+', '+Math.max(5,Math.round(n.d*2)*5)+' km '+dirOf(cx-n.p.c,cy-n.p.r);}
+
+/* ---------- state ---------- */
+var S={layer:'trend',f:null,dist:null,sel:null,poly:null,drawing:false,pts:[],q:{},tour:0,sq:''};
+var D=null,M=null,map=null,ready=false;
+
+function zoneOf(a){var k=zkey(a,S.layer),out=[a],seen={},q=[a];seen[a.k]=1;while(q.length){var x=q.shift();[[1,0],[-1,0],[0,1],[0,-1]].forEach(function(o){var nk=(x.c+o[0])+','+(x.r+o[1]);if(seen[nk])return;seen[nk]=1;var n=D.byKey[nk];if(!n||zkey(n,S.layer)!==k)return;var dc=n.c-a.c,dr=n.r-a.r;if(Math.sqrt(dc*dc+dr*dr)>2.3)return;out.push(n);q.push(n);});}return out;}
+function selection(){if(S.poly&&S.poly.length>=3){var Z=D.cells.filter(function(x){return ringHas(S.poly,x.lon,x.lat);});if(!Z.length){var cx=avg(S.poly,function(p){return p[0];}),cy=avg(S.poly,function(p){return p[1];}),h=D.byKey[cellKeyOf(cy,cx)];if(h)Z=[h];}return {mode:'drawn',Z:Z};}
+if(S.sel&&D.byKey[S.sel])return {mode:'zone',Z:zoneOf(D.byKey[S.sel])};return null;}
+function betterNear(cx,cy,Z,fn){var inZ={},seen={},out=[];Z.forEach(function(x){inZ[x.k]=1;});
+D.past.filter(function(o){return !inZ[o.k]&&fn(o);}).map(function(o){var dx=o.c+0.5-cx,dy=o.r+0.5-cy;return {o:o,d:Math.sqrt(dx*dx+dy*dy)};}).filter(function(e){return e.d<=5;}).sort(function(a,b){return a.d-b.d||b.o.pct-a.o.pct;}).forEach(function(e){if(out.length>=3)return;var o=e.o,nm=placeName(o.c+0.5,o.r+0.5,true);if(seen[nm])return;seen[nm]=1;var t=o.cov<0.6?'nr':o.trend;out.push({k:o.k,name:nm,km:Math.max(5,Math.round(e.d*10)),lv:LV[o.level].name,lvBg:LV[o.level].bg,tr:trendName(t),trBg:trendBg(t,o.strong)});});return out;}
+
+function answer(sel){var Z=sel.Z,mode=sel.mode,o={mode:mode},cx,cy,i;
+if(mode==='drawn'){var cc=S.poly.map(function(p){return toCell(p[0],p[1]);});cx=avg(cc,function(p){return p.c;});cy=avg(cc,function(p){return p.r;});}
+else{cx=avg(Z,function(x){return x.c+0.5;});cy=avg(Z,function(x){return x.r+0.5;});}
+var km=mode==='drawn'?Math.round(polyAreaKm(S.poly)):Z.length*100;
+o.name=mode==='drawn'?'Drawn area near '+nearest(cx,cy).p.en:placeName(cx,cy,false);
+o.coord='Centre '+(LAT0-cy*DLAT).toFixed(2)+'°N, '+(LON0+cx*DLON).toFixed(2)+'°E';
+var dn=Z.length?DN[maj(Z,function(x){return x.d;})]:'Outside the study area';
+o.sub=mode==='drawn'?'Your outline · '+num(km)+' km² · '+dn:dn+' · zone of '+num(km)+' km²';
+o.qid=mode==='drawn'?'drawn':(Z.length?Z[0].k:'none');o.queued=!!S.q[o.qid];o.qLabel='Add to queue';o.cx=cx;o.cy=cy;
+var P=Z.filter(function(x){return x.kind==='pasture';});
+if(!P.length){o.isPasture=false;o.conf='none';o.better=betterNear(cx,cy,Z,function(){return true;});
+if(!Z.length){o.badge='No data';o.swatch='#FFFFFF';o.reason='Outside the study area';o.detail='TrendeX covers Naryn oblast and the Suusamyr valley';o.head='There is no data here, so there is no answer.';o.expl='Draw the outline inside the study-area border.';o.next='Redraw the area inside the border.';return o;}
+var why=maj(Z,function(x){return x.why;}),kind=maj(Z,function(x){return x.kind;});
+if(kind==='excluded'){o.badge='Excluded';o.swatch=why.indexOf('Water')===0?'#D9D9D9':'#52525B';o.reason=why;
+o.detail=why.indexOf('Water')===0?'Open water covers most of the zone (ESA WorldCover 2021)':why.indexOf('Glacier')===0?'Snow, ice and bare rock cover 83% of the zone':why.indexOf('Irrigated')===0?'Cropland 58%, settlement 21%, grassland 17% (ESA WorldCover 2021)':'Settlement 34%, cropland 41%, grassland 22% (ESA WorldCover 2021)';
+o.head='Not a pasture, so this area has no level or trend.';o.expl='Land where grassland covers less than half of the ground is left out of every comparison and every share on this map.';
+o.next='Nothing to check here. If this land is grazed in practice, flag the land-cover mask for review.';o.qLabel='Flag mask for review';}
+else{o.badge='Not enough data';o.swatch=DOTS;o.reason=why;o.detail='Only '+Math.round(avg(Z,function(x){return x.seasons;}))+' of 26 seasons had clear June–August observations';
+o.head='Too few clear seasons to give a level or trend.';o.expl='A level needs at least 10 of 26 clear seasons and a trend at least 16. With fewer, one unusual year can set the answer.';
+o.next='Ask the district pasture committee for recent field notes; the satellite record is too thin here.';}
+return o;}
+o.isPasture=true;
+var n=P.length,cov=avg(P,function(x){return x.cov;}),seasons=Math.round(cov*26),level=maj(P,function(x){return x.level;});
+var pcts=P.map(function(x){return x.pct;}).sort(function(a,b){return a-b;}),pct=pcts[Math.floor((n-1)/2)];
+var SS=P.map(series),Vv=[];for(i=0;i<26;i++)Vv.push(avg(SS,function(s){return s[i];}));var base=avg(Vv,function(a){return a;});
+var slope,trend,w;
+if(mode==='drawn'){var f=fit(Vv);slope=Math.round(f.sp*10)/10;trend=cov<0.6?'nr':f.dir;w=Math.max(0.1,Math.round(f.ci*10)/10);}
+else{trend=maj(P,function(x){return x.cov<0.6?'nr':x.trend;});slope=Math.round(avg(P,function(x){return x.slope;})*10)/10;if(trend==='dec'&&slope>=0)trend='nr';if(trend==='inc'&&slope<=0)trend='nr';w=trend==='nr'?Math.abs(slope)+0.4:Math.max(0.2,Math.round(Math.abs(slope)*4.5)/10);}
+var strong=trend!=='nr'&&Math.abs(slope)>=1.1,conf=cov<0.6?'Low':(trend!=='nr'&&cov>0.78)?'High':'Medium',small=mode==='drawn'&&n<3;if(small&&conf!=='Low')conf=conf==='High'?'Medium':'Low';
+o.conf=conf;o.lowTxt=small?'The outline covers only '+n+' cell'+(n===1?'':'s')+' of data, so the interval is wide. Treat this answer as a hint and check on the ground before using it.':'Only '+seasons+' of 26 seasons had clear observations, most lost to snow and cloud. Treat this answer as a hint and check on the ground before using it.';
+o.badge=conf+' confidence';o.level=level;o.trend=trend;o.strong=strong;o.pct=pct;o.slope=slope;
+var lo=slope-w,hi=slope+w;o.trSub=signed(slope)+'% per year'+(trend==='nr'?', interval includes zero':'');
+var better=betterNear(cx,cy,Z,function(b){return b.pct>=pct+10&&b.trend!=='dec'&&b.conf!=='Low';});o.better=better;
+var tp=trend==='dec'?'and reliably declining since 2000 ('+signed(slope)+'% per year).':trend==='inc'?'and reliably rising since 2000 ('+signed(slope)+'% per year).':'with no reliable trend since 2000: year-to-year swings are larger than any direction.';
+o.takeaway=LV[level].name+' relative to other pastures in Naryn oblast, '+tp+(better.length?' '+(['One area','Two areas','Three areas'][better.length-1])+' within '+better[better.length-1].km+' km '+(better.length===1?'scores':'score')+' higher and '+(better.length===1?'is':'are')+' not declining.':'');
+/* chart */
+var W=352,Hh=168,pl=36,pr=10,pt=10,pb=26,sl=slope/100*base;
+var hw=function(i){return 0.006+0.014*(1-cov)+(w/100*base)*Math.abs(i-12.5);},tr=function(i){return base+sl*(i-12.5);};
+var mn=Infinity,mx=-Infinity;for(i=0;i<26;i++){mn=Math.min(mn,Vv[i],tr(i)-hw(i));mx=Math.max(mx,Vv[i],tr(i)+hw(i));}
+var y0=Math.floor((mn-0.005)*20)/20,y1=Math.ceil((mx+0.005)*20)/20,X=function(i){return pl+i*(W-pl-pr)/25;},Y=function(v){return pt+(y1-v)/(y1-y0)*(Hh-pt-pb);};
+var g='',yt='',t;for(t=y0;t<=y1+1e-9;t+=0.05){g+='M'+pl+' '+Y(t).toFixed(1)+'H'+(W-pr);yt+='<span style="position:absolute;left:0;top:'+(Y(t)-8).toFixed(1)+'px;font-size:12px;line-height:16px;color:#8A8A8A">'+t.toFixed(2)+'</span>';}
+var xt='';[0,5,10,15,20,25].forEach(function(i){xt+='<span style="position:absolute;left:'+(X(i)-16).toFixed(1)+'px;bottom:0;width:32px;text-align:center;font-size:12px;line-height:16px;color:#8A8A8A">'+(2000+i)+'</span>';});
+var up=[],dn2=[];for(i=0;i<26;i++){up.push(X(i).toFixed(1)+' '+Y(tr(i)+hw(i)).toFixed(1));dn2.unshift(X(i).toFixed(1)+' '+Y(tr(i)-hw(i)).toFixed(1));}
+var stroke=trend==='dec'?'#C2410C':trend==='inc'?'#0E7490':'#71717A',ttext=trend==='dec'?'#C2410C':trend==='inc'?'#0E7490':'#525252',band=trend==='dec'?'#FDBA74':trend==='inc'?'#99D5E0':'#D4D4D8';
+o.stroke=stroke;
+o.chart='<div style="position:relative;width:352px;height:168px"><svg width="352" height="168" viewBox="0 0 352 168" role="img" aria-label="Peak-season greenness 2000 to 2025, trend '+signed(slope)+' percent per year" style="position:absolute;left:0;top:0">'+
+'<path d="'+g+'" stroke="#EDEDED" fill="none"/><path d="M'+up.join('L')+'L'+dn2.join('L')+'Z" fill="'+band+'" opacity=".45"/>'+
+'<path d="M'+X(0).toFixed(1)+' '+Y(tr(0)).toFixed(1)+'L'+X(25).toFixed(1)+' '+Y(tr(25)).toFixed(1)+'" stroke="'+stroke+'" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>'+
+'<polyline points="'+Vv.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(' ')+'" stroke="#171717" stroke-width="1.5" fill="none" stroke-linejoin="round"/>'+
+'<circle cx="'+X(25).toFixed(1)+'" cy="'+Y(Vv[25]).toFixed(1)+'" r="4" fill="'+stroke+'" stroke="#fff" stroke-width="2"/></svg>'+yt+xt+
+'<span style="position:absolute;right:10px;top:'+(trend==='inc'?Hh-pb-20:2)+'px;font-size:12px;line-height:16px;font-weight:500;color:'+ttext+';background:#fff;padding:0 2px">Trend '+signed(slope)+'% / yr</span>'+
+'<span style="position:absolute;left:'+(X(25)-74).toFixed(1)+'px;top:'+(trend==='inc'?Math.max(2,Y(Vv[25])-26):Math.min(Hh-pb-18,Y(Vv[25])+8)).toFixed(1)+'px;font-size:12px;line-height:16px;background:#fff;padding:0 2px">2025: '+Vv[25].toFixed(2)+'</span>'+
+'<span style="position:absolute;left:40px;top:'+Math.max(2,Math.min(Hh-pb-16,Y(tr(1)+hw(1))-15)).toFixed(1)+'px;font-size:11px;line-height:14px;color:#525252">95% interval</span></div>';
+var hist=Vv.slice(0,25),srt=hist.slice().sort(function(a,b){return a-b;}),cur=Vv[25],rl=Math.min(srt[0],cur),rh=Math.max(srt[24],cur),PP=function(v){return (v-rl)/(rh-rl)*100;};
+o.rIqL=PP(srt[6]).toFixed(1);o.rIqW=(PP(srt[18])-PP(srt[6])).toFixed(1);o.rCur=PP(cur).toFixed(1);o.rMin=srt[0].toFixed(2);o.rMax=srt[24].toFixed(2);
+var pc=Math.round(100*hist.filter(function(h){return h<cur;}).length/25);
+o.seasonTxt='2025 is '+(cur<srt[0]?'below anything seen in 2000–2024':cur>srt[24]?'above anything seen in 2000–2024':pc<30?'in the lower part of its usual range':pc>70?'in the upper part of its usual range':'in the middle of its usual range')+' ('+ord(pc)+' percentile).';
+var m10=avg(Vv.slice(0,10),function(a){return a;}),kb=0,ka=0;for(i=16;i<26;i++){if(Vv[i]<m10)kb++;else ka++;}
+var wy=[];
+if(trend==='dec'){wy.push(['−','Slope '+signed(slope)+'% per year; the 95% interval ('+signed(lo)+' to '+signed(hi)+') stays below zero.']);wy.push(['−',kb+' of the last 10 seasons were below the 2000–2009 average.']);}
+else if(trend==='inc'){wy.push(['+','Slope '+signed(slope)+'% per year; the 95% interval ('+signed(lo)+' to '+signed(hi)+') stays above zero.']);wy.push(['+',ka+' of the last 10 seasons were above the 2000–2009 average.']);}
+else wy.push(['−','The 95% interval for the slope ('+signed(lo)+' to '+signed(hi)+'% per year) includes zero.']);
+wy.push(level==='low'?['−','Level is in the lowest third of pastures in the oblast.']:['+','Level is above the lowest third of pastures in the oblast ('+ord(pct)+' percentile).']);
+if(small)wy.push(['−','The outline covers only '+n+' cell'+(n===1?'':'s')+' of data.']);else if(conf==='Low')wy.push(['−','Only '+seasons+' of 26 seasons had clear observations.']);else wy.push(['+',seasons+' of 26 seasons had clear observations'+(n>1?' across '+n+' cells.':'.')]);
+o.why=wy.slice(0,3);
+o.next=conf==='Low'?'Check on the ground before using this answer. Ask the district pasture committee for recent field notes.':trend==='dec'&&level==='low'?'Prioritise for a field check this season and compare with the areas listed above before advising on grazing routes.':trend==='dec'?'Add to the field-check queue for the 2026 season'+(better.length?' and compare with '+better[0].name+' before advising on grazing routes.':'.'):trend==='inc'?'No field check needed. This area can serve as a reference for nearby comparisons.':'No action from the trend alone. Keep it on the regular monitoring cycle.';
+return o;}
+
+/* ---------- zone raster (smooth blobs from 10 km cells) ---------- */
+var PX=32,ZW=COLS*PX,ZH=ROWS*PX,zcv=document.createElement('canvas');zcv.width=ZW;zcv.height=ZH;var zctx=zcv.getContext('2d');
+function field(list){var a=new Float32Array(ZW*ZH),t=new Float32Array(ZW*ZH);list.forEach(function(x){for(var y=x.r*PX;y<x.r*PX+PX;y++)a.fill(1,y*ZW+x.c*PX,y*ZW+x.c*PX+PX);});for(var p=0;p<3;p++){boxH(a,t,8);boxV(t,a,8);}return a;}
+function boxH(s,d,r){var inv=1/(2*r+1);for(var y=0;y<ZH;y++){var o=y*ZW,acc=0,x;for(x=0;x<=r;x++)acc+=s[o+x];for(x=0;x<ZW;x++){d[o+x]=acc*inv;if(x+r+1<ZW)acc+=s[o+x+r+1];if(x-r>=0)acc-=s[o+x-r];}}}
+function boxV(s,d,r){var inv=1/(2*r+1);for(var x=0;x<ZW;x++){var acc=0,y;for(y=0;y<=r;y++)acc+=s[y*ZW+x];for(y=0;y<ZH;y++){d[y*ZW+x]=acc*inv;if(y+r+1<ZH)acc+=s[(y+r+1)*ZW+x];if(y-r>=0)acc-=s[(y-r)*ZW+x];}}}
+function hex(h){return [parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)];}
+var SLOTS={trend:[['decS','#C2410C'],['dec','#FDBA74'],['nr','hatch'],['inc','#99D5E0'],['incS','#0E7490'],['excl','#52525B'],['nodata','dots']],level:[['Llow','#DCEBD3'],['Lmoderate','#86C07F'],['Lgood','#2F7D3E'],['excl','#52525B'],['nodata','dots']]};
+function renderZones(){var slots=SLOTS[S.layer],lists=slots.map(function(){return [];}),dim=[],idx={};slots.forEach(function(s,i){idx[s[0]]=i;});
+var fl=S.f?S.f.split('|'):null;
+D.cells.forEach(function(x){var c=cls(x,S.layer);if(c===null)return;var ok=true;if(fl)ok=x.kind==='pasture'&&x.level===fl[0]&&x.trend===fl[1];if(S.dist&&x.d!==S.dist)ok=false;if(!ok){dim.push(x);return;}if(idx[c]!==undefined)lists[idx[c]].push(x);});
+var img=zctx.createImageData(ZW,ZH),d=img.data;
+function paint(list,col,op){if(!list.length)return;var f=field(list),rgb=(col==='hatch'||col==='dots')?null:hex(col),H1=[161,161,170],H2=[212,212,216],WH=[255,255,255];
+for(var i=0;i<f.length;i++){var a=(f[i]-0.40)*10;if(a<=0)continue;if(a>1)a=1;a*=op;var x=i%ZW,y=(i/ZW)|0,c3;
+if(rgb)c3=rgb;else if(col==='hatch')c3=((x+y)%7)<2?H1:H2;else{var dx=(x%7)-3,dy=(y%7)-3;c3=(dx*dx+dy*dy<=2)?H1:WH;}
+var k=i*4,da=d[k+3]/255,oa=a+da*(1-a);d[k]=(c3[0]*a+d[k]*da*(1-a))/oa;d[k+1]=(c3[1]*a+d[k+1]*da*(1-a))/oa;d[k+2]=(c3[2]*a+d[k+2]*da*(1-a))/oa;d[k+3]=oa*255;}}
+slots.forEach(function(s,i){paint(lists[i],s[1],0.9);});paint(dim,'#E2E2E2',0.85);
+zctx.putImageData(img,0,0);return zcv.toDataURL('image/png');}
+function renderRing(Z){var img=zctx.createImageData(ZW,ZH),d=img.data;if(Z&&Z.length){var f=field(Z);for(var i=0;i<f.length;i++){var inner=Math.min(1,Math.max(0,(f[i]-0.45)*16)),outer=Math.min(1,Math.max(0,(f[i]-0.30)*16)),a=outer-inner;if(a<=0)continue;var k=i*4;d[k]=23;d[k+1]=23;d[k+2]=23;d[k+3]=a*255;}}
+zctx.putImageData(img,0,0);return zcv.toDataURL('image/png');}
+
+/* ---------- UI ---------- */
+function share(fn,scope){return Math.round(100*scope.filter(fn).length/(scope.length||1));}
+function renderRail(sel,card){var lt=S.layer==='trend',scope=D.past.filter(function(x){return !S.dist||x.d===S.dist;});
+var trN={dec:'reliable decline',nr:'not reliable',inc:'reliable growth'};
+var h='<section style="display:flex;flex-direction:column;gap:8px"><div class="lbl">Layer</div><div class="seg" role="group" aria-label="Map layer"><button type="button" data-act="layer" data-v="trend" aria-pressed="'+lt+'">Trend</button><button type="button" data-act="layer" data-v="level" aria-pressed="'+!lt+'">Level</button></div>';
+h+=lt?'<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;height:12px;margin-top:4px"><span style="background:#C2410C;border-radius:2px 0 0 2px"></span><span style="background:#FDBA74"></span><span style="background:'+HATCH+'"></span><span style="background:#99D5E0"></span><span style="background:#0E7490;border-radius:0 2px 2px 0"></span></div><div class="small" style="display:flex;justify-content:space-between"><span>Reliable decline</span><span>Not reliable</span><span>Reliable growth</span></div><div class="small">Darker = steeper slope</div>'
+:'<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;height:12px;margin-top:4px"><span style="background:#DCEBD3"></span><span style="background:#86C07F"></span><span style="background:#2F7D3E"></span></div><div class="small" style="display:flex;justify-content:space-between"><span>Low</span><span>Moderate</span><span>Good</span></div><div class="small">Thirds of pasture area, relative to the oblast</div>';
+h+='<div class="small" style="display:flex;gap:16px"><span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:#52525B"></span>Excluded</span><span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;border:1px solid #D4D4D4;background:'+DOTS+'"></span>Not enough data</span></div></section>';
+h+='<section style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between;align-items:baseline"><div class="lbl">Level × trend</div>'+(S.f?'<button type="button" data-act="clearf" style="border:0;background:none;padding:0;font-size:12px;text-decoration:underline;cursor:pointer">Clear filter</button>':'')+'</div>';
+h+='<div class="mx small" style="text-align:center"><span></span><span>Decline</span><span>Not reliable</span><span>Growth</span></div>';
+['good','moderate','low'].forEach(function(lv){h+='<div class="mx"><span class="small">'+LV[lv].name+'</span>';['dec','nr','inc'].forEach(function(tr){var k=lv+'|'+tr,on=S.f===k,p=share(function(x){return x.level===lv&&x.trend===tr;},scope),bg=lt?(tr==='dec'?'#FDBA74':tr==='inc'?'#99D5E0':HATCH):LV[lv].bg,here=card&&card.isPasture&&card.level===lv&&card.trend===tr;
+h+='<button type="button" class="mxc" data-act="filter" data-v="'+k+'" aria-pressed="'+on+'" aria-label="'+LV[lv].name+' level, '+trN[tr]+': '+p+'% of pasture area" style="background:'+bg+';opacity:'+(S.f&&!on?0.4:1)+';box-shadow:'+(on?'0 0 0 2px #171717':'none')+'"><span class="v">'+p+'%</span>'+(here?'<span class="dot" aria-hidden="true"></span>':'')+'</button>';});h+='</div>';});
+h+='<div class="small">Share of pasture area. Click a cell to filter the map. The black dot marks the selected area.</div></section>';
+h+='<section style="display:flex;flex-direction:column;gap:4px"><div class="lbl" style="margin-bottom:4px">Districts</div>';
+['NA','AT','JU','KO','AK','SU'].forEach(function(dd){var ps=D.past.filter(function(x){return x.d===dd;}),m=ps.length||1,on=S.dist===dd,dc=Math.round(100*ps.filter(function(x){return x.trend==='dec';}).length/m),ic=Math.round(100*ps.filter(function(x){return x.trend==='inc';}).length/m);if(!ps.length)return;
+h+='<button type="button" class="rw" data-act="dist" data-v="'+dd+'" aria-pressed="'+on+'"><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13px;line-height:18px;font-weight:500">'+DN[dd]+'</span><span class="small">'+num(ps.length*100)+' km² · '+dc+'% decline</span></span><span class="minibar" aria-hidden="true"><span style="width:'+dc+'%;background:#C2410C"></span><span style="width:'+(100-dc-ic)+'%;background:'+HATCH+'"></span><span style="width:'+ic+'%;background:#0E7490"></span></span></button>';});
+h+='</section>';$('#rail').innerHTML=h;
+var dec=share(function(x){return x.trend==='dec';},scope),inc=share(function(x){return x.trend==='inc';},scope),fl=S.f?S.f.split('|'):null;
+var st='<span><span class="sw" style="background:#C2410C"></span><b>'+dec+'%</b> reliable decline</span><span aria-hidden="true">·</span><span><span class="sw" style="background:#0E7490"></span><b>'+inc+'%</b> reliable growth</span><span aria-hidden="true">·</span><span><span class="sw" style="background:'+HATCH+'"></span><b>'+(100-dec-inc)+'%</b> not reliable</span><span style="color:#8A8A8A">'+(S.dist?DN[S.dist]:'Naryn oblast')+' · '+num(scope.length*100)+' km² of pasture</span>';
+if(fl)st+='<span style="display:flex;align-items:center;gap:6px;height:24px;padding:0 4px 0 8px;border:1px solid #D4D4D4;border-radius:6px;color:#171717">'+LV[fl[0]].name+' level × '+trN[fl[1]]+'<button type="button" data-act="clearf" aria-label="Clear filter" style="width:18px;height:18px;border:0;background:none;cursor:pointer;color:#525252;padding:0">×</button></span>';
+$('#strip').innerHTML=st;}
+function bars(conf){var n=conf==='High'?3:conf==='Medium'?2:conf==='Low'?1:0;return '<span class="bars" aria-hidden="true"><i style="height:4px;background:'+(n>=1?'#171717':'#D4D4D4')+'"></i><i style="height:7px;background:'+(n>=2?'#171717':'#D4D4D4')+'"></i><i style="height:10px;background:'+(n>=3?'#171717':'#D4D4D4')+'"></i></span>';}
+function nearRows(list){return list.map(function(b){return '<button type="button" class="near" data-act="pick" data-v="'+b.k+'"><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13px;line-height:18px;font-weight:500">'+esc(b.name)+'</span><span class="small" style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:'+b.lvBg+';box-shadow:0 0 0 1px rgba(0,0,0,.08)"></span>'+b.lv+' · <span style="width:8px;height:8px;border-radius:2px;background:'+b.trBg+'"></span>'+b.tr+'</span></span><span style="font-size:13px;color:#525252">'+b.km+' km</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>';}).join('');}
+function renderCard(o){var dr=$('#drawer');if(!o){dr.hidden=true;$('#hint').hidden=false;return;}dr.hidden=false;$('#hint').hidden=true;
+var h='<div class="dh"><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><h2>'+esc(o.name)+'</h2><span style="font-size:13px;line-height:18px;color:#525252">'+esc(o.sub)+'</span><span class="small">'+o.coord+'</span></div><span class="badge">'+bars(o.conf)+esc(o.badge)+'</span><button type="button" class="x" data-act="close" aria-label="Close answer card"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div><div class="db">';
+if(o.conf==='Low')h+='<div class="warn" role="note"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:1px"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span><b style="font-weight:600">Low confidence.</b> '+o.lowTxt+'</span></div>';
+if(o.isPasture){var L=LV[o.level],tbg=o.trend==='nr'?'#D4D4D8':trendBg(o.trend,o.strong),tfg=(o.trend!=='nr'&&o.strong)?'#fff':'#171717';
+h+='<div style="display:flex;flex-direction:column;gap:8px"><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px"><div class="box"><span class="lbl">Level</span><span class="chip" style="background:'+L.bg+';color:'+L.fg+'">'+L.name+'</span><span class="small">'+ord(o.pct)+' percentile of pastures</span></div><div class="box"><span class="lbl">Trend</span><span class="chip" style="background:'+tbg+';color:'+tfg+'">'+(o.trend==='nr'?'<span class="hs" aria-hidden="true"></span>':'')+trendName(o.trend)+'</span><span class="small">'+o.trSub+'</span></div></div><span class="small">Relative to other pastures in Naryn oblast</span></div>';
+h+='<p style="margin:0;font-size:16px;line-height:24px">'+esc(o.takeaway)+'</p>';
+h+='<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;font-weight:500">Peak-season greenness (NDVI)</span><span class="small">2000–2025 · sample</span></div>'+o.chart+'</div>';
+h+='<div style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Why</span>'+o.why.map(function(w){return '<div class="why"><span class="s">'+w[0]+'</span><span>'+esc(w[1])+'</span></div>';}).join('')+'</div>';
+h+='<div style="display:flex;flex-direction:column;gap:8px"><span class="lbl">This season</span><div style="position:relative;height:16px"><span style="position:absolute;left:0;right:0;top:5px;height:6px;border-radius:3px;background:#EDEDED"></span><span style="position:absolute;left:'+o.rIqL+'%;width:'+o.rIqW+'%;top:5px;height:6px;background:#D4D4D4"></span><span style="position:absolute;left:'+o.rCur+'%;top:2px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:'+o.stroke+';box-shadow:0 0 0 2px #fff"></span></div><div style="display:flex;justify-content:space-between;font-size:12px;color:#8A8A8A"><span>'+o.rMin+'</span><span>usual range 2000–2024</span><span>'+o.rMax+'</span></div><span style="font-size:13px;line-height:18px">'+o.seasonTxt+'</span></div>';
+h+='<div style="display:flex;flex-direction:column;gap:4px"><span class="lbl" style="margin-bottom:4px">Better nearby</span>'+(o.better.length?nearRows(o.better):'<span style="font-size:13px;color:#525252">No higher-scoring areas without a decline within 50 km.</span>')+'</div>';}
+else{h+='<div style="display:flex;flex-direction:column;gap:12px"><div class="box" style="flex-direction:row;align-items:center;gap:12px"><span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:8px;border:1px solid #D4D4D4;background:'+o.swatch+'"></span><span style="display:flex;flex-direction:column"><span style="font-weight:500">'+esc(o.reason)+'</span><span class="small">'+esc(o.detail)+'</span></span></div><p style="margin:0;font-size:16px;line-height:24px">'+o.head+'</p><p style="margin:0;font-size:13px;line-height:18px;color:#525252">'+o.expl+'</p></div>';
+h+='<div style="display:flex;flex-direction:column;gap:4px"><span class="lbl" style="margin-bottom:4px">Nearest pastures</span>'+nearRows(o.better)+'</div>';}
+h+='<div class="nx"><span class="lbl">Suggested next step for the agency</span><span>'+esc(o.next)+'</span><div style="display:flex;align-items:center;gap:12px">'+(o.queued?'<button type="button" class="btn b2" data-act="queue">✓ In queue · undo</button>':'<button type="button" class="btn b1" data-act="queue">+ '+o.qLabel+'</button>')+'</div></div></div>';
+h+='<div class="note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Not accounted for: livestock load, land rights, water, roads, forage quality</span></div>';
+dr.innerHTML=h;}
+function renderDrawCtl(){var h=S.drawing?'<div class="drawbar"><span>Click the map to add corners</span><span style="color:#525252">· '+S.pts.length+'</span><button type="button" class="bt" data-act="undo">Undo</button><button type="button" class="bt" data-act="cancel">Cancel</button><button type="button" class="btn b1" data-act="finish"'+(S.pts.length<3?' disabled':'')+'>Show answer</button></div>'
+:'<button type="button" class="btn b2" data-act="draw" style="border-color:#D4D4D4"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 9.5 17.5 20h-11L3 9.5z"/></svg>Draw an area</button>';$('#drawCtl').innerHTML=h;
+if(map&&map.getCanvas())map.getCanvas().style.cursor=S.drawing?'crosshair':'pointer';}
+
+var lastZonesKey='';
+function refresh(opts){if(!D)return;var sel=selection(),card=sel?answer(sel):null;
+renderRail(sel,card);renderCard(card);renderDrawCtl();
+if(ready){var zk=S.layer+'|'+S.f+'|'+S.dist;if(zk!==lastZonesKey){lastZonesKey=zk;map.getSource('zones').updateImage({url:renderZones(),coordinates:BOX});}
+map.getSource('ring').updateImage({url:renderRing(sel&&sel.mode==='zone'?sel.Z:null),coordinates:BOX});
+var pts=S.drawing?S.pts:(S.poly||[]),feats=[];
+if(pts.length>=3)feats.push({type:'Feature',geometry:{type:'Polygon',coordinates:[pts.concat([pts[0]])]},properties:{}});else if(pts.length===2)feats.push({type:'Feature',geometry:{type:'LineString',coordinates:pts},properties:{}});
+if(S.drawing)pts.forEach(function(p){feats.push({type:'Feature',geometry:{type:'Point',coordinates:p},properties:{}});});
+map.getSource('draw').setData({type:'FeatureCollection',features:feats});
+map.setPaintProperty('draw-line','line-dasharray',S.drawing?[2,1.5]:[1,0]);}
+if(opts&&opts.fly&&card&&map){map.flyTo({center:[LON0+card.cx*DLON,LAT0-card.cy*DLAT],zoom:Math.max(map.getZoom(),8.6),padding:{right:400,left:0,top:0,bottom:0},duration:900});}
+renderTour();}
+
+/* ---------- search ---------- */
+function goTo(lon,lat){var k=toCell(lon,lat),best=null,bd=1e9;D.cells.forEach(function(x){var dx=x.c+0.5-k.c,dy=x.r+0.5-k.r,dd=dx*dx+dy*dy;if(dd<bd){bd=dd;best=x;}});
+S.sq='';$('#q').value='';$('#sugg').hidden=true;S.drawing=false;S.pts=[];
+if(best&&bd<9){S.sel=best.k;S.poly=null;}else{var e=0.08;S.sel=null;S.poly=[[lon-e,lat+e*0.75],[lon+e,lat+e*0.75],[lon+e,lat-e*0.75],[lon-e,lat-e*0.75]];}
+refresh({fly:true});}
+function suggestions(q){var items=[];q=q.trim();if(!q)return items;var m=q.match(/(-?\d+(?:[.,]\d+)?)\s*[,; ]\s*(-?\d+(?:[.,]\d+)?)/);
+if(m){var la=parseFloat(m[1].replace(',','.')),lo=parseFloat(m[2].replace(',','.'));items.push({label:la.toFixed(2)+'°N, '+lo.toFixed(2)+'°E',sub:'Coordinates',lon:lo,lat:la});}
+var ql=q.toLowerCase();PLACES.filter(function(p){return p.en.toLowerCase().indexOf(ql)===0||p.ru.toLowerCase().indexOf(ql)===0;}).slice(0,5).forEach(function(p){items.push({label:p.en,sub:p.ru,lon:p.lon,lat:p.lat});});return items;}
+var SUG=[];
+$('#q').addEventListener('input',function(e){S.sq=e.target.value;SUG=suggestions(S.sq);var box=$('#sugg');if(!S.sq.trim()){box.hidden=true;return;}box.hidden=false;
+box.innerHTML=SUG.length?SUG.map(function(s,i){return '<button type="button" data-act="sug" data-v="'+i+'"><span style="font-weight:500">'+esc(s.label)+'</span><span style="font-size:12px;color:#525252">'+esc(s.sub)+'</span></button>';}).join(''):'<span style="padding:8px;font-size:13px;line-height:18px;color:#525252">No matches. Try a village name, in Latin or Cyrillic, or coordinates like 42.15, 74.02.</span>';});
+$('#searchForm').addEventListener('submit',function(e){e.preventDefault();if(SUG.length&&D)goTo(SUG[0].lon,SUG[0].lat);});
+
+/* ---------- tour ---------- */
+var TOUR=[{t:'Read the map',x:'Coloured zones show the 2000–2025 trend of pasture greenness on a real basemap. Hatched zones have no reliable trend. That is also a result.',pos:{left:'300px',top:'150px'}},
+{t:'Pick an area',x:'Click a zone, search a village or coordinates, or draw your own outline. The card gives a plain answer relative to other pastures.',pos:{right:'416px',top:'150px'}},
+{t:'Filter with the matrix',x:'The level × trend matrix is the legend and a filter. Here the map shows only moderate pastures with a reliable decline.',pos:{left:'296px',top:'260px'}},
+{t:'How it is built',x:'Every answer comes from one documented method. See how it works, how it was checked and what it does not know.',pos:{right:'416px',top:'420px'}}];
+function renderTour(){var el=$('#tour');if(!S.tour){el.hidden=true;return;}var s=TOUR[S.tour-1];el.hidden=false;el.style.left=s.pos.left||'auto';el.style.right=s.pos.right||'auto';el.style.top=s.pos.top;
+el.innerHTML='<span class="small">Step '+S.tour+' of 4</span><span style="font-size:16px;line-height:24px;font-weight:600">'+s.t+'</span><span style="font-size:13px;line-height:18px">'+s.x+'</span><div style="display:flex;align-items:center;gap:8px;margin-top:8px"><button type="button" class="bt" data-act="tend" style="margin-right:auto;padding:0">End tour</button>'+(S.tour>1?'<button type="button" class="btn b2" data-act="tback">Back</button>':'')+(S.tour<4?'<button type="button" class="btn b1" data-act="tnext">Next</button>':'<a class="btn b1" href="'+CANVAS_URL+'" target="_blank" rel="noopener">Open Methods &amp; limits</a>')+'</div>';}
+function tourGo(n){var prev=S.tour;S.tour=n;var fly=false;if(n===1){S.sel=null;S.poly=null;S.f=null;S.dist=null;S.layer='trend';if(map)map.fitBounds([[73.4,40.45],[78.6,42.7]],{padding:{left:24,right:24,top:72,bottom:24},duration:800});}
+if(n===2){S.sel=D.demo;S.poly=null;if(prev===3)S.f=null;fly=true;}if(n===3){S.f='moderate|dec';S.layer='trend';S.dist=null;}refresh({fly:fly});}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){var b=e.target.closest('[data-act]');if(!b||!D)return;var a=b.getAttribute('data-act'),v=b.getAttribute('data-v');
+if(a==='layer'){S.layer=v;refresh();}
+else if(a==='filter'){S.f=S.f===v?null:v;refresh();}
+else if(a==='clearf'){S.f=null;refresh();}
+else if(a==='dist'){S.dist=S.dist===v?null:v;refresh();}
+else if(a==='close'){S.sel=null;S.poly=null;refresh();}
+else if(a==='pick'){S.sel=v;S.poly=null;S.drawing=false;S.pts=[];refresh({fly:true});}
+else if(a==='queue'){var sel=selection();if(sel){var o=answer(sel);if(S.q[o.qid])delete S.q[o.qid];else S.q[o.qid]=1;refresh();}}
+else if(a==='draw'){S.drawing=true;S.pts=[];S.tour=0;refresh();}
+else if(a==='undo'){S.pts=S.pts.slice(0,-1);refresh();}
+else if(a==='cancel'){S.drawing=false;S.pts=[];refresh();}
+else if(a==='finish'){if(S.pts.length>=3){S.poly=S.pts;S.pts=[];S.drawing=false;S.sel=null;refresh();}}
+else if(a==='sug'){var s=SUG[+v];if(s)goTo(s.lon,s.lat);}
+else if(a==='tour'){tourGo(1);}
+else if(a==='tnext'){tourGo(S.tour+1);}
+else if(a==='tback'){tourGo(S.tour-1);}
+else if(a==='tend'){S.tour=0;S.f=null;refresh();}});
+
+/* ---------- map ---------- */
+function status(t){var el=$('#status');if(!t){el.hidden=true;return;}el.hidden=false;el.textContent=t;}
+if(typeof maplibregl==='undefined'){status('Could not load the map library. Check your internet connection and reload.');return;}
+var CARTO=['a','b','c','d'];
+map=new maplibregl.Map({container:'map',attributionControl:false,minZoom:5.5,maxZoom:11,bounds:[[73.4,40.45],[78.6,42.7]],fitBoundsOptions:{padding:{left:24,right:424,top:72,bottom:24}},dragRotate:false,pitchWithRotate:false,
+style:{version:8,sources:{
+base:{type:'raster',tiles:CARTO.map(function(s){return 'https://'+s+'.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}@2x.png';}),tileSize:256,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" target="_blank">CARTO</a>'},
+labels:{type:'raster',tiles:CARTO.map(function(s){return 'https://'+s+'.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}@2x.png';}),tileSize:256},
+dem:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:12,attribution:'Terrain: <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank">Mapzen / AWS Terrain Tiles</a>'}},
+layers:[{id:'bg',type:'background',paint:{'background-color':'#F3F3F3'}},
+{id:'base',type:'raster',source:'base',paint:{'raster-saturation':-1,'raster-contrast':-0.05}},
+{id:'hill',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':0.45,'hillshade-shadow-color':'rgba(0,0,0,0.45)','hillshade-highlight-color':'rgba(255,255,255,0.6)','hillshade-accent-color':'rgba(0,0,0,0.15)','hillshade-illumination-direction':315}},
+{id:'labels',type:'raster',source:'labels',paint:{'raster-saturation':-1,'raster-opacity':0.95}}]}});
+map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution:'Boundaries: <a href="https://www.geoboundaries.org" target="_blank">geoBoundaries</a> · Pasture data: sample'}),'bottom-left');
+map.addControl(new maplibregl.ScaleControl({maxWidth:120,unit:'metric'}),'bottom-left');
+map.addControl(new maplibregl.NavigationControl({showCompass:false}),'bottom-left');
+
+map.on('load',function(){status('Loading oblast and district boundaries…');
+Promise.all([fetchFirst(ADM1_URLS),fetchFirst(ADM2_URLS)]).then(function(res){
+var rm=res[0]?realMask(res[0],res[1]):null;M=rm||approxMask();D=buildData(M);S.sel=D.demo;
+var empty={type:'FeatureCollection',features:[]};
+map.addSource('zones',{type:'image',url:renderZones(),coordinates:BOX});lastZonesKey=S.layer+'|'+S.f+'|'+S.dist;
+map.addLayer({id:'zones',type:'raster',source:'zones',paint:{'raster-opacity':0.92,'raster-resampling':'linear','raster-fade-duration':0}},'labels');
+map.addLayer({id:'hill2',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':0.3,'hillshade-shadow-color':'rgba(0,0,0,0.28)','hillshade-highlight-color':'rgba(255,255,255,0.25)','hillshade-accent-color':'rgba(0,0,0,0)','hillshade-illumination-direction':315}},'labels');
+map.addSource('districts',{type:'geojson',data:{type:'FeatureCollection',features:M.districts}});
+map.addLayer({id:'districts',type:'line',source:'districts',paint:{'line-color':'#737373','line-width':0.8,'line-dasharray':[3,2],'line-opacity':0.7}},'labels');
+map.addSource('oblast',{type:'geojson',data:M.oblast?{type:'FeatureCollection',features:[M.oblast]}:empty});
+map.addLayer({id:'oblast-halo',type:'line',source:'oblast',paint:{'line-color':'#FFFFFF','line-width':3.5,'line-opacity':0.9}},'labels');
+map.addLayer({id:'oblast',type:'line',source:'oblast',paint:{'line-color':'#404040','line-width':1.4}},'labels');
+map.addSource('ring',{type:'image',url:renderRing(null),coordinates:BOX});
+map.addLayer({id:'ring',type:'raster',source:'ring',paint:{'raster-opacity':1,'raster-fade-duration':0}},'labels');
+map.addSource('draw',{type:'geojson',data:empty});
+map.addLayer({id:'draw-fill',type:'fill',source:'draw',filter:['==','$type','Polygon'],paint:{'fill-color':'#171717','fill-opacity':0.08}});
+map.addLayer({id:'draw-line',type:'line',source:'draw',filter:['!=','$type','Point'],paint:{'line-color':'#171717','line-width':2}});
+map.addLayer({id:'draw-pts',type:'circle',source:'draw',filter:['==','$type','Point'],paint:{'circle-radius':5,'circle-color':'#FFFFFF','circle-stroke-color':'#171717','circle-stroke-width':2}});
+ready=true;
+status(rm?'':'Live boundaries could not be loaded, so the study area outline is approximate.');
+if(rm)setTimeout(function(){status('');},50);
+refresh();});});
+map.on('click',function(e){if(!D)return;var lon=e.lngLat.lng,lat=e.lngLat.lat;
+if(S.drawing){S.pts=S.pts.concat([[lon,lat]]);refresh();return;}
+var k=cellKeyOf(lat,lon);if(D.byKey[k]){S.sel=k;S.poly=null;refresh();}});
+map.on('load',function(){map.getCanvas().style.cursor='pointer';});
+var tileErr=0,tileOk=false;
+map.on('data',function(e){if(e.sourceId==='base'&&e.tile)tileOk=true;});
+map.on('error',function(e){var sid=e&&e.sourceId;if(sid==='base'||sid==='labels'){tileErr++;}});
+setTimeout(function(){if(!tileOk&&tileErr>0)status('Map tiles from basemaps.cartocdn.com could not load. A firewall or VPN may be blocking them.');},10000);
+}
+</script>
+</body>
+</html>
