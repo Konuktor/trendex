@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight, Download, Info } from 'lucide-react';
 import { queueFor, useApp } from '../store';
 import { buildQueue, EMPTY_FILTER, filterQueue, queueCsv, SCORE_FORMULA, type QueueFilter } from '../lib/queue';
-import { isRegion, regionGroups, regionLabel, regionLabelPlural, regionName, regionOrder } from '../lib/regions';
+import { countries, countryName, countryOfRegion, isRegion, regionGroups, regionLabel, regionLabelPlural, regionName, regionOrder, regionsOf, studyTitle } from '../lib/regions';
 import { LEVEL_NAME, QUEUE_BANNER } from '../lib/labels';
 import { downloadText } from '../lib/trends';
 import { num, signed } from '../lib/format';
@@ -24,6 +24,9 @@ export function QueueRoute() {
   const [f, setF] = useState<QueueFilter>(EMPTY_FILTER);
   const [all, setAll] = useState(false);
   const distId = useId();
+  const countryId = useId();
+  const country = useApp((s) => s.country);
+  const setCountry = useApp((s) => s.setCountry);
 
   useEffect(() => {
     void load();
@@ -36,9 +39,14 @@ export function QueueRoute() {
   }, [data]);
 
   const rows = useMemo(() => (data ? buildQueue(data, queue) : []), [data, queue]);
-  const shown = useMemo(() => filterQueue(rows, f), [rows, f]);
+  // Central Asia: the queue is pre-filtered to the chosen country.
+  const shown = useMemo(() => filterQueue(rows, { ...f, country }), [rows, f, country]);
   const visible = all ? shown : shown.slice(0, PAGE);
   const groups = data ? regionGroups() : [];
+  // A region filter from another country no longer applies once a country is chosen.
+  useEffect(() => {
+    setF((x) => (x.district && country && countryOfRegion(x.district) !== country ? { ...x, district: null } : x));
+  }, [country]);
   const addedCount = rows.filter((r) => r.fromMap).length;
 
   return (
@@ -47,7 +55,7 @@ export function QueueRoute() {
         <header className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h1 className="text-xl font-semibold">Inspection queue</h1>
-            <p className="text-sm text-text-2">Areas with a reliable decline, ranked for field checks in the 2026 season.{isReal() ? '' : ' Sample data.'}</p>
+            <p className="text-sm text-text-2">Areas with a reliable decline{country ? ` in ${countryName(country)}` : ''}, ranked for field checks in the 2026 season.{isReal() ? '' : ' Sample data.'}</p>
           </div>
           <button
             type="button"
@@ -82,6 +90,22 @@ export function QueueRoute() {
               </button>
             ))}
           </div>
+          {groups.length > 1 && (
+            <div className="flex items-center gap-2">
+              <label htmlFor={countryId} className="text-sm text-text-2">Country</label>
+              <select
+                id={countryId}
+                value={country ?? ''}
+                onChange={(e) => setCountry(e.target.value || null)}
+                className="h-control rounded border border-border-strong bg-white px-2 text-sm coarse:h-touch"
+              >
+                <option value="">All {studyTitle()}</option>
+                {countries().map((g) => (
+                  <option key={g.key} value={g.key}>{g.countryName}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <label htmlFor={distId} className="text-sm text-text-2">{regionLabel()}</label>
             <select
@@ -91,7 +115,11 @@ export function QueueRoute() {
               className="h-control max-w-[240px] rounded border border-border-strong bg-white px-2 text-sm coarse:h-touch"
             >
               <option value="">All {regionLabelPlural().toLowerCase()}</option>
-              {groups.length > 1
+              {groups.length > 1 && country
+                ? regionsOf(country).map((d) => (
+                    <option key={d} value={d}>{regionName(d)}</option>
+                  ))
+                : groups.length > 1
                 ? groups.map((g) => (
                     <optgroup key={g.key} label={g.countryName}>
                       {g.codes.map((d) => (

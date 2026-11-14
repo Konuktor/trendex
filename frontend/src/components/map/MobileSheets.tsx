@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Layers, X } from 'lucide-react';
 import type { Answer } from '../../lib/answer';
 import { AnswerCardHeader, AnswerDetails, AnswerSummary, NotAccounted, type CardActions } from '../card/AnswerCard';
-import { DistrictList, LayerSwitch, Legend, Matrix } from './Rail';
+import { CountrySelect, DistrictList, LayerSwitch, Legend, Matrix } from './Rail';
 import { HeadlineSummary } from './HeadlineStrip';
 import { useWidth } from '../../hooks/useWidth';
 
@@ -29,6 +29,7 @@ export function LayersSheet({ card, onClose }: { card: Answer | null; onClose: (
         </button>
       </div>
       <div className="flex min-h-0 flex-col gap-6 overflow-y-auto p-4">
+        <CountrySelect />
         <HeadlineSummary />
         <section className="flex flex-col gap-2">
           <h2 className="label-caps">Layer</h2>

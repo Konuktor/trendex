@@ -98,6 +98,8 @@ export interface MatrixFilter {
 export interface ZoneFilter {
   matrix: MatrixFilter | null;
   district: District | null;
+  /** Central Asia: only this country (ISO3); null or absent = all */
+  country?: string | null;
 }
 
 export type LonLat = [number, number];

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { X } from 'lucide-react';
 import { useApp } from '../../store';
 import { headline, scopeCells } from '../../lib/stats';
-import { regionLabel, regionName, studyTitle } from '../../lib/regions';
+import { countryName, regionLabel, regionName, studyTitle } from '../../lib/regions';
 import { LEVEL_NAME, TREND_SHORT } from '../../lib/labels';
 import { num } from '../../lib/format';
 
@@ -28,7 +28,9 @@ export function HeadlineStrip({ loading = false }: { loading?: boolean }) {
   const matrix = useApp((s) => s.matrix);
   const toggleMatrix = useApp((s) => s.toggleMatrix);
   const toggleDistrict = useApp((s) => s.toggleDistrict);
-  const h = useMemo(() => (data ? headline(scopeCells(data.past, district)) : null), [data, district]);
+  const country = useApp((s) => s.country);
+  const setCountry = useApp((s) => s.setCountry);
+  const h = useMemo(() => (data ? headline(scopeCells(data.past, district, country)) : null), [data, district, country]);
   return (
     <div className="z-[4] flex h-strip flex-none items-center gap-4 overflow-hidden whitespace-nowrap border-b border-hairline bg-white px-6 text-sm text-text-2">
       {h && !loading ? (
@@ -48,8 +50,9 @@ export function HeadlineStrip({ loading = false }: { loading?: boolean }) {
             <b className="font-medium text-text">{h.nr}%</b> not reliable
           </span>
           <span className="text-text-2">
-            {district ? regionName(district) : studyTitle()} · {num(h.km2)} km² of pasture
+            {district ? regionName(district) : country ? countryName(country) : studyTitle()} · {num(h.km2)} km² of pasture
           </span>
+          {country && <FilterChip label={countryName(country)} clearLabel="Show all countries" onClear={() => setCountry(null)} />}
           {matrix && (
             <FilterChip
               label={`${LEVEL_NAME[matrix.level]} level × ${TREND_SHORT[matrix.trend]}`}
@@ -76,12 +79,13 @@ export function HeadlineStrip({ loading = false }: { loading?: boolean }) {
 export function HeadlineSummary() {
   const data = useApp((s) => s.data);
   const district = useApp((s) => s.district);
-  const h = useMemo(() => (data ? headline(scopeCells(data.past, district)) : null), [data, district]);
+  const country = useApp((s) => s.country);
+  const h = useMemo(() => (data ? headline(scopeCells(data.past, district, country)) : null), [data, district, country]);
   if (!h) return null;
   return (
     <p className="text-sm text-text-2">
       <b className="font-medium text-text">{h.dec}%</b> reliable decline · <b className="font-medium text-text">{h.inc}%</b>{' '}
-      reliable growth · <b className="font-medium text-text">{h.nr}%</b> not reliable. {district ? regionName(district) : studyTitle()} ·{' '}
+      reliable growth · <b className="font-medium text-text">{h.nr}%</b> not reliable. {district ? regionName(district) : country ? countryName(country) : studyTitle()} ·{' '}
       {num(h.km2)} km² of pasture.
     </p>
   );

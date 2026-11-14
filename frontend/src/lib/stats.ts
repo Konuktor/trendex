@@ -1,12 +1,16 @@
 import { CELL_KM2 } from './geo';
+import { countryOf } from './regions';
 import type { Cell, District, Level, Trend } from './types';
 
 export function share(scope: readonly Cell[], fn: (x: Cell) => boolean): number {
   return Math.round((100 * scope.filter(fn).length) / (scope.length || 1));
 }
 
-export function scopeCells(past: readonly Cell[], district: District | null): Cell[] {
-  return past.filter((x) => !district || x.d === district);
+/** Pasture cells in scope: one region, else one country (Central Asia), else all. */
+export function scopeCells(past: readonly Cell[], district: District | null, country: string | null = null): Cell[] {
+  if (district) return past.filter((x) => x.d === district);
+  if (country) return past.filter((x) => countryOf(x) === country);
+  return past.slice();
 }
 
 export interface Headline {

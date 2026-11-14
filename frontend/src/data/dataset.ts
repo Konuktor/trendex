@@ -41,3 +41,9 @@ export function initialDataset(): DatasetId {
   if (!HAS_DATASETS || typeof window === 'undefined') return 'naryn';
   return parseDataset(new URLSearchParams(window.location.search).get('ds'));
 }
+
+/** Country from the page URL (?ds=ca&country=KAZ) at start-up; validated once the data has loaded. */
+export function initialCountry(): string | null {
+  if (initialDataset() !== 'ca') return null;
+  return new URLSearchParams(window.location.search).get('country') || null;
+}

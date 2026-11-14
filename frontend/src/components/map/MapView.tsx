@@ -3,7 +3,7 @@ import L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import type { FeatureCollection, MultiPolygon } from 'geojson';
+import type { FeatureCollection, MultiLineString, MultiPolygon } from 'geojson';
 import { useApp } from '../../store';
 import { cellAt, type ZoneFeature } from '../../lib/zones';
 import { DLON } from '../../lib/geo';
@@ -89,7 +89,14 @@ function Zones({ zones, grey }: { zones: FeatureCollection<MultiPolygon, ZoneFea
   return null;
 }
 
-function Boundaries({ mask, meta }: { mask: StudyMask | null; meta: DatasetMeta | null }) {
+/** A country to focus on (Central Asia): the map fits it and draws its border. */
+export interface MapFocus {
+  key: string;
+  bounds: [[number, number], [number, number]] | null;
+  border: MultiLineString | null;
+}
+
+function Boundaries({ mask, meta, focus }: { mask: StudyMask | null; meta: DatasetMeta | null; focus: MapFocus | null }) {
   const map = useMap();
   /** dataset the view was last fitted to (fit once per dataset per mount) */
   const fitted = useRef<string | null>(null);
@@ -112,7 +119,12 @@ function Boundaries({ mask, meta }: { mask: StudyMask | null; meta: DatasetMeta 
       const line = L.geoJSON(mask.oblast, { ...style, style: { color: C.boundary, weight: 1.4, fill: false } }).addTo(group);
       // Central Asia fits meta.view.bounds. Naryn keeps its original fit to the oblast outline (its
       // view.bounds is padded 0.9° to the west and would open the pilot 0.3 zoom levels further out).
-      const target = meta?.bounds && ds !== 'naryn' ? L.latLngBounds(meta.bounds) : line.getBounds();
+      const whole = meta?.bounds && ds !== 'naryn' ? L.latLngBounds(meta.bounds) : line.getBounds();
+      if (focus?.border) {
+        L.geoJSON(focus.border, { ...style, style: { color: '#FFFFFF', weight: 3.5, opacity: 0.9 } }).addTo(group);
+        L.geoJSON(focus.border, { ...style, style: { color: C.boundary, weight: 1.4 } }).addTo(group);
+      }
+      const target = focus?.bounds ? L.latLngBounds(focus.bounds) : whole;
       const fit = (animate: boolean) => {
         const narrow = map.getSize().x < 768;
         const h = map.getSize().y;
@@ -123,16 +135,19 @@ function Boundaries({ mask, meta }: { mask: StudyMask | null; meta: DatasetMeta 
         });
       };
       mapApi.current = { fitOblast: () => fit(true) };
-      if (fitted.current !== ds) {
-        fitted.current = ds;
-        fit(false);
+      // Fit once per dataset and country; moving between countries of one dataset animates.
+      const key = `${ds}|${focus?.key ?? ''}`;
+      if (fitted.current !== key) {
+        const sameDataset = fitted.current?.split('|')[0] === ds;
+        fitted.current = key;
+        fit(sameDataset);
       }
     }
     return () => {
       group.remove();
       mapApi.current = null;
     };
-  }, [map, mask, meta]);
+  }, [map, mask, meta, focus]);
   return null;
 }
 
@@ -261,11 +276,13 @@ export interface MapViewProps {
   meta?: DatasetMeta | null;
   /** "Naryn oblast" | "Central Asia" */
   title?: string;
+  /** Central Asia: the chosen country */
+  focus?: MapFocus | null;
   outline: MultiPolygon | null;
   poly: LonLat[] | null;
 }
 
-export function MapView({ zones, grey = false, mask, meta = null, title = 'Naryn oblast', outline, poly }: MapViewProps) {
+export function MapView({ zones, grey = false, mask, meta = null, title = 'Naryn oblast', focus = null, outline, poly }: MapViewProps) {
   return (
     <MapContainer
       bounds={meta?.bounds && meta.dataset !== 'naryn' ? L.latLngBounds(meta.bounds) : START_BOUNDS}
@@ -284,7 +301,7 @@ export function MapView({ zones, grey = false, mask, meta = null, title = 'Naryn
       <TileLayer url={BASEMAP.labels} pane="labels" subdomains={BASEMAP.subdomains ?? 'abc'} maxNativeZoom={16} />
       <Controls />
       <Zones zones={zones} grey={grey} />
-      <Boundaries mask={mask} meta={meta} />
+      <Boundaries mask={mask} meta={meta} focus={focus} />
       <Selection outline={outline} poly={poly} />
       <Interaction />
       <Fly />

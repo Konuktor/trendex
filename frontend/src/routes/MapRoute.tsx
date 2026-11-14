@@ -5,7 +5,9 @@ import { resolveAnswer } from '../lib/selection';
 import { buildZoneGeoJSON, smoothPolygon } from '../lib/zones';
 import { Rail } from '../components/map/Rail';
 import { HeadlineStrip } from '../components/map/HeadlineStrip';
-import { MapView } from '../components/map/MapView';
+import { MapView, type MapFocus } from '../components/map/MapView';
+import { countryCellBounds, countryShape } from '../lib/regions';
+import { DLAT, DLON } from '../lib/geo';
 import { SearchBox } from '../components/map/SearchBox';
 import { DrawBar } from '../components/map/DrawBar';
 import { AnswerCard, CardSkeleton } from '../components/card/AnswerCard';
@@ -30,6 +32,7 @@ export function MapRoute() {
   const mask = useApp((s) => s.mask);
   const meta = useApp((s) => s.meta);
   const dataset = useApp((s) => s.dataset);
+  const country = useApp((s) => s.country);
   const load = useApp((s) => s.load);
   const layer = useApp((s) => s.layer);
   const matrix = useApp((s) => s.matrix);
@@ -70,9 +73,15 @@ export function MapRoute() {
 
   // Zones rebuild only when the data, layer or filter change.
   const zones = useMemo(
-    () => (data ? buildZoneGeoJSON(data.cells, layer, { matrix, district }) : null),
-    [data, layer, matrix, district],
+    () => (data ? buildZoneGeoJSON(data.cells, layer, { matrix, district, country }) : null),
+    [data, layer, matrix, district, country],
   );
+  // Central Asia: fit and outline the chosen country (bounds from its region polygons, else its cells).
+  const focus = useMemo<MapFocus | null>(() => {
+    if (!country || !mask || !data) return null;
+    const shape = countryShape(mask.districts, country);
+    return { key: country, bounds: shape.bounds ?? countryCellBounds(data.cells, country, DLON, DLAT), border: shape.border };
+  }, [country, mask, data]);
   const res = useMemo(() => (data ? resolveAnswer(data, sel, layer) : null), [data, sel, layer]);
   const outline = useMemo(() => (res?.sel.mode === 'zone' ? smoothPolygon(res.sel.cells) : null), [res]);
   const card = res?.card ?? null;
@@ -103,6 +112,7 @@ export function MapRoute() {
       mask={mask}
       meta={meta}
       title={meta?.title}
+      focus={focus}
       outline={loading ? null : outline}
       poly={!loading && sel?.type === 'drawn' ? sel.poly : null}
     />

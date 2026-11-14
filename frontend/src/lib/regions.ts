@@ -1,5 +1,7 @@
 import { DISTRICT_NAMES, DISTRICT_ORDER } from './mask';
-import type { Cell, DatasetId, DatasetMeta, District, Region } from './types';
+import { bboxOf } from './geo';
+import type { MultiLineString } from 'geojson';
+import type { BoundaryFeature, Cell, DatasetId, DatasetMeta, District, Region } from './types';
 
 /**
  * Region context of the active dataset: names, display order, country grouping and the copy that
@@ -24,8 +26,9 @@ export const NARYN_REGION_META: RegionMeta = {
 };
 
 export interface CountryGroup {
-  /** ISO2 when known, else ISO3 or the country name */
+  /** country code: ISO3 when known (meta.regions[].country, cells[].country), else ISO2 or the name */
   key: string;
+  iso2?: string;
   countryName: string;
   codes: District[];
 }
@@ -41,7 +44,7 @@ interface Ctx {
 function build(meta: RegionMeta, cells?: readonly Cell[]): Ctx {
   const regions = meta.regions.length ? meta.regions : [...NARYN_REGIONS];
   const byCode = new Map(regions.map((r) => [r.code, r] as const));
-  const keyOf = (r: Region) => r.iso2 || r.country || r.countryName || '';
+  const keyOf = (r: Region) => r.country || r.iso2 || r.countryName || '';
   const countries = new Set(regions.map(keyOf));
   let order: District[];
   let groups: CountryGroup[];
@@ -53,17 +56,25 @@ function build(meta: RegionMeta, cells?: readonly Cell[]): Ctx {
       if (!m.has(k)) m.set(k, []);
       m.get(k)!.push(r);
     }
+    if (cells?.length) {
+      // Countries that only the cells name (a region missing from meta.regions) still get a group.
+      for (const x of cells) {
+        if (!x.country || byCode.has(x.d) || [...m.keys()].includes(x.country)) continue;
+        m.set(x.country, []);
+      }
+    }
     groups = [...m.entries()]
       .map(([key, rs]) => ({
         key,
-        countryName: rs[0].countryName || key,
+        iso2: rs[0]?.iso2,
+        countryName: rs[0]?.countryName || key,
         codes: rs.sort((a, b) => a.name.localeCompare(b.name)).map((r) => r.code),
       }))
       .sort((a, b) => a.countryName.localeCompare(b.countryName));
     order = groups.flatMap((g) => g.codes);
   } else {
     order = regions.map((r) => r.code);
-    groups = [{ key: keyOf(regions[0]), countryName: regions[0].countryName || '', codes: order }];
+    groups = [{ key: keyOf(regions[0]), iso2: regions[0].iso2, countryName: regions[0].countryName || '', codes: order }];
   }
   const centroids = new Map<District, { lon: number; lat: number }>();
   if (cells?.length) {
@@ -132,3 +143,132 @@ export function coverageText(): string {
   if (names.length < 2) return `TrendeX covers ${studyTitle()}`;
   return `TrendeX covers ${studyTitle()}: ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
+
+/* ---------- countries (Central Asia) ---------- */
+
+/** Countries of the active dataset, alphabetical (one entry for Naryn). */
+export const countries = (): readonly CountryGroup[] => ctx.groups;
+
+/** A country code from the URL or a cell: ISO3, ISO2 or the name, any case → the dataset's country key. */
+export function resolveCountry(code: string | null | undefined): string | null {
+  if (!code) return null;
+  const c = code.trim().toLowerCase();
+  const g = ctx.groups.find((x) => x.key.toLowerCase() === c || x.iso2?.toLowerCase() === c || x.countryName.toLowerCase() === c);
+  return g?.key ?? null;
+}
+
+export const isCountry = (code: string | null | undefined): boolean => resolveCountry(code) !== null;
+
+export function countryName(code: string | null | undefined): string {
+  return ctx.groups.find((g) => g.key === code)?.countryName ?? code ?? '';
+}
+
+/** Country key of a region (ISO3 in Central Asia). */
+export function countryOfRegion(code: District): string | null {
+  const r = ctx.byCode.get(code);
+  return r ? r.country || r.iso2 || r.countryName || null : null;
+}
+
+/** Country key of a cell: from its region, else from the cell's own `country`. */
+export function countryOf(x: Pick<Cell, 'd' | 'country'>): string | null {
+  return countryOfRegion(x.d) ?? resolveCountry(x.country);
+}
+
+/** Region codes of a country, in display order (all regions when `country` is null). */
+export function regionsOf(country: string | null): readonly District[] {
+  if (!country) return ctx.order;
+  return ctx.groups.find((g) => g.key === country)?.codes ?? [];
+}
+
+export interface CountryShape {
+  /** [[south, west], [north, east]] */
+  bounds: [[number, number], [number, number]] | null;
+  /** outer border: the region edges that no other region of the same country shares */
+  border: MultiLineString | null;
+}
+
+const shapes = new WeakMap<object, Map<string, CountryShape>>();
+
+/**
+ * Bounds and outer border of a country from its region polygons (features with `properties.country`).
+ * Neighbouring regions share their edges exactly, so the border is every edge used once.
+ */
+export function countryShape(features: readonly BoundaryFeature[], country: string): CountryShape {
+  let memo = shapes.get(features);
+  if (!memo) {
+    memo = new Map();
+    shapes.set(features, memo);
+  }
+  const hit = memo.get(country);
+  if (hit) return hit;
+  const mine = features.filter((f) => {
+    const p = f.properties as Record<string, unknown>;
+    const code = typeof p.code === 'string' ? p.code : null;
+    return (code && countryOfRegion(code) === country) || resolveCountry(p.country as string | undefined) === country;
+  });
+  let out: CountryShape = { bounds: null, border: null };
+  if (mine.length) {
+    const b: [number, number, number, number] = [180, 90, -180, -90];
+    const rings: number[][][] = [];
+    for (const f of mine) {
+      const [w, s, e, n] = bboxOf(f.geometry);
+      b[0] = Math.min(b[0], w);
+      b[1] = Math.min(b[1], s);
+      b[2] = Math.max(b[2], e);
+      b[3] = Math.max(b[3], n);
+      const g = f.geometry;
+      if (g.type === 'Polygon') rings.push(...g.coordinates);
+      else for (const poly of g.coordinates) rings.push(...poly);
+    }
+    const key = (a: number[], c: number[]) => {
+      const p = `${a[0].toFixed(6)},${a[1].toFixed(6)}`;
+      const q = `${c[0].toFixed(6)},${c[1].toFixed(6)}`;
+      return p < q ? `${p};${q}` : `${q};${p}`;
+    };
+    const count = new Map<string, number>();
+    for (const ring of rings) for (let i = 1; i < ring.length; i++) count.set(key(ring[i - 1], ring[i]), (count.get(key(ring[i - 1], ring[i])) ?? 0) + 1);
+    // Walk each ring and keep runs of unshared edges as polylines.
+    const lines: number[][][] = [];
+    for (const ring of rings) {
+      let run: number[][] = [];
+      for (let i = 1; i < ring.length; i++) {
+        if (count.get(key(ring[i - 1], ring[i])) === 1) {
+          if (!run.length) run.push(ring[i - 1]);
+          run.push(ring[i]);
+        } else if (run.length) {
+          lines.push(run);
+          run = [];
+        }
+      }
+      if (run.length) lines.push(run);
+    }
+    out = {
+      bounds: [
+        [b[1], b[0]],
+        [b[3], b[2]],
+      ],
+      border: lines.length ? { type: 'MultiLineString', coordinates: lines } : null,
+    };
+  }
+  memo.set(country, out);
+  return out;
+}
+
+/** Bounds of a country from its cells (fallback when there are no region polygons). */
+export function countryCellBounds(cells: readonly Cell[], country: string, dlon: number, dlat: number): [[number, number], [number, number]] | null {
+  let s = 90;
+  let w = 180;
+  let n = -90;
+  let e = -180;
+  let any = false;
+  for (const x of cells) {
+    if (countryOf(x) !== country) continue;
+    any = true;
+    s = Math.min(s, x.lat - dlat / 2);
+    n = Math.max(n, x.lat + dlat / 2);
+    w = Math.min(w, x.lon - dlon / 2);
+    e = Math.max(e, x.lon + dlon / 2);
+  }
+  return any ? [[s, w], [n, e]] : null;
+}
+

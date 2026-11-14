@@ -12,10 +12,16 @@ const TABS = [
   { to: '/methods', label: 'Methods & limits', short: 'Methods' },
 ];
 
-function Tabs({ mobile }: { mobile?: boolean }) {
+/** ?ds=ca&country=KAZ for links, so moving between pages keeps the dataset and the country. */
+export function useDatasetSearch(): string {
   const dataset = useApp((s) => s.dataset);
-  // Keep the dataset in the URL when moving between pages.
-  const search = HAS_DATASETS && dataset !== 'naryn' ? `?ds=${dataset}` : '';
+  const country = useApp((s) => s.country);
+  if (!HAS_DATASETS || dataset === 'naryn') return '';
+  return `?ds=${dataset}${country ? `&country=${encodeURIComponent(country)}` : ''}`;
+}
+
+function Tabs({ mobile }: { mobile?: boolean }) {
+  const search = useDatasetSearch();
   return (
     <nav aria-label="Main" className={`flex gap-1 self-stretch ${mobile ? 'h-10 overflow-x-auto border-b border-hairline px-2 md:hidden' : 'hidden md:flex'}`}>
       {TABS.map((t) => (
@@ -36,7 +42,7 @@ function Tabs({ mobile }: { mobile?: boolean }) {
 }
 
 /** Params that point into one dataset and are dropped when switching. */
-const DATASET_PARAMS = ['area', 'outline', 'scope', 'state'];
+const DATASET_PARAMS = ['area', 'outline', 'scope', 'state', 'country'];
 
 /** Segmented control: Naryn pilot / Central Asia. Shown only on real data. */
 export function DatasetSwitch() {
@@ -96,10 +102,11 @@ export function TopBar({ onTour }: { onTour?: () => void }) {
   const dataset = useApp((s) => s.dataset);
   const meta = useApp((s) => s.meta);
   const title = meta?.title ?? (dataset === 'ca' ? 'Central Asia' : 'Naryn oblast');
+  const search = useDatasetSearch();
   return (
     <header className="z-30 flex flex-none flex-col bg-white">
       <div className="flex h-bar items-center gap-8 border-b border-hairline pl-5 pr-4">
-        <NavLink to={{ pathname: '/map', search: HAS_DATASETS && dataset !== 'naryn' ? `?ds=${dataset}` : '' }} className="text-md font-semibold tracking-[-0.01em] text-text no-underline">
+        <NavLink to={{ pathname: '/map', search }} className="text-md font-semibold tracking-[-0.01em] text-text no-underline">
           TrendeX
         </NavLink>
         <Tabs />

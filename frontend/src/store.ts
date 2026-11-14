@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { activate, source } from './data/source';
-import { HAS_DATASETS, initialDataset } from './data/dataset';
+import { HAS_DATASETS, initialCountry, initialDataset } from './data/dataset';
+import { countryOf, countryOfRegion, resolveCountry } from './lib/regions';
 import { isReal } from './data/info';
 import type { DataSet, DatasetId, DatasetMeta, District, Layer, LonLat, MatrixFilter, StudyMask } from './lib/types';
 
@@ -66,6 +67,10 @@ interface AppState {
   /** switch dataset: clears data, filters and selection, then loads (selection resets to meta.defaultCellId) */
   setDataset: (ds: DatasetId) => void;
   meta: DatasetMeta | null;
+  /** Central Asia: the chosen country (ISO3), null = the whole dataset */
+  country: string | null;
+  /** choose a country: the map fits and outlines it, lists and shares are scoped to it */
+  setCountry: (c: string | null) => void;
   data: DataSet | null;
   mask: StudyMask | null;
   /** true when running on the real (production) data, false on sample data */
@@ -110,6 +115,7 @@ export const useApp = create<AppState>((set, get) => ({
     if (ds === get().dataset || (!HAS_DATASETS && ds !== 'naryn')) return;
     set({
       dataset: ds,
+      country: null,
       data: null,
       mask: null,
       meta: null,
@@ -124,6 +130,20 @@ export const useApp = create<AppState>((set, get) => ({
     void get().load();
   },
   meta: null,
+  country: initialCountry(),
+  setCountry(c) {
+    const s = get();
+    const country = c ? resolveCountry(c) : null;
+    if (country === s.country) return;
+    // Keep a region filter and a selected zone only when they lie in the new country.
+    const district = s.district && country && countryOfRegion(s.district) !== country ? null : s.district;
+    let sel = s.sel;
+    if (country && sel?.type === 'zone') {
+      const x = s.data?.byId[sel.id];
+      if (x && countryOf(x) !== country) sel = null;
+    }
+    set({ country, district, sel });
+  },
   data: null,
   mask: null,
   real: false,
@@ -138,14 +158,20 @@ export const useApp = create<AppState>((set, get) => ({
       if (get().data === loaded.data) return;
       activate(loaded);
       const { data, mask, meta } = loaded;
-      set((s) => ({
-        data,
-        mask,
-        meta,
-        real: isReal(),
-        loadError: null,
-        sel: s.sel ?? (data.demo ? { type: 'zone', id: data.demo } : null),
-      }));
+      set((s) => {
+        // A country from the URL must exist in this dataset; the default area is kept only inside it.
+        const country = ds === 'ca' ? resolveCountry(s.country) : null;
+        const demo = data.demo && (!country || countryOf(data.byId[data.demo]) === country) ? data.demo : null;
+        return {
+          data,
+          mask,
+          meta,
+          country,
+          real: isReal(),
+          loadError: null,
+          sel: s.sel ?? (demo ? { type: 'zone', id: demo } : null),
+        };
+      });
     } catch (e) {
       if (get().dataset === ds) set({ loadError: e instanceof Error ? e.message : String(e) });
     }

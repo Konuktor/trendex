@@ -6,8 +6,15 @@ import { contours } from 'd3-contour';
 import { CELL_KM, CELL_KM2, cellCenter, cellIdOf, COLS, getGrid, LON0, NARYN_GRID, setGrid, toCell, type Grid } from './geo';
 import { DISTRICT_ORDER } from './mask';
 import {
+  countries,
+  countryCellBounds,
+  countryName,
+  countryOf,
+  countryShape,
   coverageText,
   NARYN_REGION_META,
+  regionsOf,
+  resolveCountry,
   regionFull,
   regionGroups,
   regionLabel,
@@ -19,16 +26,16 @@ import {
   type RegionMeta,
 } from './regions';
 import { nearest, parseSearch, placeName, PLACES } from './places';
-import { selectZone, smoothPolygon, upsampleFor } from './zones';
+import { buildZoneGeoJSON, selectZone, smoothPolygon, upsampleFor } from './zones';
 import { answer } from './answer';
-import { countryRow, districtRow, districtRows } from './stats';
+import { countryRow, districtRow, districtRows, scopeCells } from './stats';
 import { districtPanels } from './trends';
-import { buildQueue } from './queue';
+import { buildQueue, EMPTY_FILTER, filterQueue, queueCsv } from './queue';
 import { datasetBase, parseDataset } from '../data/dataset';
 import { inferGrid, normaliseMeta } from '../data/source';
-import { queueFor, type QueueItem } from '../store';
+import { queueFor, useApp, type QueueItem } from '../store';
 import { fixture } from '../test/fixtures';
-import type { Cell, DataSet, Level, Trend } from './types';
+import type { BoundaryFeature, Cell, DataSet, Level, Trend } from './types';
 
 const CA_GRID: Grid = { cols: 30, rows: 20, lon0: 70, lat0: 46, dlon: 0.24, dlat: 0.18, cellKm2: 400 };
 
@@ -325,5 +332,91 @@ describe('meta fallbacks', () => {
     const c = normaliseMeta('ca', {}, caData().cells);
     expect(c).toMatchObject({ dataset: 'ca', title: 'Central Asia', regionLabel: { en: 'Region' }, dataStatus: 'sample' });
     expect(c.regions.map((r) => r.code).sort()).toEqual(['KG-chuy-region', 'KZ-almaty-region', 'KZ-jambyl-region']);
+  });
+});
+
+describe('countries (Central Asia)', () => {
+  it('come from meta.regions, accept ISO3, ISO2 or the name, and map cells and regions to them', () => {
+    const data = useCa();
+    expect(countries().map((g) => [g.key, g.countryName])).toEqual([
+      ['KAZ', 'Kazakhstan'],
+      ['KGZ', 'Kyrgyzstan'],
+    ]);
+    expect([resolveCountry('KAZ'), resolveCountry('kz'), resolveCountry('Kyrgyzstan'), resolveCountry('XYZ'), resolveCountry(null)]).toEqual([
+      'KAZ',
+      'KAZ',
+      'KGZ',
+      null,
+      null,
+    ]);
+    expect(countryName('KGZ')).toBe('Kyrgyzstan');
+    expect(countryOf(data.byId['0,0'])).toBe('KAZ');
+    expect(countryOf(data.byId['0,15'])).toBe('KGZ');
+    expect(countryOf({ d: 'not-in-meta', country: 'KG' })).toBe('KGZ');
+    expect(regionsOf('KAZ')).toEqual(['KZ-almaty-region', 'KZ-jambyl-region']);
+    expect(regionsOf(null)).toEqual(regionOrder());
+  });
+
+  it('Naryn has one country and no country choice changes its lists', () => {
+    expect(countries()).toHaveLength(1);
+    expect(regionsOf(null)).toEqual(DISTRICT_ORDER);
+  });
+
+  it('scope the shares, the zones and the queue to a country', () => {
+    const data = useCa();
+    const kz = scopeCells(data.past, null, 'KAZ');
+    expect(kz.length).toBe(data.past.filter((x) => x.d.startsWith('KZ')).length);
+    expect(scopeCells(data.past, 'KG-chuy-region', 'KAZ').every((x) => x.d === 'KG-chuy-region')).toBe(true);
+    expect(scopeCells(data.past, null, null)).toHaveLength(data.past.length);
+
+    const z = buildZoneGeoJSON(data.cells, 'trend', { matrix: null, district: null, country: 'KGZ' });
+    const dim = z.features.find((f) => f.properties.cls === 'dim')!;
+    expect(dim.properties.cells).toBe(data.cells.filter((x) => !x.d.startsWith('KG')).length);
+    const kept = z.features.filter((f) => f.properties.cls !== 'dim').reduce((s, f) => s + f.properties.cells, 0);
+    expect(kept).toBe(data.cells.filter((x) => x.d.startsWith('KG')).length);
+
+    const rows = buildQueue(data, []);
+    const kg = filterQueue(rows, { ...EMPTY_FILTER, country: 'KGZ' });
+    expect(kg.length).toBeGreaterThan(0);
+    expect(kg.length).toBeLessThan(rows.length);
+    expect(kg.every((r) => r.country === 'KGZ' && r.districtName.endsWith('Kyrgyzstan'))).toBe(true);
+    expect(queueCsv(kg).split('\n')[1]).toContain(',country,');
+  });
+
+  it('builds a country border from its regions without the shared edges, and its bounds', () => {
+    useCa();
+    const sq = (code: string, country: string, w: number, s: number, e: number, n: number): BoundaryFeature => ({
+      type: 'Feature',
+      properties: { shapeName: code, code, country },
+      geometry: { type: 'Polygon', coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] },
+    });
+    const feats = [
+      sq('KZ-jambyl-region', 'KAZ', 70, 44, 72, 46),
+      sq('KZ-almaty-region', 'KAZ', 72, 44, 74, 46),
+      sq('KG-chuy-region', 'KGZ', 70, 42, 74, 44),
+    ];
+    const kz = countryShape(feats, 'KAZ');
+    expect(kz.bounds).toEqual([[44, 70], [46, 74]]);
+    const segs = kz.border!.coordinates.flatMap((l) => l.slice(1).map((p, i) => [l[i], p]));
+    // 8 outer edges minus the shared x = 72 edge counted twice: 6 border segments, none on x = 72 inside
+    expect(segs).toHaveLength(6);
+    expect(segs.some(([a, b]) => a[0] === 72 && b[0] === 72)).toBe(false);
+    expect(countryShape(feats, 'KGZ').bounds).toEqual([[42, 70], [44, 74]]);
+    expect(countryShape(feats, 'TJK')).toEqual({ bounds: null, border: null });
+    const cb = countryCellBounds(caData().cells, 'KGZ', 0.24, 0.18)!;
+    expect(cb[0][0]).toBeCloseTo(46 - 20 * 0.18, 9);
+    expect(cb[1][0]).toBeCloseTo(46 - 10 * 0.18, 9);
+  });
+
+  it('choosing a country keeps only a region filter and a selection inside it', () => {
+    const data = useCa();
+    useApp.setState({ data, dataset: 'ca', country: null, district: 'KZ-almaty-region', sel: { type: 'zone', id: '20,2' } });
+    useApp.getState().setCountry('kaz');
+    expect(useApp.getState()).toMatchObject({ country: 'KAZ', district: 'KZ-almaty-region', sel: { type: 'zone', id: '20,2' } });
+    useApp.getState().setCountry('KGZ');
+    expect(useApp.getState()).toMatchObject({ country: 'KGZ', district: null, sel: null });
+    useApp.getState().setCountry(null);
+    expect(useApp.getState().country).toBeNull();
+    useApp.setState({ data: null, dataset: 'naryn', country: null, district: null, sel: null });
   });
 });

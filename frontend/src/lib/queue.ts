@@ -1,7 +1,7 @@
 import { dataInfo, isReal } from '../data/info';
 import { answer, type Answer } from './answer';
 import { selectDrawn, selectZone } from './zones';
-import { regionFull, regionLabel } from './regions';
+import { countryName, countryOfRegion, multiCountry, regionFull, regionLabel } from './regions';
 import { maj, signed } from './format';
 import type { Confidence, DataSet, District, Level, LonLat, Trend } from './types';
 
@@ -18,6 +18,8 @@ export interface QueueRow {
   name: string;
   district: District | null;
   districtName: string;
+  /** Central Asia: country of the area (ISO3) */
+  country: string | null;
   level: Level | null;
   trend: Trend | null;
   strong: boolean;
@@ -67,13 +69,13 @@ function rowFrom(key: string, a: Answer, cells: { d: District }[], href: string,
           : 'No reliable trend; added for a field check';
     return {
       key, id: a.qid, name: a.name, district, districtName: district ? regionFull(district) : 'Outside the study area',
-      level: a.level, trend: a.trend, strong: a.strong, slope: a.slope, km2, conf: a.conf, reason,
+      country: district ? countryOfRegion(district) : null, level: a.level, trend: a.trend, strong: a.strong, slope: a.slope, km2, conf: a.conf, reason,
       score: scoreOf(a), fromMap, href, kind: a.kind,
     };
   }
   return {
     key, id: a.qid, name: a.name, district, districtName: district ? regionFull(district) : 'Outside the study area',
-    level: null, trend: null, strong: false, slope: null, km2, conf: null,
+    country: district ? countryOfRegion(district) : null, level: null, trend: null, strong: false, slope: null, km2, conf: null,
     reason: a.kind === 'excluded' ? `Mask review: ${a.reason.toLowerCase()}` : a.reason,
     score: 0, fromMap, href, kind: a.kind,
   };
@@ -118,6 +120,8 @@ export function buildQueue(data: DataSet, added: readonly AddedItem[]): QueueRow
 
 export interface QueueFilter {
   district: District | null;
+  /** Central Asia: only areas in this country (ISO3) */
+  country?: string | null;
   levels: Level[];
   highOnly: boolean;
   /** show only rows added from the map */
@@ -130,6 +134,7 @@ export function filterQueue(rows: readonly QueueRow[], f: QueueFilter): QueueRow
   return rows.filter(
     (r) =>
       (!f.district || r.district === f.district) &&
+      (!f.country || r.country === f.country) &&
       (!f.levels.length || (r.level !== null && f.levels.includes(r.level))) &&
       (!f.highOnly || r.conf === 'High') &&
       (!f.addedOnly || r.fromMap),
@@ -137,13 +142,14 @@ export function filterQueue(rows: readonly QueueRow[], f: QueueFilter): QueueRow
 }
 
 export function queueCsv(rows: readonly QueueRow[]): string {
-  const head = ['rank', 'area', 'id', regionLabel().toLowerCase(), 'level', 'trend', 'slope_pct_per_year', 'pasture_km2', 'confidence', 'reason', 'score', 'added_from_map'];
+  const withCountry = multiCountry();
+  const head = ['rank', 'area', 'id', regionLabel().toLowerCase(), ...(withCountry ? ['country'] : []), 'level', 'trend', 'slope_pct_per_year', 'pasture_km2', 'confidence', 'reason', 'score', 'added_from_map'];
   const esc = (v: unknown) => {
     const s = v === null || v === undefined ? '' : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const lines = rows.map((r, i) =>
-    [i + 1, r.name, r.id, r.districtName, r.level, r.trend, r.slope?.toFixed(1), r.km2, r.conf, r.reason, r.score.toFixed(2), r.fromMap]
+    [i + 1, r.name, r.id, r.districtName, ...(withCountry ? [r.country ? countryName(r.country) : ''] : []), r.level, r.trend, r.slope?.toFixed(1), r.km2, r.conf, r.reason, r.score.toFixed(2), r.fromMap]
       .map(esc)
       .join(','),
   );

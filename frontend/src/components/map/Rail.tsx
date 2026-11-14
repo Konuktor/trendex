@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '../../store';
 import { LEVEL_NAME, TREND_SHORT } from '../../lib/labels';
-import { areaNoun, regionGroups, regionLabelPlural, regionName, regionOrder } from '../../lib/regions';
+import { areaNoun, countries, multiCountry, regionGroups, regionLabelPlural, regionName, regionOrder, regionsOf, studyTitle } from '../../lib/regions';
 import { countryRow, districtRows, matrixShare, scopeCells, type DistrictRow } from '../../lib/stats';
 import { num } from '../../lib/format';
 import type { Answer } from '../../lib/answer';
@@ -92,7 +92,8 @@ export function Matrix({ card, loading = false }: { card: Answer | null; loading
   const district = useApp((s) => s.district);
   const toggleMatrix = useApp((s) => s.toggleMatrix);
   const clear = useApp((s) => s.toggleMatrix);
-  const scope = useMemo(() => (data ? scopeCells(data.past, district) : []), [data, district]);
+  const country = useApp((s) => s.country);
+  const scope = useMemo(() => (data ? scopeCells(data.past, district, country) : []), [data, district, country]);
   if (!data || loading) return <MatrixSkeleton />;
   return (
     <section className="flex flex-col gap-2" aria-labelledby="mx-label">
@@ -203,6 +204,7 @@ function RegionRow({ row, on, onToggle, indent = false }: { row: DistrictRow; on
 export function DistrictList({ loading = false }: { loading?: boolean }) {
   const data = useApp((s) => s.data);
   const district = useApp((s) => s.district);
+  const country = useApp((s) => s.country);
   const toggle = useApp((s) => s.toggleDistrict);
   const rows = useMemo(() => (data ? districtRows(data.past) : null), [data]);
   /** expanded state per country, by group key (Central Asia only) */
@@ -218,11 +220,12 @@ export function DistrictList({ loading = false }: { loading?: boolean }) {
     );
   }
   const groups = regionGroups();
-  if (groups.length <= 1) {
+  // One country (Naryn, or a chosen Central Asian country): a flat list of its regions.
+  if (groups.length <= 1 || country) {
     return (
       <section className="flex flex-col gap-1" aria-labelledby="dist-label">
         <h2 id="dist-label" className="label-caps mb-1">{regionLabelPlural()}</h2>
-        {regionOrder().map((d) => {
+        {(country ? regionsOf(country) : regionOrder()).map((d) => {
           const row = rows.get(d);
           if (!row) return null;
           return <RegionRow key={d} row={row} on={district === d} onToggle={() => toggle(d)} />;
@@ -273,12 +276,43 @@ export function DistrictList({ loading = false }: { loading?: boolean }) {
   );
 }
 
+/** Central Asia: "All Central Asia" or one country. Renders nothing for single-country datasets (Naryn). */
+export function CountrySelect() {
+  const data = useApp((s) => s.data);
+  const country = useApp((s) => s.country);
+  const setCountry = useApp((s) => s.setCountry);
+  const id = useId();
+  if (!data || !multiCountry()) return null;
+  return (
+    <section className="flex flex-col gap-2">
+      <label htmlFor={id} className="label-caps">
+        Country
+      </label>
+      <select
+        id={id}
+        value={country ?? ''}
+        onChange={(e) => setCountry(e.target.value || null)}
+        className="h-control w-full rounded border border-border-strong bg-white px-2 text-sm coarse:h-touch"
+        data-testid="country-select"
+      >
+        <option value="">All {studyTitle()}</option>
+        {countries().map((g) => (
+          <option key={g.key} value={g.key}>
+            {g.countryName}
+          </option>
+        ))}
+      </select>
+    </section>
+  );
+}
+
 export function Rail({ card, loading = false }: { card: Answer | null; loading?: boolean }) {
   return (
     <aside
       aria-label="Layers and filters"
       className="z-[5] flex w-rail flex-none flex-col gap-6 overflow-y-auto border-r border-hairline bg-surface p-4"
     >
+      {!loading && <CountrySelect />}
       <section className="flex flex-col gap-2">
         <h2 className="label-caps">Layer</h2>
         <LayerSwitch />

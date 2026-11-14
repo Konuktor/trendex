@@ -3,12 +3,12 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { useApp } from '../store';
-import { isRegion, regionGroups, regionLabelPlural, regionName, regionOrder, studyTitle } from '../lib/regions';
+import { countryName, countryOf, countryOfRegion, isRegion, regionGroups, regionLabelPlural, regionName, regionOrder, studyTitle } from '../lib/regions';
 import { cellsCsv, districtPanels, downloadText, matrixTable, scopeTrend, trendShares, type DistrictPanel } from '../lib/trends';
 import { unionDomain, yDomain } from '../lib/chart';
 import { num, signed } from '../lib/format';
 import { LEVEL_NAME, NO_TREND_RESULT, TREND_NAME } from '../lib/labels';
-import type { District, Trend } from '../lib/types';
+import type { Cell, District, Trend } from '../lib/types';
 import { TrendChart } from '../components/card/TrendChart';
 import { useWidth } from '../hooks/useWidth';
 import { C } from '../theme';
@@ -31,6 +31,8 @@ export function TrendsRoute() {
   const data = useApp((s) => s.data);
   const load = useApp((s) => s.load);
   const dataset = useApp((s) => s.dataset);
+  const country = useApp((s) => s.country);
+  const setCountry = useApp((s) => s.setCountry);
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const raw = params.get('scope');
@@ -54,10 +56,14 @@ export function TrendsRoute() {
 
   const v = useMemo(() => {
     if (!data) return null;
-    const past = data.past.filter((x) => !scope || x.d === scope);
-    const all = data.cells.filter((x) => !scope || x.d === scope);
-    const t = scopeTrend(past)!;
-    const panels = districtPanels(data.past);
+    // Scope: one region, else the chosen country (Central Asia), else everything.
+    const inCountry = (x: Cell) => !country || countryOf(x) === country;
+    const inScope = (x: Cell) => (scope ? x.d === scope : inCountry(x));
+    const past = data.past.filter(inScope);
+    const all = data.cells.filter(inScope);
+    const t = scopeTrend(past.length ? past : data.past)!;
+    // Panels: the chosen country's regions only, else every region.
+    const panels = districtPanels(country ? data.past.filter(inCountry) : data.past);
     const shared = unionDomain(panels.map((p) => yDomain(p.model)));
     // Several countries: one group per country, each sorted by slope like the flat list.
     const byD = new Map(panels.map((p) => [p.d, p] as const));
@@ -66,11 +72,25 @@ export function TrendsRoute() {
       panels: g.codes.map((d) => byD.get(d)).filter((p): p is DistrictPanel => !!p).sort((a, b) => a.slope - b.slope || a.d.localeCompare(b.d)),
     }));
     return { past, all, t, shares: trendShares(past), matrix: matrixTable(past), panels, shared, groups };
-  }, [data, scope]);
+  }, [data, scope, country]);
 
   const title = data ? studyTitle() : dataset === 'ca' ? 'Central Asia' : 'Naryn oblast';
-  const scopeName = scope ? regionName(scope) : title;
+  const scopeName = scope ? regionName(scope) : country ? countryName(country) : title;
   const multi = !!v && v.groups.length > 1;
+  /** panels grouped by country: several countries and none chosen */
+  const grouped = multi && !country;
+  const pickScope = (value: string) => {
+    if (value.startsWith('country:')) {
+      setCountry(value.slice('country:'.length));
+      setScope(null);
+    } else if (isRegion(value)) {
+      if (multi) setCountry(countryOfRegion(value));
+      setScope(value);
+    } else {
+      if (multi) setCountry(null);
+      setScope(null);
+    }
+  };
 
   return (
     <main className="min-w-0 flex-1 overflow-y-auto bg-white">
@@ -88,14 +108,15 @@ export function TrendsRoute() {
             </label>
             <select
               id={selectId}
-              value={scope ?? ''}
-              onChange={(e) => setScope(isRegion(e.target.value) ? e.target.value : null)}
+              value={scope ?? (multi && country ? `country:${country}` : '')}
+              onChange={(e) => pickScope(e.target.value)}
               className="h-control max-w-[260px] rounded border border-border-strong bg-white px-2 text-sm coarse:h-touch"
             >
               <option value="">{title}</option>
               {data && multi
                 ? v!.groups.map((g) => (
                     <optgroup key={g.key} label={g.countryName}>
+                      <option value={`country:${g.key}`}>All of {g.countryName}</option>
                       {g.codes.map((d) => (
                         <option key={d} value={d}>
                           {regionName(d)}
@@ -114,7 +135,7 @@ export function TrendsRoute() {
               type="button"
               className="btn-secondary"
               disabled={!v}
-              onClick={() => v && downloadText(`trendex-${scope ?? dataset}-cells.csv`, cellsCsv(v.all))}
+              onClick={() => v && downloadText(`trendex-${scope ?? country ?? dataset}-cells.csv`, cellsCsv(v.all))}
             >
               <Download size={14} strokeWidth={1.5} aria-hidden="true" />
               Download CSV
@@ -216,11 +237,12 @@ export function TrendsRoute() {
             <section ref={gridRef} className="flex flex-col gap-4">
               <div className="flex items-baseline justify-between">
                 <h2 className="text-md font-semibold">
-                  {regionLabelPlural()}, {multi ? 'by country, sorted by slope' : 'sorted by slope'}
+                  {regionLabelPlural()}
+                  {grouped ? ', by country, sorted by slope' : country && multi ? ` of ${countryName(country)}, sorted by slope` : ', sorted by slope'}
                 </h2>
                 <span className="text-xs text-text-2">All panels share one y-scale{isReal() ? '' : ' · Sample data'}</span>
               </div>
-              {multi ? (
+              {grouped ? (
                 v.groups.map((g) => {
                   if (!g.panels.length) return null;
                   const open = !closed[g.key];

@@ -10,33 +10,44 @@ import { QueueRoute } from './routes/QueueRoute';
 import { MethodsRoute } from './routes/MethodsRoute';
 
 /**
- * Keeps ?ds= and the store in step. The store is the source of truth; an explicit change of the URL
- * (back/forward, an edited or shared link) switches the dataset, and a link that drops the parameter
- * gets it back.
+ * Keeps ?ds= (and ?country= in Central Asia) and the store in step. The store is the source of truth; an
+ * explicit change of the URL (back/forward, an edited or shared link) switches the dataset or the country,
+ * and a link that drops the parameters gets them back.
  */
 function DatasetSync() {
   const ds = useApp((s) => s.dataset);
+  const country = useApp((s) => s.country);
   const setDataset = useApp((s) => s.setDataset);
+  const setCountry = useApp((s) => s.setCountry);
   const [params, setParams] = useSearchParams();
   const urlDs = params.get('ds');
-  const written = useRef<string | null>(urlDs);
+  const urlCountry = params.get('country');
+  const written = useRef<{ ds: string | null; country: string | null }>({ ds: urlDs, country: urlCountry });
   useEffect(() => {
     if (!HAS_DATASETS) return;
-    const want = ds === 'naryn' ? null : ds;
-    if (urlDs !== null && urlDs !== want && urlDs !== written.current) {
-      written.current = urlDs;
+    const wantDs = ds === 'naryn' ? null : ds;
+    const wantCountry = ds === 'ca' ? country : null;
+    if (urlDs !== null && urlDs !== wantDs && urlDs !== written.current.ds) {
+      written.current.ds = urlDs;
       setDataset(parseDataset(urlDs));
       return;
     }
-    written.current = want;
-    if (urlDs !== want) {
+    if (ds === 'ca' && urlCountry !== null && urlCountry !== wantCountry && urlCountry !== written.current.country) {
+      written.current.country = urlCountry;
+      setCountry(urlCountry);
+      return;
+    }
+    written.current = { ds: wantDs, country: wantCountry };
+    if (urlDs !== wantDs || urlCountry !== wantCountry) {
       const next = new URLSearchParams(params);
-      if (want) next.set('ds', want);
+      if (wantDs) next.set('ds', wantDs);
       else next.delete('ds');
+      if (wantCountry) next.set('country', wantCountry);
+      else next.delete('country');
       setParams(next, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ds, urlDs]);
+  }, [ds, country, urlDs, urlCountry]);
   return null;
 }
 

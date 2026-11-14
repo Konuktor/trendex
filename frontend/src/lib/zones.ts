@@ -2,6 +2,7 @@ import { contours } from 'd3-contour';
 import type { Feature, FeatureCollection, MultiPolygon } from 'geojson';
 import { avg } from './format';
 import { cellIdOf, COLS, DLAT, DLON, LAT0, LON0, ringHas, ROWS } from './geo';
+import { countryOf } from './regions';
 import type { Cell, DataSet, Layer, LonLat, Selection, ZoneFilter } from './types';
 
 export type TrendClass = 'decS' | 'dec' | 'nr' | 'inc' | 'incS';
@@ -197,6 +198,7 @@ export function matchesFilter(x: Cell, filter: ZoneFilter): boolean {
   if (filter.matrix && !(x.kind === 'pasture' && x.level === filter.matrix.level && x.trend === filter.matrix.trend))
     return false;
   if (filter.district && x.d !== filter.district) return false;
+  if (filter.country && countryOf(x) !== filter.country) return false;
   return true;
 }
 
