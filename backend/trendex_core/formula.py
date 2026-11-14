@@ -16,8 +16,27 @@ def mask_status(cells: pd.DataFrame, cfg: dict) -> np.ndarray:
     lc = cells["lc_major"].to_numpy()
     for reason, classes in cfg["exclude"].items():
         status[np.isin(lc, classes) & (status == "pasture")] = reason
+    # conditional exclusions, e.g. barren only in lowland desert: {bare: {classes: [16], below_elev_m: 1500}}
+    elev = cells["elev_mean"].to_numpy() if "elev_mean" in cells else None
+    for reason, rule in (cfg.get("exclude_where") or {}).items():
+        if "below_elev_m" not in rule or elev is None:
+            continue  # greenness-only rules run later in mask_low_green
+        hit = np.isin(lc, rule["classes"]) & (status == "pasture") & (elev < float(rule["below_elev_m"]))
+        status[hit] = reason
     slope = cells["slope_mean"].to_numpy()
     status[(slope > cfg["max_slope_deg"]) & (status == "pasture")] = "steep"
+    return status
+
+
+def mask_low_green(status: np.ndarray, cells: pd.DataFrame, green: np.ndarray, cfg: dict) -> np.ndarray:
+    """Second pass of exclude_where rules that need greenness: {bare: {classes: [16], max_green: 0.10}} also
+    excludes those classes where the median summer NDVI stays below max_green (bare even if high up)."""
+    lc = cells["lc_major"].to_numpy()
+    for reason, rule in (cfg.get("exclude_where") or {}).items():
+        if "max_green" not in rule:
+            continue
+        hit = np.isin(lc, rule["classes"]) & (status == "pasture") & (green < float(rule["max_green"]))
+        status[hit] = reason
     return status
 
 

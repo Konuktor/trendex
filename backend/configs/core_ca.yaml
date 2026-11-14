@@ -16,7 +16,8 @@ exclude:                         # IGBP LC_Type1 (MCD12Q1, 2020)
   urban: [13]
   cropland: [12, 14]
   forest: [1, 2, 3, 4, 5]
-  bare: [16]                     # deserts and bare ground (Karakum, Kyzylkum, high Pamir rock): not rangeland here
+exclude_where:                   # MCD12Q1 barren (16) is bimodal here: 606k cells < 500 m (deserts), ~98k > 3,000 m (mountains)
+  bare: {classes: [16], below_elev_m: 1500, max_green: 0.10}   # exclude lowland desert, and bare rock/scree anywhere (median summer NDVI < 0.10); keep sparse mountain pasture
 max_slope_deg: 35
 weights: {green: 0.4, stability: 0.2, season: 0.2, terrain: 0.2}
 level_thresholds: {suitable: 60, limited: 40}
@@ -32,7 +33,7 @@ sensitivity_sets:
   no_season: {green: 0.5, stability: 0.25, season: 0.0, terrain: 0.25}
   stability_heavy: {green: 0.3, stability: 0.4, season: 0.15, terrain: 0.15}
 placebo: {n_perm: 50, seed: 42, max_cells: 200000}
-layers: {res_m: 2500}            # PNG overlay pixel size (EPSG:3857 m) for the much larger extent
+layers: {res_m: 1000}            # PNG overlay pixel size (EPSG:3857 m): ~1 km classification images for the map
 export: {cards: false, cells_bin: false}   # per-block cards and per-cell binary do not scale to ~4.6M cells
 ext_disabled: [access, passport]           # OSM for all of Central Asia and per-block PDFs are out of scope tonight
 fe:                              # frontend overview grid (frontend/docs contract), ~20 x 20 km cells
