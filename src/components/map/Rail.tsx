@@ -83,7 +83,7 @@ export function Legend() {
   );
 }
 
-export function Matrix({ card }: { card: Answer | null }) {
+export function Matrix({ card, loading = false }: { card: Answer | null; loading?: boolean }) {
   const data = useApp((s) => s.data);
   const layer = useApp((s) => s.layer);
   const matrix = useApp((s) => s.matrix);
@@ -91,7 +91,7 @@ export function Matrix({ card }: { card: Answer | null }) {
   const toggleMatrix = useApp((s) => s.toggleMatrix);
   const clear = useApp((s) => s.toggleMatrix);
   const scope = useMemo(() => (data ? scopeCells(data.past, district) : []), [data, district]);
-  if (!data) return <MatrixSkeleton />;
+  if (!data || loading) return <MatrixSkeleton />;
   return (
     <section className="flex flex-col gap-2" aria-labelledby="mx-label">
       <div className="flex items-baseline justify-between">
@@ -167,11 +167,20 @@ export function MatrixSkeleton() {
   );
 }
 
-export function DistrictList() {
+export function DistrictList({ loading = false }: { loading?: boolean }) {
   const data = useApp((s) => s.data);
   const district = useApp((s) => s.district);
   const toggle = useApp((s) => s.toggleDistrict);
-  if (!data) return null;
+  if (!data || loading) {
+    return (
+      <section className="flex flex-col gap-3" aria-hidden="true">
+        <div className="h-4 w-20 animate-pulse rounded-sm bg-panel" />
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="h-10 animate-pulse rounded bg-panel" />
+        ))}
+      </section>
+    );
+  }
   return (
     <section className="flex flex-col gap-1" aria-labelledby="dist-label">
       <h2 id="dist-label" className="label-caps mb-1">Districts</h2>
@@ -207,7 +216,7 @@ export function DistrictList() {
   );
 }
 
-export function Rail({ card }: { card: Answer | null }) {
+export function Rail({ card, loading = false }: { card: Answer | null; loading?: boolean }) {
   return (
     <aside
       aria-label="Layers and filters"
@@ -218,8 +227,8 @@ export function Rail({ card }: { card: Answer | null }) {
         <LayerSwitch />
         <Legend />
       </section>
-      <Matrix card={card} />
-      <DistrictList />
+      <Matrix card={card} loading={loading} />
+      <DistrictList loading={loading} />
     </aside>
   );
 }

@@ -22,7 +22,7 @@ function FilterChip({ label, onClear, clearLabel }: { label: string; onClear: ()
   );
 }
 
-export function HeadlineStrip() {
+export function HeadlineStrip({ loading = false }: { loading?: boolean }) {
   const data = useApp((s) => s.data);
   const district = useApp((s) => s.district);
   const matrix = useApp((s) => s.matrix);
@@ -31,7 +31,7 @@ export function HeadlineStrip() {
   const h = useMemo(() => (data ? headline(scopeCells(data.past, district)) : null), [data, district]);
   return (
     <div className="z-[4] flex h-strip flex-none items-center gap-4 overflow-hidden whitespace-nowrap border-b border-hairline bg-white px-6 text-sm text-text-2">
-      {h ? (
+      {h && !loading ? (
         <>
           <span>
             <span aria-hidden="true" className="mr-1.5 inline-block h-2.5 w-2.5 rounded-[3px] bg-trend-dec-strong align-[-1px]" />
