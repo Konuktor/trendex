@@ -1,14 +1,17 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { TopBar } from './components/TopBar';
+import { Tour } from './components/Tour';
+import { useApp } from './store';
 import { MapRoute } from './routes/MapRoute';
 import { TrendsRoute } from './routes/TrendsRoute';
 import { QueueRoute } from './routes/QueueRoute';
 import { MethodsRoute } from './routes/MethodsRoute';
 
 export function App() {
+  const setTour = useApp((s) => s.setTour);
   return (
     <div className="flex h-full min-h-[640px] flex-col overflow-hidden">
-      <TopBar />
+      <TopBar onTour={() => setTour(1)} />
       <div className="relative flex min-h-0 flex-1">
         <Routes>
           <Route path="/" element={<Navigate to="/map" replace />} />
@@ -18,6 +21,7 @@ export function App() {
           <Route path="/methods" element={<MethodsRoute />} />
           <Route path="*" element={<Navigate to="/map" replace />} />
         </Routes>
+        <Tour />
       </div>
     </div>
   );

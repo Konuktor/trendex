@@ -24,6 +24,9 @@ export interface DrawApi {
 /** Set by the map once ready; used by the draw bar. */
 export const drawApi: { current: DrawApi | null } = { current: null };
 
+/** Imperative map actions used by the demo tour. */
+export const mapApi: { current: { fitOblast: () => void } | null } = { current: null };
+
 /** Right padding used when fitting or flying, so the drawer does not hide the target. */
 export const DRAWER_PAD = 400;
 
@@ -102,19 +105,24 @@ function Boundaries({ mask }: { mask: StudyMask | null }) {
       const style = { pane: 'bounds', interactive: false } as const;
       L.geoJSON(mask.oblast, { ...style, style: { color: '#FFFFFF', weight: 3.5, fill: false, opacity: 0.9 } }).addTo(group);
       const line = L.geoJSON(mask.oblast, { ...style, style: { color: C.boundary, weight: 1.4, fill: false } }).addTo(group);
-      if (!fitted.current) {
-        fitted.current = true;
+      const fit = (animate: boolean) => {
         const narrow = map.getSize().x < 768;
         const h = map.getSize().y;
         map.fitBounds(line.getBounds(), {
           paddingTopLeft: [narrow ? 12 : 24, narrow ? 116 : 64],
           paddingBottomRight: [narrow ? 12 : DRAWER_PAD + 24, narrow ? Math.round(h * 0.45) : 24],
-          animate: false,
+          animate,
         });
+      };
+      mapApi.current = { fitOblast: () => fit(true) };
+      if (!fitted.current) {
+        fitted.current = true;
+        fit(false);
       }
     }
     return () => {
       group.remove();
+      mapApi.current = null;
     };
   }, [map, mask]);
   return null;
