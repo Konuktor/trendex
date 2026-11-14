@@ -1,0 +1,4 @@
+project_id = "trendex"
+
+[functions.trendex-api]
+verify_jwt = false

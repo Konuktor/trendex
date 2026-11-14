@@ -1,0 +1,71 @@
+# F22 capacity scenario (PRD: capacity is a scenario with a range, never a fact).
+#
+#   heads = A_ha × B × u / (I × D),   B = a + b × NDVI_peak   (kg DM/ha)
+#
+# EVERY VALUE BELOW IS A PLACEHOLDER. None of them has a source yet (source: "", placeholder: true),
+# and the API names every unsourced parameter in `unsourced[]`. The team must replace them with sourced
+# values (PRD §13: the local formula used by specialists is unknown) and then set placeholder: false.
+# `heads_effect` says which way a larger value moves the head count; the low/high scenario combines the
+# pessimistic / optimistic end of every parameter, so the range is wide on purpose.
+version: capacity_v0
+formula: "heads = A_ha × B × u / (I × D);  B = a + b × NDVI_peak"
+head_unit: {en: "sheep units (placeholder unit)", ru: "овцеединицы (условная единица)"}
+ndvi_peak_source: card.dynamics.mean   # the area's mean May–Sep NDVI 2000–2025 stands in for the seasonal peak
+parameters:
+  a:
+    label: {en: "Biomass intercept a", ru: "Свободный член биомассы a"}
+    unit: kg DM/ha
+    low: -300
+    central: -150
+    high: 0
+    heads_effect: up
+    source: ""
+    placeholder: true
+  b:
+    label: {en: "Biomass slope b (per 1.0 NDVI)", ru: "Наклон биомассы b (на 1,0 NDVI)"}
+    unit: kg DM/ha per NDVI unit
+    low: 2000
+    central: 3000
+    high: 4000
+    heads_effect: up
+    source: ""
+    placeholder: true
+  u:
+    label: {en: "Usable fraction u", ru: "Доля, доступная для выпаса, u"}
+    unit: fraction (0–1)
+    low: 0.3
+    central: 0.45
+    high: 0.6
+    heads_effect: up
+    source: ""
+    placeholder: true
+  I:
+    label: {en: "Daily intake I", ru: "Суточное потребление I"}
+    unit: kg DM/head/day
+    low: 1.5
+    central: 2.0
+    high: 2.5
+    heads_effect: down
+    source: ""
+    placeholder: true
+  D:
+    label: {en: "Grazing days D", ru: "Дни выпаса D"}
+    unit: days
+    low: 90
+    central: 105
+    high: 120
+    heads_effect: down
+    source: ""
+    placeholder: true
+label: {en: "scenario, not an estimate", ru: "сценарий, не оценка"}
+caveats:
+  en:
+    - "All parameters are placeholders without a source; the numbers illustrate the formula, they are not a carrying capacity."
+    - "NDVI_peak is approximated by the area's mean May–Sep NDVI, which is below the true seasonal peak."
+    - "Does not account for forage quality, shrubs, water access, slope, current livestock or land rights."
+    - "Discuss with pasture specialists before using any number."
+  ru:
+    - "Все параметры — условные значения без источника; числа иллюстрируют формулу и не являются ёмкостью пастбища."
+    - "NDVI_peak заменён средним NDVI участка за май–сентябрь; это ниже настоящего пика сезона."
+    - "Не учитывает качество корма, кустарник, доступ к воде, уклон, текущее поголовье и права на землю."
+    - "Перед использованием любого числа обсудите его со специалистами по пастбищам."

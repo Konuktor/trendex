@@ -1,0 +1,74 @@
+# English templates. Forbidden anywhere: "degradation", "cause" (enforced by tests/test_texts.py).
+labels:
+  layers:
+    trend_class: "Dynamics 2000–2025"
+    level_class: "Level (relative)"
+    level_score: "Level score"
+    trend_slope: "Change, % per decade"
+    season_2025: "Summer 2025 vs usual"
+    mask: "Excluded areas"
+    matrix: "Level × dynamics"
+    confidence: "Confidence"
+    access_road: "Distance to road"
+    underused: "Good but far from villages (hypothesis)"
+    precip_trend: "Precipitation trend Apr–Sep"
+    snow_may: "May snow cover"
+    level_spring_autumn: "Level, spring–autumn"
+    resid_trend: "Change beyond weather (Jun–Aug)"
+    suspicious: "Suspicious growth (hypothesis)"
+  level: {suitable: Suitable, limited: Suitable with limitations, low: Poorly suitable}
+  dynamics: {growth: Steady growth, decline: Steady decline, unreliable: Not reliable, insufficient: Not enough data}
+  season: {below: Below usual, within: Within usual range, above: Above usual}
+  confidence: {high: High, medium: Medium, low: Low}
+  status: {ok: OK, excluded: Excluded, insufficient: Not enough data, outside_aoi: Outside the study area}
+  mask: {water: Water, snow_ice: Snow and ice, urban: Built-up, cropland: Cropland, forest: Forest, steep: Too steep, insufficient: Not enough data, pasture: Pasture}
+  component: {green: Summer greenness, stability: Year-to-year stability, season: Green season length, terrain: Gentle terrain}
+relative_note: "Relative to the pastures of Naryn region, not an absolute rating."
+reasons:
+  green_pro: "Summer greenness is higher than on {p}% of the region's pastures"
+  green_con: "Summer greenness is lower than on {q}% of the region's pastures"
+  stability_pro: "Greenness is steadier from year to year than on {p}% of pastures"
+  stability_con: "Greenness swings from year to year more than on {q}% of pastures"
+  season_pro: "The green season lasts longer than on {p}% of pastures"
+  season_con: "The green season is shorter than on {q}% of pastures"
+  terrain_pro: "Gentler terrain than {p}% of pastures (mean slope {slope}°)"
+  terrain_con: "Steeper terrain than {q}% of pastures (mean slope {slope}°)"
+  trend_pro: "Summer greenness has risen since {y0}: {pct:+.1f}% per decade (95% CI {lo:+.3f} to {hi:+.3f} NDVI/decade)"
+  trend_con: "Summer greenness has fallen since {y0}: {pct:+.1f}% per decade (95% CI {lo:+.3f} to {hi:+.3f} NDVI/decade)"
+  excluded_con: "{share}% of the area is not pasture (water, ice, built-up, cropland, forest or steep slopes)"
+confidence:
+  small_area: "Small pasture area ({km2} km²)"
+  excluded_share: "More than half of the area is not pasture"
+  valid_frac: "Many summer months are missing because of cloud or snow ({pct}% valid)"
+  flip_share: "The class changes for {pct}% of cells under other weight settings"
+  none: "Large enough area, complete data, stable under other weights"
+season:
+  text: "Summer {year} was {label_lc} for this area (higher than {p}% of its own summers in {b0}–{b1})"
+alternatives:
+  none: "No better zones within {r} km"
+  not_needed: "Level is already Suitable; alternatives are shown only for lower levels"
+  score: "Score higher by {d:.0f} points"
+  green: "Greener: above {p}% of pastures"
+  not_declining: "No steady decline"
+  name: "Block {id}, {district}"
+  name_buffer: "Block {id} (outside Naryn region)"
+actions:
+  recommend_check_load: "Candidate for recommendation. Check grazing load and land rights first."
+  queue_inspection: "Add to the inspection queue: the level is high, but the series is declining."
+  recommend_with_caveat: "Recommend with a caveat: the trend is not proven."
+  observe: "Keep observing."
+  priority_inspection: "Inspection priority. Do not increase grazing load before a field check."
+  caveat_low_priority: "Caveat, low priority."
+  growth_without_forage_value_check: "Greening may not mean forage value (e.g. shrubs). Check the cover in the field (hypothesis)."
+  do_not_recommend: "Do not recommend for grazing."
+  excluded: "Not a pasture area (water, ice, built-up, cropland, forest or too steep)."
+  insufficient: "Not enough reliable satellite data to judge this area."
+action_note: "A direction to discuss with specialists, not an instruction."
+not_considered:
+  - "Livestock load"
+  - "Land rights and pasture boundaries"
+  - "Watering points"
+  - "Actual travel routes and access rights (only straight-line distances to roads, water and villages are shown)"
+  - "Forage quality (greenness is not the same as forage)"
+headline: "Since {y0}, summer greenness rose steadily on {g}% of Naryn's pastures and fell steadily on {d}%; on {u}% the trend is not reliable."
+mock_banner: "MOCK DATA: synthetic values for interface testing, not results."

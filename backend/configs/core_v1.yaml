@@ -1,0 +1,42 @@
+# TrendeX core formula config. FREEZE (commit) BEFORE THE FIRST REAL-DATA RUN.
+# Its hash is returned in every API response (meta.config_hash).
+version: core_v1
+districts:            # official Naryn region districts, geoBoundaries gbOpen KGZ ADM2 shapeName -> slug
+  At-Bashy: at-bashy
+  Naryn: naryn
+  Ak-Talaa: ak-talaa
+  Jumgal: jumgal
+  Kochkor: kochkor
+district_names:
+  at-bashy: {en: At-Bashy, ru: Ат-Башинский}
+  naryn: {en: Naryn, ru: Нарынский}
+  ak-talaa: {en: Ak-Talaa, ru: Ак-Талинский}
+  jumgal: {en: Jumgal, ru: Жумгальский}
+  kochkor: {en: Kochkor, ru: Кочкорский}
+years: [2000, 2025]              # trend window; "this season" = last year vs the years before it
+summer_months: [5, 6, 7, 8, 9]   # aligned with the ML session's May–Sep rows
+season_months: [4, 5, 6, 7, 8, 9, 10]
+spring_autumn_months: [4, 5, 9, 10]
+min_valid_months_per_summer: 3   # of 5, else that year = NaN
+min_valid_years: 18              # of 26, else "insufficient"
+exclude:                         # IGBP LC_Type1 classes (MCD12Q1, 2020)
+  water: [17]
+  snow_ice: [15]
+  urban: [13]
+  cropland: [12, 14]
+  forest: [1, 2, 3, 4, 5]
+max_slope_deg: 35                # mean of 30 m slopes per 1 km cell (cube definition); = the cube's mask_reason rule, so formula and ML share one pasture mask. Set before the first real run.
+weights: {green: 0.4, stability: 0.2, season: 0.2, terrain: 0.2}
+level_thresholds: {suitable: 60, limited: 40}
+trend: {method: hamed_rao, alpha: 0.05, fdr_q: 0.05}
+season_terciles: [33.3, 66.7]
+confidence: {min_pasture_km2: 20, max_excluded_share: 0.5, min_valid_frac: 0.7, max_flip_share: 0.3}
+alternatives: {radius_km: 50, max_n: 3}
+queue: {min_zone_cells: 3}
+sensitivity_sets:
+  equal: {green: 0.25, stability: 0.25, season: 0.25, terrain: 0.25}
+  green_heavy: {green: 0.6, stability: 0.1, season: 0.15, terrain: 0.15}
+  terrain_heavy: {green: 0.3, stability: 0.15, season: 0.15, terrain: 0.4}
+  no_season: {green: 0.5, stability: 0.25, season: 0.0, terrain: 0.25}
+  stability_heavy: {green: 0.3, stability: 0.4, season: 0.15, terrain: 0.15}
+placebo: {n_perm: 100, seed: 42}

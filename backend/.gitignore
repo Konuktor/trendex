@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+data/cube_mock/
+data/cube_real/
+data/osm/
+.pytest_cache/
+export/
+.env.supabase
+artifacts_*/
+export_*/
+artifacts/

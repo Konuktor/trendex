@@ -1,0 +1,6 @@
+**/.env*
+!**/.env.example
+!frontend/.env.production
+node_modules/
+.claude/
+**/__pycache__/

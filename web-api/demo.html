@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TrendeX API demo</title>
+<style>body{font:14px system-ui;margin:16px;max-width:900px}button{margin:4px}pre{background:#f4f4f4;padding:8px;white-space:pre-wrap;max-height:60vh;overflow:auto}</style>
+</head><body>
+<h3>TrendeX static API (browser)</h3>
+<p>Data base: <code id="base"></code></p>
+<button data-get="/api/health">health</button>
+<button data-get="/api/overview?lang=ru">overview ru</button>
+<button data-get="/api/card?sel=district:at-bashy">card district</button>
+<button data-get="/api/card?sel=point:41.9,75.2,8&lang=ru">card point (computed in browser)</button>
+<button id="poly">card polygon</button>
+<button id="query">query «летние пастбища Ат-Башинского района выше 2500 м»</button>
+<button data-get="/api/queue?limit=3">queue</button>
+<pre id="out">click a button</pre>
+<script type="module">
+import { createTrendexApi } from "./trendex-api.mjs";
+const base = new URLSearchParams(location.search).get("base") || "../backend/export/v1";
+const api = createTrendexApi(base);
+document.getElementById("base").textContent = api.base;
+const out = document.getElementById("out");
+const show = async (p) => { const t = performance.now(); try { const r = await p; out.textContent = `${(performance.now() - t).toFixed(0)} ms\n` + JSON.stringify(r, null, 1).slice(0, 6000); } catch (e) { out.textContent = "ERROR " + e.message; } };
+document.querySelectorAll("[data-get]").forEach(b => b.onclick = () => show(api.get(b.dataset.get)));
+document.getElementById("poly").onclick = () => show(api.post("/api/card", { type: "polygon", geometry: { type: "Polygon", coordinates: [[[75.4, 41.4], [75.7, 41.4], [75.7, 41.6], [75.4, 41.6], [75.4, 41.4]]] } }));
+document.getElementById("query").onclick = () => show(api.post("/api/query", { text: "покажи летние пастбища Ат-Башинского района выше 2500 м", lang: "ru" }));
+window.__api = api;
+</script></body></html>

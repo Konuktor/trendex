@@ -1,0 +1,8 @@
+.venv
+data/cube_mock
+data/cube_real
+data/osm
+tests
+__pycache__
+*.pyc
+.pytest_cache

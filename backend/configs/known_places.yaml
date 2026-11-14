@@ -1,0 +1,54 @@
+# Known places (PRD §6, F10). THE TEAM writes `expect` BEFORE the first real-data run and commits this file.
+# Coordinates are approximate: verify them on a map. A place with an empty `expect` is reported as not_evaluable.
+# expect keys (any subset): status: [ok|excluded|insufficient|outside_aoi]; level: [suitable|limited|low];
+#                           dynamics: [growth|decline|unreliable|insufficient]; dominant_mask: [water|snow_ice|urban|...]
+written_at: null        # fill in (ISO time) when expectations are written, before the run
+places:
+  - name: Son-Kul lake
+    lat: 41.83
+    lon: 75.13
+    radius_km: 3
+    expect: {}          # e.g. {status: [excluded], dominant_mask: [water]}
+    rationale: ""
+  - name: Son-Kul jailoo (shore pastures)
+    lat: 41.90
+    lon: 75.30
+    radius_km: 5
+    expect: {}
+    rationale: ""
+  - name: Chatyr-Kul lake
+    lat: 40.61
+    lon: 75.30
+    radius_km: 3
+    expect: {}
+    rationale: ""
+  - name: Naryn city
+    lat: 41.43
+    lon: 75.99
+    radius_km: 2
+    expect: {}
+    rationale: ""
+  - name: At-Bashy valley
+    lat: 41.10
+    lon: 75.80
+    radius_km: 8
+    expect: {}
+    rationale: ""
+  - name: Arpa valley
+    lat: 40.85
+    lon: 75.10
+    radius_km: 8
+    expect: {}
+    rationale: ""
+  - name: Ak-Shyirak massif
+    lat: 41.83
+    lon: 78.20
+    radius_km: 5
+    expect: {}
+    rationale: "may be outside the 20 km buffer; then status = outside_aoi"
+  - name: Suusamyr valley (Chüy region)
+    lat: 42.15
+    lon: 73.90
+    radius_km: 8
+    expect: {}
+    rationale: "outside Naryn region; evaluable only if inside the 20 km buffer"

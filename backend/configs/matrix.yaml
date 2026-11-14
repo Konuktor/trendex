@@ -1,0 +1,17 @@
+# Level x dynamics -> action key (PRD §5). Text lives in texts_*.yaml under actions.
+# Wording must be shown to a pasture specialist before publication.
+suitable:
+  growth: recommend_check_load
+  decline: queue_inspection
+  unreliable: recommend_with_caveat
+  insufficient: recommend_with_caveat
+limited:
+  growth: observe
+  decline: priority_inspection
+  unreliable: caveat_low_priority
+  insufficient: caveat_low_priority
+low:
+  growth: growth_without_forage_value_check
+  decline: do_not_recommend
+  unreliable: do_not_recommend
+  insufficient: do_not_recommend

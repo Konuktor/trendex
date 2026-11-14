@@ -1,0 +1,39 @@
+# Default layer colours (designer may override; re-render layers with scripts/20_build.py --layers-only).
+level_class:
+  suitable: "#2e9e4f"
+  limited: "#e3b23c"
+  low: "#c8553d"
+trend_class:
+  growth: "#1a9850"
+  decline: "#d73027"
+  unreliable: "#bdbdbd"
+  insufficient: "#6b6b6b"
+mask:
+  water: "#4a90d9"
+  snow_ice: "#e8f1fa"
+  urban: "#6d6d6d"
+  cropland: "#c9a66b"
+  forest: "#2f5d3a"
+  steep: "#8c7b6b"
+  insufficient: "#3d3d3d"
+season_class:
+  below: "#d6604d"
+  within: "#f7f7f7"
+  above: "#4393c3"
+confidence:
+  high: "#2166ac"
+  medium: "#92c5de"
+  low: "#f4a582"
+matrix:
+  suitable|growth: "#1b7837"
+  suitable|decline: "#b2182b"
+  suitable|unreliable: "#7fbf7b"
+  limited|growth: "#5aae61"
+  limited|decline: "#d6604d"
+  limited|unreliable: "#d9d9a0"
+  low|growth: "#9970ab"
+  low|decline: "#8c510a"
+  low|unreliable: "#bfa58a"
+continuous:
+  diverging: ["#b2182b", "#ef8a62", "#fddbc7", "#f7f7f7", "#d1e5f0", "#67a9cf", "#2166ac"]
+  sequential: ["#f7fcf5", "#c7e9c0", "#74c476", "#238b45", "#00441b"]
