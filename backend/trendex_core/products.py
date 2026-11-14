@@ -238,8 +238,8 @@ def overview(core, B: pd.DataFrame, zones: list[dict], tr: dict) -> dict:
 
 def headline_sentence(ov: dict, core, lang: str) -> str:
     s = ov["headline"]["dynamics_shares"]
-    area = core.cfg.get("title", {}).get("en_area" if lang == "en" else "ru_gen") or (
-        "Naryn region" if lang == "en" else "Нарынской области")
+    ca = core.cfg.get("zones") == "ca_adm1"
+    area = ("Central Asia" if ca else "Naryn region") if lang == "en" else ("Центральной Азии" if ca else "Нарынской области")
     return config.texts(lang)["headline"].format(y0=int(core.years[0]), g=round(100 * s["growth"]), area=area,
                                                  d=round(100 * s["decline"]), u=round(100 * s["unreliable"]))
 
