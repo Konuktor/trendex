@@ -62,6 +62,7 @@ interface AppState {
   toggleMatrix: (f: MatrixFilter) => void;
   district: District | null;
   toggleDistrict: (d: District) => void;
+  setDistrict: (d: District | null) => void;
   clearFilters: () => void;
 
   sel: SelectionRef;
@@ -102,6 +103,7 @@ export const useApp = create<AppState>((set, get) => ({
     })),
   district: null,
   toggleDistrict: (d) => set((s) => ({ district: s.district === d ? null : d })),
+  setDistrict: (district) => set({ district }),
   clearFilters: () => set({ matrix: null, district: null }),
 
   sel: null,

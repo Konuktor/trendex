@@ -10,6 +10,7 @@ import { SearchBox } from '../components/map/SearchBox';
 import { DrawBar } from '../components/map/DrawBar';
 import { AnswerCard, CardSkeleton } from '../components/card/AnswerCard';
 import type { LonLat } from '../lib/types';
+import { parseOutline } from '../lib/queue';
 
 /** Preview states for screenshots: /map?state=excluded|lowConfidence|noData|outside|loading */
 export type PreviewState = 'excluded' | 'lowConfidence' | 'noData' | 'outside' | 'loading';
@@ -36,6 +37,16 @@ export function MapRoute() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const area = params.get('area');
+  const outlineParam = params.get('outline');
+  useEffect(() => {
+    if (!data) return;
+    const s = useApp.getState();
+    if (area && data.byId[area]) s.selectZone(area, true);
+    const poly = parseOutline(outlineParam);
+    if (poly) s.selectDrawn(poly, true);
+  }, [data, area, outlineParam]);
 
   useEffect(() => {
     if (!data || !forced) return;
