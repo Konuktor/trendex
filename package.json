@@ -1,0 +1,52 @@
+{
+  "name": "trendex",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 4173",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "typecheck": "tsc -b --noEmit",
+    "fetch-boundaries": "tsx scripts/fetch-boundaries.ts"
+  },
+  "dependencies": {
+    "@geoman-io/leaflet-geoman-free": "^2.20.6",
+    "d3-contour": "^4.0.3",
+    "d3-scale": "^4.0.3",
+    "d3-shape": "^3.2.1",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.73.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
+    "react-router-dom": "^6.30.6",
+    "zustand": "^4.5.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/d3-contour": "^3.0.6",
+    "@types/d3-scale": "^4.0.9",
+    "@types/d3-shape": "^3.2.0",
+    "@types/geojson": "^7946.0.16",
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^26.6.6",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.6.2",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.5.33",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.15",
+    "typescript": "5.6",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.9"
+  }
+}
