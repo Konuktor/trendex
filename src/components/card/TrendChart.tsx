@@ -1,6 +1,6 @@
 import { scaleLinear } from 'd3-scale';
 import { area, line } from 'd3-shape';
-import { bandAt, ticks005, trendAt, yDomain, type ChartModel } from '../../lib/chart';
+import { bandAt, ticks, trendAt, yDomain, type ChartModel } from '../../lib/chart';
 import { signed } from '../../lib/format';
 import { FIRST_YEAR, YEARS } from '../../lib/noise';
 import type { Trend } from '../../lib/types';
@@ -46,7 +46,7 @@ export function TrendChart({
   const series = line<number>()
     .x((i) => X(i))
     .y((i) => Y(model.values[i]))(IDX)!;
-  const yt = ticks005(d);
+  const yt = ticks(d, height < 160 ? 0.1 : 0.05);
   const label = `${title} ${FIRST_YEAR} to ${FIRST_YEAR + YEARS - 1}: trend ${signed(model.slope)} percent per year; ${
     FIRST_YEAR + YEARS - 1
   } value ${cur.toFixed(2)}.`;

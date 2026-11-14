@@ -37,8 +37,10 @@ export function unionDomain(ds: [number, number][]): [number, number] {
   return [Math.min(...ds.map((d) => d[0])), Math.max(...ds.map((d) => d[1]))];
 }
 
-export function ticks005(d: [number, number]): number[] {
+/** Gridline values every `step` inside the domain. */
+export function ticks(d: [number, number], step = 0.05): number[] {
   const out: number[] = [];
-  for (let t = d[0]; t <= d[1] + 1e-9; t += 0.05) out.push(Math.round(t * 100) / 100);
+  const first = Math.ceil(d[0] / step - 1e-9) * step;
+  for (let t = first; t <= d[1] + 1e-9; t += step) out.push(Math.round(t * 100) / 100);
   return out;
 }
