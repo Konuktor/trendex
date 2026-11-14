@@ -80,3 +80,18 @@ test('draw an area', async ({ page }) => {
   await expect(undo).toHaveCSS('background-color', 'rgb(255, 255, 255)');
   await page.screenshot({ path: 'screenshots/phase-2-drawn.png' });
 });
+
+test('panning does not rebuild zones', async ({ page }) => {
+  await page.goto('/map');
+  await mapReady(page);
+  await page.evaluate(() => document.querySelector('path.zone')!.setAttribute('data-mark', '1'));
+  const map = page.locator('.leaflet-container');
+  const b = (await map.boundingBox())!;
+  await page.mouse.move(b.x + 300, b.y + 400);
+  await page.mouse.down();
+  await page.mouse.move(b.x + 420, b.y + 460, { steps: 12 });
+  await page.mouse.up();
+  await page.evaluate(() => (window as unknown as { __txMap: { panBy: (p: number[]) => void } }).__txMap.panBy([80, 40]));
+  await page.waitForTimeout(400);
+  await page.locator('path.zone[data-mark="1"]').waitFor({ state: 'attached' });
+});

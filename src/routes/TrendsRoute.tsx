@@ -23,7 +23,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub: string
   return (
     <div className="card flex flex-col gap-1 p-4">
       <span className="label-caps">{label}</span>
-      <span className="text-xl font-semibold">{value}</span>
+      <span className="text-lg font-semibold md:text-xl">{value}</span>
       <span className="text-sm text-text-2">{sub}</span>
     </div>
   );
@@ -66,14 +66,14 @@ export function TrendsRoute() {
   return (
     <main className="min-w-0 flex-1 overflow-y-auto bg-white">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-6 md:px-8 md:py-8">
-        <header className="flex flex-wrap items-end gap-4">
+        <header className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h1 className="text-xl font-semibold">Trends</h1>
             <p className="text-sm text-text-2">
               Peak-season greenness (NDVI), 2000–2025, for pastures in {scopeName}. Sample data.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <label htmlFor={selectId} className="text-sm text-text-2">
               Scope
             </label>

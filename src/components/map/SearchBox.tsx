@@ -82,7 +82,7 @@ export function SearchBox({ className = 'w-80' }: { className?: string }) {
             listRef.current?.querySelector('button')?.focus();
           } else if (e.key === 'Escape') setOpen(false);
         }}
-        className="h-control w-full rounded border border-border-strong bg-white px-8 text-sm text-text placeholder:text-text-3 coarse:h-touch"
+        className="h-control w-full rounded border border-border-strong bg-white px-8 text-sm text-text placeholder:text-text-2 coarse:h-touch"
       />
       {open && q.trim() && (
         <div

@@ -15,14 +15,15 @@ export default defineConfig({
     { name: 'desktop', testIgnore: /mobile\.spec/, use: { viewport: { width: 1440, height: 900 } } },
     {
       name: 'mobile',
-      testMatch: /mobile\.spec/,
+      testMatch: /(mobile|final)\.spec/,
       use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
     },
   ],
   webServer: {
-    command: 'npm run dev',
+    // PW_PREVIEW=1 runs the checks against the production build (npm run build first).
+    command: process.env.PW_PREVIEW ? 'npx vite preview --port 5173 --strictPort' : 'npm run dev',
     url: 'http://localhost:5173',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.PW_PREVIEW,
     timeout: 60_000,
   },
 });

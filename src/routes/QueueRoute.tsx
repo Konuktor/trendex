@@ -30,7 +30,7 @@ export function QueueRoute() {
   return (
     <main className="min-w-0 flex-1 overflow-y-auto bg-white">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
-        <header className="flex flex-wrap items-end gap-4">
+        <header className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h1 className="text-xl font-semibold">Inspection queue</h1>
             <p className="text-sm text-text-2">Areas with a reliable decline, ranked for field checks in the 2026 season. Sample data.</p>

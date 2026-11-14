@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
+    "e2e:build": "npm run build && PW_PREVIEW=1 playwright test",
     "typecheck": "tsc -b --noEmit",
     "fetch-boundaries": "tsx scripts/fetch-boundaries.ts"
   },
