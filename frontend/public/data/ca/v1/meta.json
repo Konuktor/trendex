@@ -1,22 +1,6 @@
 {
  "dataset": "ca",
  "title": "Central Asia",
- "dataStatus": "sample",
- "pipelineVersion": "ca-sample (synthetic, for frontend development)",
- "generatedAt": "2026-11-14T17:14:00Z",
- "years": [
-  2000,
-  2025
- ],
- "grid": {
-  "lon0": 46.4,
-  "lat0": 55.5,
-  "dlon": 0.24,
-  "dlat": 0.18,
-  "cols": 171,
-  "rows": 114,
-  "cellKm2": 400
- },
  "view": {
   "bounds": [
    [
@@ -360,16 +344,124 @@
    "countryName": "Uzbekistan"
   }
  ],
- "boundaryFile": "boundary.geojson",
- "regionsFile": "regions.geojson",
  "regionLabel": {
   "en": "Region",
   "ru": "Регион"
  },
- "defaultCellId": "115,68",
- "lowCellId": null,
- "excludedCellId": "20,58",
+ "boundaryFile": "boundary.geojson",
+ "regionsFile": "regions.geojson",
+ "dataStatus": "production",
+ "pipelineVersion": "1.0.0+c2b258c1db45",
+ "generatedAt": "2026-11-14T17:51:29Z",
+ "dataComputedAt": "2026-11-14T17:45:19+00:00",
+ "years": [
+  2000,
+  2025
+ ],
+ "grid": {
+  "cols": 171,
+  "rows": 114,
+  "lon0": 46.4,
+  "lat0": 55.5,
+  "dlon": 0.24,
+  "dlat": 0.18,
+  "cellKm2": 400
+ },
  "sources": {
-  "note": "SAMPLE data. The real Central Asia export (NASA MODIS 1 km, aggregated) replaces this file."
- }
+  "ndvi": "NASA MODIS MOD13A3 v061 (Terra, monthly 1 km NDVI), LP DAAC",
+  "landCover": "NASA MODIS MCD12Q1 v061 (IGBP LC_Type1, 2020), LP DAAC",
+  "precip": "NASA GPM IMERG Final V07 monthly, GES DISC",
+  "dem": "NASADEM (30 m), LP DAAC",
+  "boundaries": "geoBoundaries gbOpen KGZ ADM2 (5 official Naryn districts)"
+ },
+ "method": {
+  "series": "Summer (May–Sep) mean NDVI of the pasture 1-km cells in each 10-km cell, 2000–2025; rare gaps interpolated.",
+  "level": "TrendeX level score (greenness, year-to-year stability, green-season length, gentle terrain; 1-km percentiles, weights 0.4/0.2/0.2/0.2) averaged per 10-km cell; pct = rank among pasture cells; level = thirds of that rank.",
+  "trend": "Theil–Sen slope (% of mean per year); reliable if Hamed–Rao Mann–Kendall passes Benjamini–Hochberg FDR q < 0.05 across pasture cells and ≥ 16 valid summers.",
+  "strong": "reliable and |slope| ≥ 1.1 %/yr",
+  "conf": "Low if cov < 0.6; High if reliable, cov > 0.78 and level stable under alternative weights; else Medium.",
+  "kind": "pasture if pasture 1-km cells cover ≥ 50% of the 10-km cell; masks: water, snow/ice, built-up, cropland, forest (MCD12Q1) and mean slope > 35°."
+ },
+ "stats": {
+  "n_cells": 10728,
+  "n_pasture": 8303,
+  "kinds": {
+   "pasture": 8303,
+   "excluded": 2425,
+   "nodata": 0
+  },
+  "trend": {
+   "dec": 83,
+   "inc": 104,
+   "nr": 8116
+  },
+  "strong": 68,
+  "conf": {
+   "High": 44,
+   "Medium": 8259,
+   "Low": 0
+  },
+  "districts": {
+   "KG-batken-region": 43,
+   "KG-chuy-region": 54,
+   "KG-issyk-kul-region": 107,
+   "KG-jalal-abad-region": 76,
+   "KG-naryn-region": 121,
+   "KG-osh-region": 72,
+   "KG-talas-region": 27,
+   "KZ-akmola-region": 440,
+   "KZ-aktobe-region": 849,
+   "KZ-almaty": 1,
+   "KZ-almaty-region": 590,
+   "KZ-astana": 1,
+   "KZ-atyrau-region": 310,
+   "KZ-east-kazakhstan-region": 803,
+   "KZ-jambyl-region": 376,
+   "KZ-karaganda-region": 1204,
+   "KZ-kostanay-region": 592,
+   "KZ-kyzylorda-region": 598,
+   "KZ-mangystau-region": 406,
+   "KZ-north-kazakhstan-region": 305,
+   "KZ-pavlodar-region": 379,
+   "KZ-south-kazakhstan-region": 298,
+   "KZ-west-kazakhstan-region": 445,
+   "TJ-districts-of-republican-subordination": 70,
+   "TJ-dushanbe": 1,
+   "TJ-gorno-badakhshan-autonomous-region": 146,
+   "TJ-khatlon-region": 60,
+   "TJ-sughd-region": 60,
+   "TM-ahai": 226,
+   "TM-balkan": 338,
+   "TM-dasoguz": 184,
+   "TM-lebap": 233,
+   "TM-mary": 209,
+   "UZ-andijan-region": 10,
+   "UZ-bukhara-region": 98,
+   "UZ-fergana-region": 16,
+   "UZ-jizzakh-region": 51,
+   "UZ-namangan-region": 20,
+   "UZ-navoiy-region": 273,
+   "UZ-qashqadaryo-region": 66,
+   "UZ-republic-of-karakalpakstan": 419,
+   "UZ-samarqand-region": 43,
+   "UZ-sirdaryo-region": 10,
+   "UZ-surxondaryo-region": 46,
+   "UZ-tashkent-region": 35,
+   "UZ-xorazm-region": 17
+  }
+ },
+ "cubeManifest": {
+  "synthetic": false,
+  "partial": true,
+  "datasets": {
+   "MOD13A3": "061, doi:10.5067/MODIS/MOD13A3.061",
+   "MCD12Q1": "061, doi:10.5067/MODIS/MCD12Q1.061",
+   "NASADEM_HGT": "001, doi:10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+   "GPM_3IMERGM": "07, doi:10.5067/GPM/IMERG/3B-MONTH/07",
+   "GLDAS_NOAH025_M": "2.1, doi:10.5067/SXAVCZFAQLNO"
+  }
+ },
+ "defaultCellId": "54,65",
+ "lowCellId": null,
+ "excludedCellId": "102,4"
 }

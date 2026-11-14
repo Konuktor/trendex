@@ -3,7 +3,7 @@
 version: core_ca
 zones: ca_adm1                   # zones = geoBoundaries ADM1 regions of the 5 countries (data/boundaries/ca)
 district_names: {}               # filled at load time from the ADM1 files
-title: {en: Central Asia, ru: Центральная Азия}
+title: {en: Central Asia, ru: Центральная Азия, en_area: Central Asia, ru_gen: Центральной Азии}
 years: [2000, 2025]
 summer_months: [5, 6, 7, 8, 9]
 season_months: [4, 5, 6, 7, 8, 9, 10]

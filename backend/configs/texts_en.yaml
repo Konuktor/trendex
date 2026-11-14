@@ -70,5 +70,5 @@ not_considered:
   - "Watering points"
   - "Actual travel routes and access rights (only straight-line distances to roads, water and villages are shown)"
   - "Forage quality (greenness is not the same as forage)"
-headline: "Since {y0}, summer greenness rose steadily on {g}% of Naryn's pastures and fell steadily on {d}%; on {u}% the trend is not reliable."
+headline: "Since {y0}, summer greenness rose steadily on {g}% of the pastures in {area} and fell steadily on {d}%; on {u}% the trend is not reliable."
 mock_banner: "MOCK DATA: synthetic values for interface testing, not results."
