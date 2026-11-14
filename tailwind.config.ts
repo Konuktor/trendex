@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 /**
  * TrendeX tokens. Chrome is white/grey only; colour lives in the data.
@@ -80,7 +81,11 @@ const config: Config = {
       maxWidth: { prose: '720px' },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ addVariant }) => {
+      addVariant('coarse', '@media (pointer: coarse)');
+    }),
+  ],
 };
 
 export default config;

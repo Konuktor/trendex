@@ -30,3 +30,24 @@
 @media (pointer: coarse) {
   .btn, .btn-primary, .btn-secondary { min-height: 44px; }
 }
+
+/* Data patterns (never rely on colour alone) */
+.hatch { background: repeating-linear-gradient(45deg, #A1A1AA 0px, #A1A1AA 1px, #D4D4D8 1px, #D4D4D8 4px); }
+.hatch-light { background: repeating-linear-gradient(45deg, #A1A1AA 0px, #A1A1AA 1px, #FFFFFF 1px, #FFFFFF 3px); }
+.dots { background: radial-gradient(circle, #A1A1AA 0.9px, rgba(255,255,255,0) 1.2px) 0 0 / 4px 4px, #FFFFFF; }
+
+/* Leaflet */
+.leaflet-container { font-family: Inter, system-ui, sans-serif; background: #F3F3F3; cursor: pointer; }
+.leaflet-container.tx-drawing { cursor: crosshair; }
+.leaflet-pane.leaflet-base-pane img, .leaflet-pane.leaflet-labels-pane img { filter: grayscale(1); }
+.leaflet-hillshade-pane { mix-blend-mode: multiply; opacity: 0.35; pointer-events: none; }
+.leaflet-labels-pane { pointer-events: none; }
+.leaflet-control-zoom.leaflet-bar { border: 1px solid #E5E5E5; border-radius: 6px; box-shadow: none; overflow: hidden; }
+.leaflet-control-zoom.leaflet-bar a { width: 32px; height: 32px; line-height: 30px; color: #171717; border-bottom-color: #E5E5E5; transition: background 150ms ease; }
+.leaflet-control-zoom.leaflet-bar a:hover { background: #FAFAFA; }
+.leaflet-control-scale-line { border-color: #525252; color: #525252; font-size: 11px; background: rgba(255,255,255,.8); }
+.leaflet-control-attribution { font-size: 11px; color: #525252; background: rgba(255,255,255,.85) !important; }
+.leaflet-control-attribution a { color: #525252; }
+.leaflet-left .leaflet-control { margin-left: 16px; }
+.leaflet-bottom .leaflet-control { margin-bottom: 8px; }
+.leaflet-bottom.leaflet-left { bottom: 8px; }
