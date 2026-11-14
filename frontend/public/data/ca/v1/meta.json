@@ -351,9 +351,9 @@
  "boundaryFile": "boundary.geojson",
  "regionsFile": "regions.geojson",
  "dataStatus": "production",
- "pipelineVersion": "1.0.0+c2b258c1db45",
- "generatedAt": "2026-11-14T17:51:29Z",
- "dataComputedAt": "2026-11-14T17:45:19+00:00",
+ "pipelineVersion": "1.0.0+ec27d522701c",
+ "generatedAt": "2026-11-14T18:40:52Z",
+ "dataComputedAt": "2026-11-14T18:32:13+00:00",
  "years": [
   2000,
   2025
@@ -372,7 +372,7 @@
   "landCover": "NASA MODIS MCD12Q1 v061 (IGBP LC_Type1, 2020), LP DAAC",
   "precip": "NASA GPM IMERG Final V07 monthly, GES DISC",
   "dem": "NASADEM (30 m), LP DAAC",
-  "boundaries": "geoBoundaries gbOpen KGZ ADM2 (5 official Naryn districts)"
+  "boundaries": "geoBoundaries gbOpen ADM0/ADM1 (KAZ, KGZ, TJK, TKM, UZB)"
  },
  "method": {
   "series": "Summer (May–Sep) mean NDVI of the pasture 1-km cells in each 10-km cell, 2000–2025; rare gaps interpolated.",
@@ -384,21 +384,21 @@
  },
  "stats": {
   "n_cells": 10728,
-  "n_pasture": 8303,
+  "n_pasture": 8396,
   "kinds": {
-   "pasture": 8303,
-   "excluded": 2425,
+   "pasture": 8396,
+   "excluded": 2332,
    "nodata": 0
   },
   "trend": {
-   "dec": 83,
-   "inc": 104,
-   "nr": 8116
+   "dec": 86,
+   "inc": 141,
+   "nr": 8169
   },
-  "strong": 68,
+  "strong": 70,
   "conf": {
-   "High": 44,
-   "Medium": 8259,
+   "High": 46,
+   "Medium": 8350,
    "Low": 0
   },
   "districts": {
@@ -415,9 +415,9 @@
    "KZ-almaty-region": 590,
    "KZ-astana": 1,
    "KZ-atyrau-region": 310,
-   "KZ-east-kazakhstan-region": 803,
+   "KZ-east-kazakhstan-region": 802,
    "KZ-jambyl-region": 376,
-   "KZ-karaganda-region": 1204,
+   "KZ-karaganda-region": 1205,
    "KZ-kostanay-region": 592,
    "KZ-kyzylorda-region": 598,
    "KZ-mangystau-region": 406,
@@ -452,7 +452,7 @@
  },
  "cubeManifest": {
   "synthetic": false,
-  "partial": true,
+  "partial": false,
   "datasets": {
    "MOD13A3": "061, doi:10.5067/MODIS/MOD13A3.061",
    "MCD12Q1": "061, doi:10.5067/MODIS/MCD12Q1.061",

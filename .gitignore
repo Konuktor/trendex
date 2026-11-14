@@ -4,3 +4,6 @@
 node_modules/
 .claude/
 **/__pycache__/
+research_notes/
+frontend/public/data/ca/v1/px/chunks/
+frontend/public/data/ca/v1/px/tiles/

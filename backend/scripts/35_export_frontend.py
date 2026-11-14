@@ -237,7 +237,8 @@ def main():
             "landCover": "NASA MODIS MCD12Q1 v061 (IGBP LC_Type1, 2020), LP DAAC",
             "precip": "NASA GPM IMERG Final V07 monthly, GES DISC",
             "dem": "NASADEM (30 m), LP DAAC",
-            "boundaries": "geoBoundaries gbOpen KGZ ADM2 (5 official Naryn districts)",
+            "boundaries": ("geoBoundaries gbOpen KGZ ADM2 (5 official Naryn districts)" if PROFILE["dataset"] == "naryn"
+                           else "geoBoundaries gbOpen ADM0/ADM1 (KAZ, KGZ, TJK, TKM, UZB)"),
         },
         "method": {
             "series": "Summer (May–Sep) mean NDVI of the pasture 1-km cells in each 10-km cell, 2000–2025; rare gaps interpolated.",

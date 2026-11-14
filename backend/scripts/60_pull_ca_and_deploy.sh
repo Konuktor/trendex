@@ -16,5 +16,11 @@ SRC="$TMP/formula/export/ca/v1/fe"
 for f in cells.json meta.json boundary.geojson regions.geojson; do test -s "$SRC/$f" || { echo "missing $f in HF export"; exit 1; }; done
 python3 -c "import json,sys;m=json.load(open('$SRC/meta.json'));assert m['dataStatus']=='production',m['dataStatus'];print('CA meta ok:',m['stats'])"
 cp "$SRC"/{cells.json,meta.json,boundary.geojson,regions.geojson} "$DST/"
+python3 - "$DST/meta.json" <<'PY'
+import json, sys
+p = sys.argv[1]; m = json.load(open(p))
+m.setdefault("sources", {})["boundaries"] = "geoBoundaries gbOpen ADM0/ADM1 (KAZ, KGZ, TJK, TKM, UZB)"
+json.dump(m, open(p, "w"), ensure_ascii=False, indent=1)
+PY
 sed -i 's/^VITE_DATASETS=.*/VITE_DATASETS=naryn,ca/' "$ROOT/frontend/.env.production"
 cd "$ROOT/frontend" && npm run build && npx --yes wrangler@3 pages deploy dist --project-name trendex --branch main --commit-dirty=true
