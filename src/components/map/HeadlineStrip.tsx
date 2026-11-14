@@ -71,3 +71,18 @@ export function HeadlineStrip({ loading = false }: { loading?: boolean }) {
     </div>
   );
 }
+
+/** Compact headline for the mobile Layers sheet. */
+export function HeadlineSummary() {
+  const data = useApp((s) => s.data);
+  const district = useApp((s) => s.district);
+  const h = useMemo(() => (data ? headline(scopeCells(data.past, district)) : null), [data, district]);
+  if (!h) return null;
+  return (
+    <p className="text-sm text-text-2">
+      <b className="font-medium text-text">{h.dec}%</b> reliable decline · <b className="font-medium text-text">{h.inc}%</b>{' '}
+      reliable growth · <b className="font-medium text-text">{h.nr}%</b> not reliable. {district ? DISTRICT_NAMES[district] : 'Naryn oblast'} ·{' '}
+      {num(h.km2)} km² of pasture.
+    </p>
+  );
+}

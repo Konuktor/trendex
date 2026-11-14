@@ -9,6 +9,9 @@ import { MapView } from '../components/map/MapView';
 import { SearchBox } from '../components/map/SearchBox';
 import { DrawBar } from '../components/map/DrawBar';
 import { AnswerCard, CardSkeleton } from '../components/card/AnswerCard';
+import { AnswerSheet, LayersButton, LayersSheet } from '../components/map/MobileSheets';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { useState } from 'react';
 import type { LonLat } from '../lib/types';
 import { parseOutline } from '../lib/queue';
 
@@ -32,6 +35,9 @@ export function MapRoute() {
   const sel = useApp((s) => s.sel);
   const queue = useApp((s) => s.queue);
   const [params] = useSearchParams();
+  const mobile = useIsMobile();
+  const [layersOpen, setLayersOpen] = useState(false);
+  const drawing = useApp((s) => s.drawing);
   const forced = params.get('state');
 
   useEffect(() => {
@@ -88,19 +94,49 @@ export function MapRoute() {
     },
   };
 
+  const mapView = (
+    <MapView
+      zones={zones}
+      grey={loading}
+      mask={mask}
+      outline={loading ? null : outline}
+      poly={!loading && sel?.type === 'drawn' ? sel.poly : null}
+    />
+  );
+
+  if (mobile) {
+    return (
+      <main className="relative flex min-h-0 min-w-0 flex-1 flex-col" data-state={forced ?? 'ready'}>
+        <div className="relative min-h-0 flex-1 bg-[#F3F3F3]">
+          {mapView}
+          <div className="absolute inset-x-3 top-3 z-[800] flex flex-col gap-2">
+            <div className="flex items-start gap-2">
+              {!drawing && <SearchBox className="min-w-0 flex-1" />}
+              <DrawBar compact />
+            </div>
+            {!drawing && (
+              <div>
+                <LayersButton open={layersOpen} onClick={() => setLayersOpen(!layersOpen)} />
+              </div>
+            )}
+          </div>
+          {layersOpen ? (
+            <LayersSheet card={loading ? null : card} onClose={() => setLayersOpen(false)} />
+          ) : loading ? null : (
+            card && !drawing && <AnswerSheet key={key ?? 'none'} a={card} act={act} />
+          )}
+        </div>
+      </main>
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-1">
       <Rail card={loading ? null : card} loading={loading} />
       <main className="relative flex min-w-0 flex-1 flex-col" data-state={forced ?? 'ready'}>
         <HeadlineStrip loading={loading} />
         <div className="relative min-h-0 flex-1 bg-[#F3F3F3]">
-          <MapView
-            zones={zones}
-            grey={loading}
-            mask={mask}
-            outline={loading ? null : outline}
-            poly={!loading && sel?.type === 'drawn' ? sel.poly : null}
-          />
+          {mapView}
           <div className="absolute left-4 top-4 z-[800] flex items-start gap-2">
             <SearchBox />
             <DrawBar />

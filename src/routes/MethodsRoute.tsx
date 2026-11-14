@@ -56,7 +56,7 @@ export function MethodsRoute() {
 
   return (
     <main className="min-w-0 flex-1 overflow-y-auto bg-white">
-      <div className="mx-auto flex max-w-[1080px] gap-12 px-8 py-8">
+      <div className="mx-auto flex max-w-[1080px] gap-12 px-4 py-6 md:px-8 md:py-8">
         <nav aria-label="On this page" className="sticky top-0 hidden w-[200px] flex-none self-start pt-14 lg:block">
           <h2 className="label-caps mb-2">On this page</h2>
           <ol className="flex flex-col gap-0.5">

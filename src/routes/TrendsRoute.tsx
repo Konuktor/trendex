@@ -65,7 +65,7 @@ export function TrendsRoute() {
 
   return (
     <main className="min-w-0 flex-1 overflow-y-auto bg-white">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-8 py-8">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-6 md:px-8 md:py-8">
         <header className="flex flex-wrap items-end gap-4">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h1 className="text-xl font-semibold">Trends</h1>
@@ -121,8 +121,8 @@ export function TrendsRoute() {
               />
             </section>
 
-            <section className="card flex flex-col gap-3 p-6">
-              <div className="flex items-baseline justify-between">
+            <section className="card flex flex-col gap-3 p-4 md:p-6">
+              <div className="flex flex-wrap items-baseline justify-between gap-1">
                 <h2 className="text-md font-semibold">Average peak-season greenness, {scopeName}</h2>
                 <span className="text-xs text-text-2">Mean of {num(v.t.cells)} pasture cells · 2000–2025 · Sample data</span>
               </div>
@@ -136,7 +136,7 @@ export function TrendsRoute() {
                 <h2 className="text-md font-semibold">Area share by trend class</h2>
                 <ul className="flex flex-col gap-3">
                   {v.shares.map((s) => (
-                    <li key={s.trend} className="grid grid-cols-[120px_1fr_150px] items-center gap-3 text-sm">
+                    <li key={s.trend} className="grid grid-cols-[104px_1fr_auto] items-center gap-3 text-sm md:grid-cols-[120px_1fr_150px]">
                       <span>{TREND_NAME[s.trend]}</span>
                       <span className="h-3 rounded-xs bg-panel" aria-hidden="true">
                         <span className={`block h-3 rounded-xs ${TREND_BAR[s.trend]}`} style={{ width: `${s.pct}%` }} />
@@ -157,7 +157,7 @@ export function TrendsRoute() {
 
               <section className="card flex flex-col gap-3 p-6">
                 <h2 className="text-md font-semibold">Level × trend</h2>
-                <table className="w-full border-separate border-spacing-1 text-sm">
+                <table className="w-full min-w-[300px] border-separate border-spacing-1 text-sm">
                   <caption className="sr-only-label">Share of pasture area by level and trend, with area in km²</caption>
                   <thead>
                     <tr className="text-xs text-text-2">

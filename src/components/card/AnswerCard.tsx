@@ -61,7 +61,8 @@ function LowBanner({ text }: { text: string }) {
   );
 }
 
-function PastureBody({ a, act }: { a: PastureAnswer; act: CardActions }) {
+/** Name-level summary: banner, chips, takeaway. Shown in the collapsed mobile sheet too. */
+export function PastureSummary({ a }: { a: PastureAnswer }) {
   return (
     <>
       {a.conf === 'Low' && <LowBanner text={a.lowTxt} />}
@@ -81,12 +82,19 @@ function PastureBody({ a, act }: { a: PastureAnswer; act: CardActions }) {
         <span className="text-xs text-text-2">{RELATIVE_NOTE}</span>
       </div>
       <p className="text-md">{a.takeaway}</p>
+    </>
+  );
+}
+
+function PastureDetails({ a, act, chartWidth }: { a: PastureAnswer; act: CardActions; chartWidth: number }) {
+  return (
+    <>
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
           <h3 className="text-sm font-medium">Peak-season greenness (NDVI)</h3>
           <span className="text-xs text-text-2">2000–2025 · Sample data</span>
         </div>
-        <TrendChart model={a.chart} trend={a.trend} />
+        <TrendChart model={a.chart} trend={a.trend} width={chartWidth} />
       </section>
       <Section label="Why">
         <ul className="flex flex-col gap-2">
@@ -130,22 +138,27 @@ function PastureBody({ a, act }: { a: PastureAnswer; act: CardActions }) {
   );
 }
 
-function NonPastureBody({ a, act }: { a: NonPastureAnswer; act: CardActions }) {
+export function NonPastureSummary({ a }: { a: NonPastureAnswer }) {
   const swatch =
     a.kind === 'excluded' ? (a.water ? 'bg-[#D9D9D9]' : 'bg-excluded') : a.kind === 'nodata' ? 'dots' : 'bg-white';
   return (
-    <>
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3 rounded-lg border border-hairline p-3">
-          <span aria-hidden="true" className={`h-8 w-8 flex-none rounded-lg border border-border-strong ${swatch}`} />
-          <span className="flex flex-col">
-            <span className="font-medium">{a.reason}</span>
-            <span className="text-xs text-text-2">{a.detail}</span>
-          </span>
-        </div>
-        <p className="text-md">{a.head}</p>
-        <p className="text-sm text-text-2">{a.expl}</p>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-3 rounded-lg border border-hairline p-3">
+        <span aria-hidden="true" className={`h-8 w-8 flex-none rounded-lg border border-border-strong ${swatch}`} />
+        <span className="flex flex-col">
+          <span className="font-medium">{a.reason}</span>
+          <span className="text-xs text-text-2">{a.detail}</span>
+        </span>
       </div>
+      <p className="text-md">{a.head}</p>
+    </div>
+  );
+}
+
+function NonPastureDetails({ a, act }: { a: NonPastureAnswer; act: CardActions }) {
+  return (
+    <>
+      <p className="text-sm text-text-2">{a.expl}</p>
       {a.nearest.length > 0 && (
         <Section label="Nearest pastures" gap="gap-1">
           <NearRows rows={a.nearest} onPick={act.onPick} />
@@ -155,9 +168,22 @@ function NonPastureBody({ a, act }: { a: NonPastureAnswer; act: CardActions }) {
   );
 }
 
-export function AnswerCardHeader({ a, onClose }: { a: Answer; onClose?: () => void }) {
+export function AnswerSummary({ a }: { a: Answer }) {
+  return a.kind === 'pasture' ? <PastureSummary a={a} /> : <NonPastureSummary a={a} />;
+}
+
+export function AnswerDetails({ a, act, chartWidth = 352 }: { a: Answer; act: CardActions; chartWidth?: number }) {
   return (
-    <div className="flex flex-none flex-col gap-1 border-b border-hairline px-6 pb-4 pt-5">
+    <>
+      {a.kind === 'pasture' ? <PastureDetails a={a} act={act} chartWidth={chartWidth} /> : <NonPastureDetails a={a} act={act} />}
+      <NextStep a={a} act={act} />
+    </>
+  );
+}
+
+export function AnswerCardHeader({ a, onClose, compact = false }: { a: Answer; onClose?: () => void; compact?: boolean }) {
+  return (
+    <div className={`flex flex-none flex-col gap-1 border-b border-hairline px-6 ${compact ? 'pb-3 pt-2' : 'pb-4 pt-5'}`}>
       <div className="flex items-start gap-3">
         <h2 className="min-w-0 flex-1 text-lg font-semibold">{a.name}</h2>
         <span className="mt-0.5">
@@ -175,7 +201,7 @@ export function AnswerCardHeader({ a, onClose }: { a: Answer; onClose?: () => vo
         )}
       </div>
       <span className="text-sm text-text-2">{a.sub}</span>
-      <span className="text-xs text-text-2">{a.coord}</span>
+      {!compact && <span className="text-xs text-text-2">{a.coord}</span>}
     </div>
   );
 }
@@ -214,8 +240,8 @@ export function NotAccounted() {
 export function AnswerBody({ a, act }: { a: Answer; act: CardActions }) {
   return (
     <>
-      {a.kind === 'pasture' ? <PastureBody a={a} act={act} /> : <NonPastureBody a={a} act={act} />}
-      <NextStep a={a} act={act} />
+      <AnswerSummary a={a} />
+      <AnswerDetails a={a} act={act} />
     </>
   );
 }

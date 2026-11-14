@@ -105,9 +105,10 @@ function Boundaries({ mask }: { mask: StudyMask | null }) {
       if (!fitted.current) {
         fitted.current = true;
         const narrow = map.getSize().x < 768;
+        const h = map.getSize().y;
         map.fitBounds(line.getBounds(), {
-          paddingTopLeft: [24, narrow ? 72 : 64],
-          paddingBottomRight: [narrow ? 24 : DRAWER_PAD + 24, narrow ? 160 : 24],
+          paddingTopLeft: [narrow ? 12 : 24, narrow ? 116 : 64],
+          paddingBottomRight: [narrow ? 12 : DRAWER_PAD + 24, narrow ? Math.round(h * 0.45) : 24],
           animate: false,
         });
       }
@@ -221,7 +222,7 @@ function Fly() {
     const zoom = Math.max(map.getZoom(), 8.6);
     const narrow = map.getSize().x < 768;
     // Shift the target so it lands in the middle of the part of the map the drawer leaves visible.
-    const p = map.project([fly.lat, fly.lon], zoom).add(narrow ? [0, map.getSize().y * 0.2] : [DRAWER_PAD / 2, 0]);
+    const p = map.project([fly.lat, fly.lon], zoom).add(narrow ? [0, map.getSize().y * 0.22] : [DRAWER_PAD / 2, 0]);
     map.flyTo(map.unproject(p, zoom), zoom, { duration: 0.9 });
   }, [map, fly]);
   return null;
@@ -249,12 +250,12 @@ export function MapView({ zones, grey = false, mask, outline, poly }: MapViewPro
     <MapContainer
       bounds={START_BOUNDS}
       boundsOptions={{ paddingBottomRight: [DRAWER_PAD, 0] }}
-      minZoom={6}
+      minZoom={5}
       maxZoom={11}
       zoomSnap={0.1}
       zoomControl={false}
       attributionControl={false}
-      className="absolute inset-0"
+      className="absolute inset-0 z-0"
       aria-label="Map of Naryn oblast pastures"
     >
       <Panes />

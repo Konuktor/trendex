@@ -29,7 +29,7 @@ export function QueueRoute() {
 
   return (
     <main className="min-w-0 flex-1 overflow-y-auto bg-white">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-8 py-8">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
         <header className="flex flex-wrap items-end gap-4">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h1 className="text-xl font-semibold">Inspection queue</h1>
@@ -146,8 +146,8 @@ export function QueueRoute() {
             )}
           </div>
         ) : (
-          <div className="card overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="card overflow-x-auto">
+            <table className="w-full min-w-[880px] text-sm">
               <caption className="sr-only-label">Inspection queue, ranked by score</caption>
               <thead className="border-b border-hairline bg-surface text-left">
                 <tr className="text-xs text-text-2">

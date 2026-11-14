@@ -27,8 +27,10 @@
   .sr-only-label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 }
 
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 768px) {
   .btn, .btn-primary, .btn-secondary { min-height: 44px; }
+  .btn-ghost { min-height: 44px; }
+  .leaflet-control-zoom.leaflet-bar a { width: 44px; height: 44px; line-height: 42px; }
 }
 
 /* Data patterns (never rely on colour alone) */

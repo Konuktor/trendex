@@ -5,7 +5,7 @@ import { LEVEL_BG, LEVEL_FG, trendColor } from '../../theme';
 export function LevelChip({ level, size = 'md' }: { level: Level; size?: 'sm' | 'md' }) {
   return (
     <span
-      className={`inline-flex items-center self-start rounded font-medium ${size === 'sm' ? 'h-5 px-1.5 text-xs' : 'h-6 px-2 text-sm'}`}
+      className={`inline-flex items-center self-start whitespace-nowrap rounded font-medium ${size === 'sm' ? 'h-5 px-1.5 text-xs' : 'h-6 px-2 text-sm'}`}
       style={{ background: LEVEL_BG[level], color: LEVEL_FG[level] }}
     >
       {LEVEL_NAME[level]}
@@ -27,7 +27,7 @@ export function TrendChip({
   const fg = trend !== 'nr' && strong ? '#FFFFFF' : '#171717';
   return (
     <span
-      className={`inline-flex items-center gap-1.5 self-start rounded font-medium ${size === 'sm' ? 'h-5 px-1.5 text-xs' : 'h-6 px-2 text-sm'}`}
+      className={`inline-flex items-center gap-1.5 self-start whitespace-nowrap rounded font-medium ${size === 'sm' ? 'h-5 px-1.5 text-xs' : 'h-6 px-2 text-sm'}`}
       style={{ background: trendColor(trend, strong), color: fg }}
     >
       {trend === 'nr' && <span aria-hidden="true" className="hatch-light h-2.5 w-2.5 rounded-xs shadow-[0_0_0_1px_#A1A1AA]" />}

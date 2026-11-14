@@ -83,7 +83,8 @@ const config: Config = {
   },
   plugins: [
     plugin(({ addVariant }) => {
-      addVariant('coarse', '@media (pointer: coarse)');
+      // Touch targets: 44 px on coarse pointers and on narrow screens.
+      addVariant('coarse', '@media (pointer: coarse), (max-width: 768px)');
     }),
   ],
 };
