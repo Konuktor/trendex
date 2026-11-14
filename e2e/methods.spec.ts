@@ -12,7 +12,7 @@ test('methods page', async ({ page }) => {
   await page.screenshot({ path: 'screenshots/phase-6-methods.png' });
   await page.getByRole('link', { name: '4. Checks' }).click();
   await page.waitForTimeout(1200);
-  await expect(page.locator('header')).toBeInViewport();
+  await expect(page.getByRole('banner')).toBeInViewport();
   await expect(page.getByRole('heading', { name: '4. Checks' })).toBeInViewport();
   await page.screenshot({ path: 'screenshots/phase-6-methods-checks.png' });
 });
