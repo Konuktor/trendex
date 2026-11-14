@@ -28,18 +28,24 @@ def season_mean(ndvi: np.ndarray, months, min_valid: int) -> tuple[np.ndarray, n
     Returns (S[N,Y], valid_frac[N]) where valid_frac = share of valid cell-months."""
     sub = ndvi[:, :, np.asarray(months) - 1]
     cnt = np.isfinite(sub).sum(axis=2)
-    with np.errstate(invalid="ignore"):
-        S = np.nanmean(np.where(np.isfinite(sub), sub, np.nan), axis=2)
+    import warnings
+    with warnings.catch_warnings(), np.errstate(invalid="ignore"):
+        warnings.simplefilter("ignore")
+        S = np.nanmean(sub, axis=2)  # sub already holds NaN where invalid
     S[cnt < min_valid] = np.nan
     valid_frac = np.isfinite(sub).mean(axis=(1, 2))
     return S.astype(np.float32), valid_frac.astype(np.float32)
 
 
-def climatology(ndvi: np.ndarray) -> np.ndarray:
+def climatology(ndvi: np.ndarray, chunk: int = 300_000) -> np.ndarray:
+    """Per-cell median NDVI by calendar month (N x 12), computed in row chunks to bound memory."""
     import warnings
+    out = np.full((ndvi.shape[0], ndvi.shape[2]), np.nan, dtype=np.float32)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        return np.nanmedian(ndvi, axis=1).astype(np.float32)  # N x 12
+        for i in range(0, ndvi.shape[0], chunk):
+            out[i:i + chunk] = np.nanmedian(ndvi[i:i + chunk], axis=1)
+    return out
 
 
 def season_length(clim: np.ndarray, months) -> np.ndarray:

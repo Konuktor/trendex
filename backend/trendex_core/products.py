@@ -143,12 +143,16 @@ def inspection_queue(core, lang: str = "en") -> list[dict]:
     G = np.zeros((core.grid.H, core.grid.W), dtype=bool)
     G[core.col("r")[qual], core.col("c")[qual]] = True
     lab, n = ndimage.label(G, structure=np.ones((3, 3)))
-    cell_lab = lab[core.col("r"), core.col("c")]
+    qidx = np.flatnonzero(qual)
+    qlab = lab[core.col("r")[qidx], core.col("c")[qidx]]
+    order = np.argsort(qlab, kind="stable")
+    qidx, qlab = qidx[order], qlab[order]
+    bounds = np.searchsorted(qlab, np.arange(1, n + 2))
     zones = []
     area = core.col("area_km2")
     for z in range(1, n + 1):
-        m = (cell_lab == z) & qual
-        if m.sum() < cfg["queue"]["min_zone_cells"]:
+        m = qidx[bounds[z - 1]:bounds[z]]  # cell indices of zone z
+        if len(m) < cfg["queue"]["min_zone_cells"]:
             continue
         vals, _ = area_series(core, m)
         tr = series_trend(core, vals)
@@ -162,7 +166,7 @@ def inspection_queue(core, lang: str = "en") -> list[dict]:
             conf = "medium" if conf == "high" else "low"
         zones.append({"zone_id": None, "district": max(set(d), key=d.count) if d else None,
                       "lat": float(core.col("lat")[m].mean()), "lon": float(core.col("lon")[m].mean()),
-                      "area_km2": round(km2, 2), "n_cells": int(m.sum()),
+                      "area_km2": round(km2, 2), "n_cells": int(len(m)),
                       "level": lvl, "score": round(float(np.nanmean(core.col("score")[m])), 1),
                       "dynamics": tr["class"], "slope_per_decade": tr["slope"] * 10,
                       "ci_lo": tr["ci_lo"] * 10, "ci_hi": tr["ci_hi"] * 10, "p_value": tr["p"],

@@ -33,7 +33,9 @@ def build_step(core, cube):
     cfg = core.cfg
     months = cfg["spring_autumn_months"]
     S_sa, _ = formula.season_mean(cube.ndvi, months, 2)
-    clim = formula.climatology(cube.ndvi)
+    clim = cube.extra.get("_clim")
+    if clim is None:
+        clim = formula.climatology(cube.ndvi)
     comps = formula.raw_components(S_sa, clim, core.col("slope_mean"), cfg["season_months"])
     ref = core.pasture & core.in_region
     pct = {}

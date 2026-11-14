@@ -41,12 +41,15 @@ class Core:
 
     @property
     def pasture(self) -> np.ndarray:
-        return self.col("status") == "pasture"
+        if "pasture" not in self._cache:
+            self._cache["pasture"] = self.col("status") == "pasture"
+        return self._cache["pasture"]
 
     @property
     def in_region(self) -> np.ndarray:
-        d = self.col("district")
-        return np.array([v is not None and v == v for v in d]) if d.dtype == object else ~pd.isna(d)
+        if "in_region" not in self._cache:
+            self._cache["in_region"] = ~pd.isna(pd.Series(self.col("district"), copy=False)).to_numpy()
+        return self._cache["in_region"]
 
     @property
     def index(self) -> np.ndarray:

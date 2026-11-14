@@ -75,6 +75,7 @@ def build(source: str, out: Path = config.ARTIFACTS, n_jobs: int = -1) -> Core:
     n_years = np.isfinite(S).sum(axis=1)
     status[(status == "pasture") & (n_years < cfg["min_valid_years"])] = "insufficient"
     clim = formula.climatology(cube.ndvi)
+    cube.extra["_clim"] = clim  # reused by ext/seasons (avoids a second pass over the monthly cube)
     comps = formula.raw_components(S, clim, cells["slope_mean"].to_numpy(), cfg["season_months"])
     pasture = status == "pasture"
     ref = pasture & in_region
