@@ -87,80 +87,107 @@ export function selectDrawn(data: DataSet, poly: LonLat[]): Selection {
 
 /* ---------- smoothed zone polygons ---------- */
 
-const UP = 8; // upsample factor
-const PAD = 2; // cells of padding around the grid
-const SIGMA = 0.26 * UP; // Gaussian sigma in pixels
+const PAD = 2; // cells of padding around the cells' bounding box
 const THRESHOLD = 0.45;
-const GW = (COLS + 2 * PAD) * UP;
-const GH = (ROWS + 2 * PAD) * UP;
+/** Pixel budget for a raster of the whole grid; larger grids get a lower upsample factor. */
+const MAX_PX = 400_000;
 
-const KERNEL = (() => {
-  const rad = Math.ceil(SIGMA * 3);
-  const k: number[] = [];
-  let s = 0;
-  for (let i = -rad; i <= rad; i++) {
-    const v = Math.exp(-(i * i) / (2 * SIGMA * SIGMA));
-    k.push(v);
-    s += v;
-  }
-  return k.map((v) => v / s);
-})();
-
-function rasterize(list: readonly Cell[]): Float64Array {
-  const a = new Float64Array(GW * GH);
-  for (const x of list) {
-    const x0 = (x.c + PAD) * UP;
-    const y0 = (x.r + PAD) * UP;
-    for (let y = y0; y < y0 + UP; y++) a.fill(1, y * GW + x0, y * GW + x0 + UP);
-  }
-  return a;
+/** Upsample factor for a grid: ×8 (Naryn), lower for large grids so a full-grid raster stays under MAX_PX. */
+export function upsampleFor(cols: number, rows: number): number {
+  for (const up of [8, 6, 4, 3]) if ((cols + 2 * PAD) * (rows + 2 * PAD) * up * up <= MAX_PX) return up;
+  return 2;
 }
 
-function blur(src: Float64Array): Float64Array {
-  const rad = (KERNEL.length - 1) / 2;
-  const tmp = new Float64Array(GW * GH);
-  const out = new Float64Array(GW * GH);
-  for (let y = 0; y < GH; y++) {
-    const o = y * GW;
-    for (let x = 0; x < GW; x++) {
+const kernels = new Map<number, Float64Array>();
+
+/** Normalised 1-D Gaussian, sigma 0.26 cell. */
+function kernelFor(up: number): Float64Array {
+  let k = kernels.get(up);
+  if (!k) {
+    const sigma = 0.26 * up;
+    const rad = Math.ceil(sigma * 3);
+    const v: number[] = [];
+    let s = 0;
+    for (let i = -rad; i <= rad; i++) {
+      const e = Math.exp(-(i * i) / (2 * sigma * sigma));
+      v.push(e);
+      s += e;
+    }
+    k = Float64Array.from(v, (e) => e / s);
+    kernels.set(up, k);
+  }
+  return k;
+}
+
+/** Separable blur; per pixel the taps are summed in the same order in both passes. */
+function blur(src: Float64Array, W: number, H: number, K: Float64Array): Float64Array {
+  const rad = (K.length - 1) / 2;
+  const tmp = new Float64Array(W * H);
+  const out = new Float64Array(W * H);
+  for (let y = 0; y < H; y++) {
+    const o = y * W;
+    for (let x = 0; x < W; x++) {
       let s = 0;
       for (let k = -rad; k <= rad; k++) {
         const xx = x + k;
-        if (xx >= 0 && xx < GW) s += src[o + xx] * KERNEL[k + rad];
+        if (xx >= 0 && xx < W) s += src[o + xx] * K[k + rad];
       }
       tmp[o + x] = s;
     }
   }
-  for (let x = 0; x < GW; x++) {
-    for (let y = 0; y < GH; y++) {
-      let s = 0;
-      for (let k = -rad; k <= rad; k++) {
-        const yy = y + k;
-        if (yy >= 0 && yy < GH) s += tmp[yy * GW + x] * KERNEL[k + rad];
-      }
-      out[y * GW + x] = s;
+  // Vertical pass row by row (cache-friendly); `out` accumulates taps in ascending k order.
+  for (let y = 0; y < H; y++) {
+    const o = y * W;
+    for (let k = -rad; k <= rad; k++) {
+      const yy = y + k;
+      if (yy < 0 || yy >= H) continue;
+      const w = K[k + rad];
+      const oo = yy * W;
+      for (let x = 0; x < W; x++) out[o + x] += tmp[oo + x] * w;
     }
   }
   return out;
 }
 
-const contour = contours().size([GW, GH]).thresholds([THRESHOLD]);
-
-/** Contour pixel coordinates → lon/lat (a cell spans UP pixels; tested to stay centred). */
-function pxToLonLat([x, y]: number[]): LonLat {
-  const c = x / UP - PAD;
-  const r = y / UP - PAD;
-  return [+(LON0 + c * DLON).toFixed(5), +(LAT0 - r * DLAT).toFixed(5)];
-}
-
-/** Smoothed multipolygon around a set of cells (upsample → blur → contour at 0.45). */
+/**
+ * Smoothed multipolygon around a set of cells (upsample → blur → contour at 0.45). Only the cells'
+ * bounding box plus 2 cells of padding is rasterised, which gives the same contour as a raster of the
+ * whole grid (the blur reaches less than one cell) at a fraction of the cost.
+ */
 export function smoothPolygon(list: readonly Cell[]): MultiPolygon | null {
   if (!list.length) return null;
-  const [mp] = contour(Array.from(blur(rasterize(list))));
+  let c0 = Infinity;
+  let c1 = -Infinity;
+  let r0 = Infinity;
+  let r1 = -Infinity;
+  for (const x of list) {
+    if (x.c < c0) c0 = x.c;
+    if (x.c > c1) c1 = x.c;
+    if (x.r < r0) r0 = x.r;
+    if (x.r > r1) r1 = x.r;
+  }
+  const up = upsampleFor(COLS, ROWS);
+  const ox = c0 - PAD;
+  const oy = r0 - PAD;
+  const W = (c1 - c0 + 1 + 2 * PAD) * up;
+  const H = (r1 - r0 + 1 + 2 * PAD) * up;
+  const a = new Float64Array(W * H);
+  for (const x of list) {
+    const x0 = (x.c - ox) * up;
+    const y0 = (x.r - oy) * up;
+    for (let y = y0; y < y0 + up; y++) a.fill(1, y * W + x0, y * W + x0 + up);
+  }
+  const values = blur(a, W, H, kernelFor(up));
+  const [mp] = contours().size([W, H]).thresholds([THRESHOLD])(values as unknown as number[]);
   if (!mp || !mp.coordinates.length) return null;
+  // Contour pixel coordinates → lon/lat (a cell spans `up` pixels; tested to stay centred).
+  const toLonLat = ([px, py]: number[]): LonLat => [
+    +(LON0 + (px / up + ox) * DLON).toFixed(5),
+    +(LAT0 - (py / up + oy) * DLAT).toFixed(5),
+  ];
   return {
     type: 'MultiPolygon',
-    coordinates: mp.coordinates.map((poly) => poly.map((ring) => ring.map(pxToLonLat))),
+    coordinates: mp.coordinates.map((poly) => poly.map((ring) => ring.map(toLonLat))),
   };
 }
 

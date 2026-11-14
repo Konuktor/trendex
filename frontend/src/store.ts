@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { source } from './data/source';
+import { activate, source } from './data/source';
+import { HAS_DATASETS, initialDataset } from './data/dataset';
 import { isReal } from './data/info';
-import type { DataSet, District, Layer, LonLat, MatrixFilter, StudyMask } from './lib/types';
+import type { DataSet, DatasetId, DatasetMeta, District, Layer, LonLat, MatrixFilter, StudyMask } from './lib/types';
 
 export type SelectionRef = { type: 'zone'; id: string } | { type: 'drawn'; poly: LonLat[] } | null;
 
@@ -15,6 +16,13 @@ export interface QueueItem {
   /** "Flag mask for review" rather than a field check */
   flag?: boolean;
   addedAt: number;
+  /** dataset the item belongs to (items saved before the switch existed are Naryn) */
+  ds?: DatasetId;
+}
+
+/** Queue items of one dataset (cell ids repeat across datasets). */
+export function queueFor(queue: readonly QueueItem[], ds: DatasetId): QueueItem[] {
+  return queue.filter((q) => (q.ds ?? 'naryn') === ds);
 }
 
 export interface FlyTarget {
@@ -53,6 +61,11 @@ export function selectionKey(sel: SelectionRef): string | null {
 }
 
 interface AppState {
+  /** active dataset: the Naryn pilot or Central Asia */
+  dataset: DatasetId;
+  /** switch dataset: clears data, filters and selection, then loads (selection resets to meta.defaultCellId) */
+  setDataset: (ds: DatasetId) => void;
+  meta: DatasetMeta | null;
   data: DataSet | null;
   mask: StudyMask | null;
   /** true when running on the real (production) data, false on sample data */
@@ -84,7 +97,7 @@ interface AppState {
   setDrawCount: (n: number) => void;
 
   queue: QueueItem[];
-  toggleQueue: (item: Omit<QueueItem, 'addedAt'>) => void;
+  toggleQueue: (item: Omit<QueueItem, 'addedAt' | 'ds'>) => void;
   removeFromQueue: (key: string) => void;
 
   tour: number;
@@ -92,17 +105,49 @@ interface AppState {
 }
 
 export const useApp = create<AppState>((set, get) => ({
+  dataset: initialDataset(),
+  setDataset(ds) {
+    if (ds === get().dataset || (!HAS_DATASETS && ds !== 'naryn')) return;
+    set({
+      dataset: ds,
+      data: null,
+      mask: null,
+      meta: null,
+      loadError: null,
+      sel: null,
+      matrix: null,
+      district: null,
+      drawing: false,
+      drawCount: 0,
+      tour: 0,
+    });
+    void get().load();
+  },
+  meta: null,
   data: null,
   mask: null,
   real: false,
   loadError: null,
   async load() {
     if (get().data) return;
+    const ds = get().dataset;
     try {
-      const { data, mask } = await source.getCells();
-      set((s) => ({ data, mask, real: isReal(), loadError: null, sel: s.sel ?? (data.demo ? { type: 'zone', id: data.demo } : null) }));
+      const loaded = await source.getCells(ds);
+      // A switch while loading: the newer load sets the state.
+      if (get().dataset !== ds) return;
+      if (get().data === loaded.data) return;
+      activate(loaded);
+      const { data, mask, meta } = loaded;
+      set((s) => ({
+        data,
+        mask,
+        meta,
+        real: isReal(),
+        loadError: null,
+        sel: s.sel ?? (data.demo ? { type: 'zone', id: data.demo } : null),
+      }));
     } catch (e) {
-      set({ loadError: e instanceof Error ? e.message : String(e) });
+      if (get().dataset === ds) set({ loadError: e instanceof Error ? e.message : String(e) });
     }
   },
   retry() {
@@ -150,14 +195,18 @@ export const useApp = create<AppState>((set, get) => ({
   queue: typeof localStorage === 'undefined' ? [] : loadQueue(),
   toggleQueue: (item) =>
     set((s) => {
-      const has = s.queue.some((q) => q.key === item.key);
-      const queue = has ? s.queue.filter((q) => q.key !== item.key) : [...s.queue, { ...item, addedAt: Date.now() }];
+      const ds = s.dataset;
+      const mine = (q: QueueItem) => q.key === item.key && (q.ds ?? 'naryn') === ds;
+      const has = s.queue.some(mine);
+      // Naryn items keep the old shape (no `ds`), so a queue saved before the switch stays compatible.
+      const add: QueueItem = ds === 'naryn' ? { ...item, addedAt: Date.now() } : { ...item, addedAt: Date.now(), ds };
+      const queue = has ? s.queue.filter((q) => !mine(q)) : [...s.queue, add];
       saveQueue(queue);
       return { queue };
     }),
   removeFromQueue: (key) =>
     set((s) => {
-      const queue = s.queue.filter((q) => q.key !== key);
+      const queue = s.queue.filter((q) => !(q.key === key && (q.ds ?? 'naryn') === s.dataset));
       saveQueue(queue);
       return { queue };
     }),

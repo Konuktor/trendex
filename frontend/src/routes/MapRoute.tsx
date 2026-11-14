@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useApp, selectionKey } from '../store';
+import { useApp, queueFor, selectionKey } from '../store';
 import { resolveAnswer } from '../lib/selection';
 import { buildZoneGeoJSON, smoothPolygon } from '../lib/zones';
 import { Rail } from '../components/map/Rail';
@@ -28,6 +28,8 @@ const OUTSIDE_POLY: LonLat[] = [
 export function MapRoute() {
   const data = useApp((s) => s.data);
   const mask = useApp((s) => s.mask);
+  const meta = useApp((s) => s.meta);
+  const dataset = useApp((s) => s.dataset);
   const load = useApp((s) => s.load);
   const layer = useApp((s) => s.layer);
   const matrix = useApp((s) => s.matrix);
@@ -75,7 +77,7 @@ export function MapRoute() {
   const outline = useMemo(() => (res?.sel.mode === 'zone' ? smoothPolygon(res.sel.cells) : null), [res]);
   const card = res?.card ?? null;
   const key = selectionKey(sel);
-  const queued = !!key && queue.some((q) => q.key === key);
+  const queued = !!key && queueFor(queue, dataset).some((q) => q.key === key);
 
   const act = {
     queued,
@@ -99,6 +101,8 @@ export function MapRoute() {
       zones={zones}
       grey={loading}
       mask={mask}
+      meta={meta}
+      title={meta?.title}
       outline={loading ? null : outline}
       poly={!loading && sel?.type === 'drawn' ? sel.poly : null}
     />

@@ -1,6 +1,6 @@
 import { avg, maj, num, ord, signed } from './format';
-import { CELL_KM2, DLAT, DLON, LAT0, LON0, polyAreaKm, toCell } from './geo';
-import { DISTRICT_NAMES } from './mask';
+import { CELL_KM, CELL_KM2, cellId, DLAT, DLON, LAT0, LON0, polyAreaKm, toCell } from './geo';
+import { areaNoun, coverageText, currentDataset, regionFull, studyTitle } from './regions';
 import { meanSeries, fit, series } from './series';
 import { LEVEL_NAME } from './labels';
 import { nearest, placeName } from './places';
@@ -70,6 +70,24 @@ export interface NonPastureAnswer extends AnswerBase {
 
 export type Answer = PastureAnswer | NonPastureAnswer;
 
+/** Index of each pasture cell in `data.past`, the tie-break order of "better nearby". */
+const pastIndex = new WeakMap<DataSet, Map<string, number>>();
+
+function indexOfPast(data: DataSet): Map<string, number> {
+  let m = pastIndex.get(data);
+  if (!m) {
+    m = new Map(data.past.map((x, i) => [x.id, i] as const));
+    pastIndex.set(data, m);
+  }
+  return m;
+}
+
+/** Search radius of "better nearby", in cells. */
+export const NEAR_CELLS = 5;
+
+/** "50 km" for Naryn (5 cells of 10 km), "100 km" for 20 km cells. */
+export const nearKm = (): number => Math.round(NEAR_CELLS * CELL_KM);
+
 function betterNear(
   data: DataSet,
   cx: number,
@@ -80,25 +98,38 @@ function betterNear(
   const inZ = new Set(Z.map((x) => x.id));
   const seen = new Set<string>();
   const out: BetterRow[] = [];
-  data.past
-    .filter((o) => !inZ.has(o.id) && fn(o))
-    .map((o) => {
+  const idx = indexOfPast(data);
+  // Only cells in the window around the centre can be within 5 cells; order as a stable sort of
+  // data.past by distance, then by percentile (descending).
+  const cand: { o: Cell; d: number; i: number }[] = [];
+  const cA = Math.floor(cx - NEAR_CELLS - 1);
+  const cB = Math.ceil(cx + NEAR_CELLS);
+  const rA = Math.floor(cy - NEAR_CELLS - 1);
+  const rB = Math.ceil(cy + NEAR_CELLS);
+  for (let r = rA; r <= rB; r++)
+    for (let c = cA; c <= cB; c++) {
+      const id = cellId(c, r);
+      const i = idx.get(id);
+      if (i === undefined) continue;
+      const o = data.past[i];
+      if (inZ.has(o.id) || !fn(o)) continue;
       const dx = o.c + 0.5 - cx;
       const dy = o.r + 0.5 - cy;
-      return { o, d: Math.sqrt(dx * dx + dy * dy) };
-    })
-    .filter((e) => e.d <= 5)
-    .sort((a, b) => a.d - b.d || b.o.pct - a.o.pct)
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d <= NEAR_CELLS) cand.push({ o, d, i });
+    }
+  cand
+    .sort((a, b) => a.d - b.d || b.o.pct - a.o.pct || a.i - b.i)
     .forEach((e) => {
       if (out.length >= 3) return;
       const o = e.o;
-      const nm = placeName(o.c + 0.5, o.r + 0.5, true);
+      const nm = placeName(o.c + 0.5, o.r + 0.5, true, o.d);
       if (seen.has(nm)) return;
       seen.add(nm);
       out.push({
         id: o.id,
         name: nm,
-        km: Math.max(5, Math.round(e.d * 10)),
+        km: Math.max(5, Math.round(e.d * CELL_KM)),
         level: o.level,
         trend: o.cov < 0.6 ? 'nr' : o.trend,
         strong: o.strong,
@@ -108,6 +139,9 @@ function betterNear(
 }
 
 const COUNT_WORD = ['One area', 'Two areas', 'Three areas'];
+
+/** Who holds local field notes: the district committee in Naryn, a local one elsewhere. */
+const committee = () => (currentDataset() === 'naryn' ? 'district' : 'local');
 
 /** The answer card for a zone or a drawn outline. Copy is identical to the reference. */
 export function answer(sel: Selection, data: DataSet): Answer {
@@ -124,9 +158,10 @@ export function answer(sel: Selection, data: DataSet): Answer {
     cy = avg(Z, (x) => x.r + 0.5);
   }
   const km = sel.mode === 'drawn' ? Math.round(polyAreaKm(sel.poly)) : Z.length * CELL_KM2;
-  const name = mode === 'drawn' ? 'Drawn area near ' + nearest(cx, cy).p.en : placeName(cx, cy, false);
+  const region = Z.length ? maj(Z, (x) => x.d) : null;
+  const name = mode === 'drawn' ? 'Drawn area near ' + nearest(cx, cy).p.en : placeName(cx, cy, false, region);
   const coord = 'Centre ' + (LAT0 - cy * DLAT).toFixed(2) + '°N, ' + (LON0 + cx * DLON).toFixed(2) + '°E';
-  const dn = Z.length ? DISTRICT_NAMES[maj(Z, (x) => x.d)] : 'Outside the study area';
+  const dn = region ? regionFull(region) : 'Outside the study area';
   const sub = mode === 'drawn' ? 'Your outline · ' + num(km) + ' km² · ' + dn : dn + ' · zone of ' + num(km) + ' km²';
   const qid = mode === 'drawn' ? 'drawn' : Z.length ? Z[0].id : 'none';
   const base = { mode, name, coord, sub, qid, cx, cy };
@@ -142,7 +177,7 @@ export function answer(sel: Selection, data: DataSet): Answer {
         badge: 'No data',
         water: false,
         reason: 'Outside the study area',
-        detail: 'TrendeX covers Naryn oblast and the Suusamyr valley',
+        detail: coverageText(),
         head: 'There is no data here, so there is no answer.',
         expl: 'Draw the outline inside the study-area border.',
         next: 'Redraw the area inside the border.',
@@ -184,7 +219,7 @@ export function answer(sel: Selection, data: DataSet): Answer {
       detail: 'Only ' + Math.round(avg(Z, (x) => x.seasons)) + ' of 26 seasons had clear June–August observations',
       head: 'Too few clear seasons to give a level or trend.',
       expl: 'A level needs at least 10 of 26 clear seasons and a trend at least 16. With fewer, one unusual year can set the answer.',
-      next: 'Ask the district pasture committee for recent field notes; the satellite record is too thin here.',
+      next: `Ask the ${committee()} pasture committee for recent field notes; the satellite record is too thin here.`,
       nearest: near,
       actionLabel: 'Add to queue',
     };
@@ -234,7 +269,7 @@ export function answer(sel: Selection, data: DataSet): Answer {
         ? 'and reliably rising since 2000 (' + signed(slope) + '% per year).'
         : 'with no reliable trend since 2000: year-to-year swings are larger than any direction.';
   const takeaway =
-    LEVEL_NAME[level] + ' relative to other pastures in Naryn oblast, ' + tp +
+    LEVEL_NAME[level] + ' relative to other pastures in ' + studyTitle() + ', ' + tp +
     (better.length
       ? ' ' + COUNT_WORD[better.length - 1] + ' within ' + better[better.length - 1].km + ' km ' +
         (better.length === 1 ? 'scores' : 'score') + ' higher and ' + (better.length === 1 ? 'is' : 'are') +
@@ -281,8 +316,8 @@ export function answer(sel: Selection, data: DataSet): Answer {
   }
   wy.push(
     level === 'low'
-      ? ['−', 'Level is in the lowest third of pastures in the oblast.']
-      : ['+', 'Level is above the lowest third of pastures in the oblast (' + ord(pct) + ' percentile).'],
+      ? ['−', 'Level is in the lowest third of pastures in ' + areaNoun() + '.']
+      : ['+', 'Level is above the lowest third of pastures in ' + areaNoun() + ' (' + ord(pct) + ' percentile).'],
   );
   if (small) wy.push(['−', 'The outline covers only ' + n + ' cell' + (n === 1 ? '' : 's') + ' of data.']);
   else if (conf === 'Low') wy.push(['−', 'Only ' + seasons + ' of 26 seasons had clear observations.']);
@@ -290,7 +325,7 @@ export function answer(sel: Selection, data: DataSet): Answer {
 
   const next =
     conf === 'Low'
-      ? 'Check on the ground before using this answer. Ask the district pasture committee for recent field notes.'
+      ? `Check on the ground before using this answer. Ask the ${committee()} pasture committee for recent field notes.`
       : trend === 'dec' && level === 'low'
         ? 'Prioritise for a field check this season and compare with the areas listed above before advising on grazing routes.'
         : trend === 'dec'

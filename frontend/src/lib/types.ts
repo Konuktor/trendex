@@ -1,6 +1,9 @@
 import type { Feature, MultiPolygon, Polygon } from 'geojson';
 
-export type District = 'NA' | 'AT' | 'JU' | 'KO' | 'AK' | 'SU';
+/** Region code: a Naryn district (NA, AT, JU, KO, AK, SU) or, for Central Asia, an ADM1 code such as "KZ-almaty-region". */
+export type District = string;
+/** Which dataset the app shows. */
+export type DatasetId = 'naryn' | 'ca';
 export type Level = 'low' | 'moderate' | 'good';
 export type Trend = 'dec' | 'nr' | 'inc'; // nr = not reliable
 export type Kind = 'pasture' | 'excluded' | 'nodata';
@@ -14,6 +17,8 @@ export interface Cell {
   lon: number;
   lat: number;
   d: District;
+  /** Central Asia only: ISO2 country code of the cell. */
+  country?: string;
   kind: Kind;
   why: string;
   water: boolean;
@@ -40,8 +45,37 @@ export type BoundaryFeature = Feature<Polygon | MultiPolygon, { shapeName: strin
 export interface StudyMask {
   /** cell id ("c,r") → district */
   m: Record<string, District>;
+  /** outer outline of the study area (Naryn oblast, or Central Asia) */
   oblast: BoundaryFeature | null;
+  /** region outlines (Naryn districts, or Central Asia ADM1 regions) */
   districts: BoundaryFeature[];
+}
+
+export interface Region {
+  code: District;
+  name: string;
+  /** ISO3 */
+  country?: string;
+  iso2?: string;
+  countryName?: string;
+}
+
+/** The dataset-level part of meta.json the interface needs. */
+export interface DatasetMeta {
+  dataset: DatasetId;
+  /** "Naryn oblast" | "Central Asia" */
+  title: string;
+  grid: import('./geo').Grid;
+  /** [[south, west], [north, east]] */
+  bounds: [[number, number], [number, number]] | null;
+  /** in display order */
+  regions: Region[];
+  regionLabel: { en: string; ru: string };
+  dataStatus: 'sample' | 'production';
+  pipelineVersion?: string;
+  generatedAt?: string;
+  sources?: Record<string, string>;
+  method?: Record<string, string>;
 }
 
 export interface DataSet {

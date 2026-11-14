@@ -1,7 +1,71 @@
 {
+ "dataset": "naryn",
+ "title": "Naryn oblast",
+ "view": {
+  "bounds": [
+   [
+    40.12979240000008,
+    72.81000776800008
+   ],
+   [
+    42.604551001000026,
+    78.05820834200003
+   ]
+  ]
+ },
+ "regions": [
+  {
+   "code": "NA",
+   "name": "Naryn",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "AT",
+   "name": "At-Bashy",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "JU",
+   "name": "Jumgal",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "KO",
+   "name": "Kochkor",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "AK",
+   "name": "Ak-Talaa",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "SU",
+   "name": "Suusamyr valley",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  }
+ ],
+ "regionLabel": {
+  "en": "District",
+  "ru": "Район"
+ },
+ "boundaryFile": "oblast.geojson",
+ "regionsFile": "districts.geojson",
  "dataStatus": "production",
  "pipelineVersion": "1.0.0+c323445f4abe",
- "generatedAt": "2026-11-14T16:26:54Z",
+ "generatedAt": "2026-11-14T16:43:39Z",
  "dataComputedAt": "2026-11-14T14:53:58+00:00",
  "years": [
   2000,
@@ -13,7 +77,8 @@
   "lon0": 73.6,
   "lat0": 42.55,
   "dlon": 0.12,
-  "dlat": 0.09
+  "dlat": 0.09,
+  "cellKm2": 100
  },
  "sources": {
   "ndvi": "NASA MODIS MOD13A3 v061 (Terra, monthly 1 km NDVI), LP DAAC",

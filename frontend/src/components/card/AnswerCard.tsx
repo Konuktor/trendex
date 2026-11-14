@@ -1,7 +1,8 @@
 import { isReal } from '../../data/info';
 import { AlertTriangle, Check, ChevronRight, Info, Plus, X } from 'lucide-react';
-import type { Answer, BetterRow, NonPastureAnswer, PastureAnswer } from '../../lib/answer';
-import { LEVEL_NAME, NOT_ACCOUNTED, RELATIVE_NOTE, TREND_NAME } from '../../lib/labels';
+import { nearKm, type Answer, type BetterRow, type NonPastureAnswer, type PastureAnswer } from '../../lib/answer';
+import { LEVEL_NAME, NOT_ACCOUNTED, TREND_NAME } from '../../lib/labels';
+import { relativeNote } from '../../lib/regions';
 import { ord } from '../../lib/format';
 import { ConfidenceBadge, LevelChip, Swatch, TrendChip } from '../ui/Chips';
 import { TrendChart } from './TrendChart';
@@ -80,7 +81,7 @@ export function PastureSummary({ a }: { a: PastureAnswer }) {
             <span className="text-xs text-text-2">{a.trSub}</span>
           </div>
         </div>
-        <span className="text-xs text-text-2">{RELATIVE_NOTE}</span>
+        <span className="text-xs text-text-2">{relativeNote()}</span>
       </div>
       <p className="text-md">{a.takeaway}</p>
     </>
@@ -132,7 +133,7 @@ function PastureDetails({ a, act, chartWidth }: { a: PastureAnswer; act: CardAct
         {a.better.length ? (
           <NearRows rows={a.better} onPick={act.onPick} />
         ) : (
-          <span className="text-sm text-text-2">No higher-scoring areas without a decline within 50 km.</span>
+          <span className="text-sm text-text-2">No higher-scoring areas without a decline within {nearKm()} km.</span>
         )}
       </Section>
     </>

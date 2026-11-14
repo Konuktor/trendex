@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { X } from 'lucide-react';
 import { useApp } from '../../store';
 import { headline, scopeCells } from '../../lib/stats';
-import { DISTRICT_NAMES } from '../../lib/mask';
+import { regionLabel, regionName, studyTitle } from '../../lib/regions';
 import { LEVEL_NAME, TREND_SHORT } from '../../lib/labels';
 import { num } from '../../lib/format';
 
@@ -48,7 +48,7 @@ export function HeadlineStrip({ loading = false }: { loading?: boolean }) {
             <b className="font-medium text-text">{h.nr}%</b> not reliable
           </span>
           <span className="text-text-2">
-            {district ? DISTRICT_NAMES[district] : 'Naryn oblast'} · {num(h.km2)} km² of pasture
+            {district ? regionName(district) : studyTitle()} · {num(h.km2)} km² of pasture
           </span>
           {matrix && (
             <FilterChip
@@ -59,8 +59,8 @@ export function HeadlineStrip({ loading = false }: { loading?: boolean }) {
           )}
           {district && (
             <FilterChip
-              label={DISTRICT_NAMES[district]}
-              clearLabel="Clear district filter"
+              label={regionName(district)}
+              clearLabel={`Clear ${regionLabel().toLowerCase()} filter`}
               onClear={() => toggleDistrict(district)}
             />
           )}
@@ -81,7 +81,7 @@ export function HeadlineSummary() {
   return (
     <p className="text-sm text-text-2">
       <b className="font-medium text-text">{h.dec}%</b> reliable decline · <b className="font-medium text-text">{h.inc}%</b>{' '}
-      reliable growth · <b className="font-medium text-text">{h.nr}%</b> not reliable. {district ? DISTRICT_NAMES[district] : 'Naryn oblast'} ·{' '}
+      reliable growth · <b className="font-medium text-text">{h.nr}%</b> not reliable. {district ? regionName(district) : studyTitle()} ·{' '}
       {num(h.km2)} km² of pasture.
     </p>
   );

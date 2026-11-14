@@ -1,7 +1,7 @@
 import { dataInfo, isReal } from '../data/info';
 import { answer, type Answer } from './answer';
 import { selectDrawn, selectZone } from './zones';
-import { DISTRICT_NAMES } from './mask';
+import { regionFull, regionLabel } from './regions';
 import { maj, signed } from './format';
 import type { Confidence, DataSet, District, Level, LonLat, Trend } from './types';
 
@@ -66,13 +66,13 @@ function rowFrom(key: string, a: Answer, cells: { d: District }[], href: string,
           ? `Reliable growth (${signed(a.slope)}% per year); added for comparison`
           : 'No reliable trend; added for a field check';
     return {
-      key, id: a.qid, name: a.name, district, districtName: district ? DISTRICT_NAMES[district] : 'Outside the study area',
+      key, id: a.qid, name: a.name, district, districtName: district ? regionFull(district) : 'Outside the study area',
       level: a.level, trend: a.trend, strong: a.strong, slope: a.slope, km2, conf: a.conf, reason,
       score: scoreOf(a), fromMap, href, kind: a.kind,
     };
   }
   return {
-    key, id: a.qid, name: a.name, district, districtName: district ? DISTRICT_NAMES[district] : 'Outside the study area',
+    key, id: a.qid, name: a.name, district, districtName: district ? regionFull(district) : 'Outside the study area',
     level: null, trend: null, strong: false, slope: null, km2, conf: null,
     reason: a.kind === 'excluded' ? `Mask review: ${a.reason.toLowerCase()}` : a.reason,
     score: 0, fromMap, href, kind: a.kind,
@@ -137,7 +137,7 @@ export function filterQueue(rows: readonly QueueRow[], f: QueueFilter): QueueRow
 }
 
 export function queueCsv(rows: readonly QueueRow[]): string {
-  const head = ['rank', 'area', 'id', 'district', 'level', 'trend', 'slope_pct_per_year', 'pasture_km2', 'confidence', 'reason', 'score', 'added_from_map'];
+  const head = ['rank', 'area', 'id', regionLabel().toLowerCase(), 'level', 'trend', 'slope_pct_per_year', 'pasture_km2', 'confidence', 'reason', 'score', 'added_from_map'];
   const esc = (v: unknown) => {
     const s = v === null || v === undefined ? '' : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;

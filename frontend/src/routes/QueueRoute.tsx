@@ -2,9 +2,9 @@ import { isReal } from '../data/info';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Download, Info } from 'lucide-react';
-import { useApp } from '../store';
+import { queueFor, useApp } from '../store';
 import { buildQueue, EMPTY_FILTER, filterQueue, queueCsv, SCORE_FORMULA, type QueueFilter } from '../lib/queue';
-import { DISTRICT_NAMES, DISTRICT_ORDER } from '../lib/mask';
+import { isRegion, regionGroups, regionLabel, regionLabelPlural, regionName, regionOrder } from '../lib/regions';
 import { LEVEL_NAME, QUEUE_BANNER } from '../lib/labels';
 import { downloadText } from '../lib/trends';
 import { num, signed } from '../lib/format';
@@ -12,20 +12,33 @@ import type { District, Level } from '../lib/types';
 import { ConfidenceBars, LevelChip, TrendChip } from '../components/ui/Chips';
 
 const LEVELS: Level[] = ['low', 'moderate', 'good'];
+/** Rows shown before "Show all" (Central Asia has hundreds of candidate zones). */
+const PAGE = 100;
 
 export function QueueRoute() {
   const data = useApp((s) => s.data);
   const load = useApp((s) => s.load);
-  const queue = useApp((s) => s.queue);
+  const allQueue = useApp((s) => s.queue);
+  const dataset = useApp((s) => s.dataset);
+  const queue = useMemo(() => queueFor(allQueue, dataset), [allQueue, dataset]);
   const [f, setF] = useState<QueueFilter>(EMPTY_FILTER);
+  const [all, setAll] = useState(false);
   const distId = useId();
 
   useEffect(() => {
     void load();
   }, [load]);
 
+  // A filter on a region of the other dataset does not apply after a switch.
+  useEffect(() => {
+    setF((x) => (x.district && !isRegion(x.district) ? { ...x, district: null } : x));
+    setAll(false);
+  }, [data]);
+
   const rows = useMemo(() => (data ? buildQueue(data, queue) : []), [data, queue]);
   const shown = useMemo(() => filterQueue(rows, f), [rows, f]);
+  const visible = all ? shown : shown.slice(0, PAGE);
+  const groups = data ? regionGroups() : [];
   const addedCount = rows.filter((r) => r.fromMap).length;
 
   return (
@@ -70,17 +83,25 @@ export function QueueRoute() {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <label htmlFor={distId} className="text-sm text-text-2">District</label>
+            <label htmlFor={distId} className="text-sm text-text-2">{regionLabel()}</label>
             <select
               id={distId}
               value={f.district ?? ''}
               onChange={(e) => setF({ ...f, district: (e.target.value || null) as District | null })}
-              className="h-control rounded border border-border-strong bg-white px-2 text-sm coarse:h-touch"
+              className="h-control max-w-[240px] rounded border border-border-strong bg-white px-2 text-sm coarse:h-touch"
             >
-              <option value="">All districts</option>
-              {DISTRICT_ORDER.map((d) => (
-                <option key={d} value={d}>{DISTRICT_NAMES[d]}</option>
-              ))}
+              <option value="">All {regionLabelPlural().toLowerCase()}</option>
+              {groups.length > 1
+                ? groups.map((g) => (
+                    <optgroup key={g.key} label={g.countryName}>
+                      {g.codes.map((d) => (
+                        <option key={d} value={d}>{regionName(d)}</option>
+                      ))}
+                    </optgroup>
+                  ))
+                : data && regionOrder().map((d) => (
+                    <option key={d} value={d}>{regionName(d)}</option>
+                  ))}
             </select>
           </div>
           <div className="flex items-center gap-1.5" role="group" aria-label="Level">
@@ -139,7 +160,7 @@ export function QueueRoute() {
             ) : (
               <>
                 <h2 className="text-md font-semibold">No areas match these filters</h2>
-                <p className="text-sm text-text-2">Try another district or level, or allow medium confidence.</p>
+                <p className="text-sm text-text-2">Try another {regionLabel().toLowerCase()} or level, or allow medium confidence.</p>
                 <button type="button" className="btn-secondary" onClick={() => setF({ ...EMPTY_FILTER, addedOnly: f.addedOnly })}>
                   Clear filters
                 </button>
@@ -163,7 +184,7 @@ export function QueueRoute() {
                 </tr>
               </thead>
               <tbody>
-                {shown.map((r, i) => (
+                {visible.map((r, i) => (
                   <tr key={r.key} className="border-b border-hairline last:border-0 hover:bg-surface">
                     <td className="px-4 py-3 align-top font-medium">{i + 1}</td>
                     <td className="px-2 py-3 align-top">
@@ -205,6 +226,14 @@ export function QueueRoute() {
                 ))}
               </tbody>
             </table>
+            {shown.length > visible.length && (
+              <div className="flex items-center gap-3 border-t border-hairline px-4 py-3 text-sm text-text-2">
+                Showing the top {visible.length} of {shown.length} areas.
+                <button type="button" className="btn-secondary" onClick={() => setAll(true)}>
+                  Show all {shown.length}
+                </button>
+              </div>
+            )}
           </div>
         )}
         <p className="text-xs text-text-2">{SCORE_FORMULA} Areas without a reliable decline score 0.</p>

@@ -1,13 +1,73 @@
 import type { LonLat } from './types';
 
-/** Analysis grid: 40 × 22 cells of 0.12° lon × 0.09° lat, origin top-left. */
-export const LON0 = 73.6;
-export const LAT0 = 42.55;
-export const DLON = 0.12;
-export const DLAT = 0.09;
-export const COLS = 40;
-export const ROWS = 22;
-export const CELL_KM2 = 100;
+export interface Grid {
+  cols: number;
+  rows: number;
+  /** lon of the left edge of column 0 */
+  lon0: number;
+  /** lat of the top edge of row 0 */
+  lat0: number;
+  dlon: number;
+  dlat: number;
+  /** nominal area of one cell, km² */
+  cellKm2: number;
+}
+
+/** The Naryn pilot grid: 40 × 22 cells of 0.12° lon × 0.09° lat, origin top-left. Also used by the mock. */
+export const NARYN_GRID: Readonly<Grid> = { cols: 40, rows: 22, lon0: 73.6, lat0: 42.55, dlon: 0.12, dlat: 0.09, cellKm2: 100 };
+
+/*
+ * The analysis grid of the active dataset. These are live bindings: setGrid() (called when a dataset
+ * is activated, from meta.grid) updates them for every importer. They default to the Naryn grid.
+ */
+export let LON0 = NARYN_GRID.lon0;
+export let LAT0 = NARYN_GRID.lat0;
+export let DLON = NARYN_GRID.dlon;
+export let DLAT = NARYN_GRID.dlat;
+export let COLS = NARYN_GRID.cols;
+export let ROWS = NARYN_GRID.rows;
+export let CELL_KM2 = NARYN_GRID.cellKm2;
+/** Approximate side of one cell in km (10 for Naryn). */
+export let CELL_KM = Math.sqrt(NARYN_GRID.cellKm2);
+
+let current: Readonly<Grid> = NARYN_GRID;
+
+/** The active grid (a new object after each change, so it can key caches). */
+export const getGrid = (): Readonly<Grid> => current;
+
+function valid(g: Partial<Grid> | null | undefined): g is Grid {
+  return (
+    !!g &&
+    (['cols', 'rows', 'lon0', 'lat0', 'dlon', 'dlat'] as const).every((k) => typeof g[k] === 'number' && Number.isFinite(g[k])) &&
+    g.cols! > 0 &&
+    g.rows! > 0 &&
+    g.dlon! > 0 &&
+    g.dlat! > 0
+  );
+}
+
+/** Switch the analysis grid (from meta.grid). Missing or invalid input falls back to the Naryn grid. */
+export function setGrid(g?: Partial<Grid> | null): void {
+  const next: Grid = valid(g)
+    ? { ...g, cellKm2: typeof g.cellKm2 === 'number' && g.cellKm2 > 0 ? g.cellKm2 : approxCellKm2(g) }
+    : { ...NARYN_GRID };
+  const same = (Object.keys(next) as (keyof Grid)[]).every((k) => next[k] === current[k]);
+  if (same) return;
+  current = next;
+  LON0 = next.lon0;
+  LAT0 = next.lat0;
+  DLON = next.dlon;
+  DLAT = next.dlat;
+  COLS = next.cols;
+  ROWS = next.rows;
+  CELL_KM2 = next.cellKm2;
+  CELL_KM = Math.sqrt(next.cellKm2);
+}
+
+function approxCellKm2(g: Grid): number {
+  const midLat = g.lat0 - (g.rows * g.dlat) / 2;
+  return Math.round(g.dlon * 111.32 * Math.cos((midLat * Math.PI) / 180) * g.dlat * 110.57);
+}
 
 export const cellId = (c: number, r: number): string => `${c},${r}`;
 

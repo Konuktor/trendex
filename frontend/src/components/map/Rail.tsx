@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '../../store';
-import { DISTRICT_NAMES, DISTRICT_ORDER } from '../../lib/mask';
 import { LEVEL_NAME, TREND_SHORT } from '../../lib/labels';
-import { districtRow, matrixShare, scopeCells } from '../../lib/stats';
+import { areaNoun, regionGroups, regionLabelPlural, regionName, regionOrder } from '../../lib/regions';
+import { countryRow, districtRows, matrixShare, scopeCells, type DistrictRow } from '../../lib/stats';
 import { num } from '../../lib/format';
 import type { Answer } from '../../lib/answer';
 import type { Level, Trend } from '../../lib/types';
@@ -36,6 +37,7 @@ export function LayerSwitch() {
 
 export function Legend() {
   const layer = useApp((s) => s.layer);
+  useApp((s) => s.meta); // re-render on dataset switch (copy depends on it)
   return (
     <div className="flex flex-col gap-2">
       {layer === 'trend' ? (
@@ -66,7 +68,7 @@ export function Legend() {
             <span>Moderate</span>
             <span>Good</span>
           </div>
-          <div className="text-xs text-text-2">Thirds of pasture area, relative to the oblast</div>
+          <div className="text-xs text-text-2">Thirds of pasture area, relative to {areaNoun()}</div>
         </>
       )}
       <div className="flex gap-4 text-xs text-text-2">
@@ -167,11 +169,45 @@ export function MatrixSkeleton() {
   );
 }
 
+function ShareBar({ row }: { row: Pick<DistrictRow, 'dec' | 'nr' | 'inc'> }) {
+  return (
+    <span className="flex h-2 w-16 flex-none gap-px overflow-hidden rounded-xs" aria-hidden="true">
+      <span className="bg-trend-dec-strong" style={{ width: `${row.dec}%` }} />
+      <span className="hatch" style={{ width: `${row.nr}%` }} />
+      <span className="bg-trend-inc-strong" style={{ width: `${row.inc}%` }} />
+    </span>
+  );
+}
+
+function RegionRow({ row, on, onToggle, indent = false }: { row: DistrictRow; on: boolean; onToggle: () => void; indent?: boolean }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onToggle}
+      className={`flex w-full items-center gap-3 rounded border p-2 text-left transition-colors ${indent ? 'pl-7' : ''} ${
+        on ? 'border-border-strong bg-white' : 'border-transparent hover:bg-panel'
+      }`}
+    >
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-sm font-medium">{regionName(row.d)}</span>
+        <span className="text-xs text-text-2">
+          {num(row.km2)} km² · {row.dec}% decline
+        </span>
+      </span>
+      <ShareBar row={row} />
+    </button>
+  );
+}
+
 export function DistrictList({ loading = false }: { loading?: boolean }) {
   const data = useApp((s) => s.data);
   const district = useApp((s) => s.district);
   const toggle = useApp((s) => s.toggleDistrict);
-  if (!data || loading) {
+  const rows = useMemo(() => (data ? districtRows(data.past) : null), [data]);
+  /** expanded state per country, by group key (Central Asia only) */
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+  if (!data || !rows || loading) {
     return (
       <section className="flex flex-col gap-3" aria-hidden="true">
         <div className="h-4 w-20 animate-pulse rounded-sm bg-panel" />
@@ -181,35 +217,56 @@ export function DistrictList({ loading = false }: { loading?: boolean }) {
       </section>
     );
   }
+  const groups = regionGroups();
+  if (groups.length <= 1) {
+    return (
+      <section className="flex flex-col gap-1" aria-labelledby="dist-label">
+        <h2 id="dist-label" className="label-caps mb-1">{regionLabelPlural()}</h2>
+        {regionOrder().map((d) => {
+          const row = rows.get(d);
+          if (!row) return null;
+          return <RegionRow key={d} row={row} on={district === d} onToggle={() => toggle(d)} />;
+        })}
+      </section>
+    );
+  }
+  // Several countries: one collapsible group per country; the group of the active filter opens itself.
   return (
     <section className="flex flex-col gap-1" aria-labelledby="dist-label">
-      <h2 id="dist-label" className="label-caps mb-1">Districts</h2>
-      {DISTRICT_ORDER.map((d) => {
-        const row = districtRow(data.past, d);
-        if (!row) return null;
-        const on = district === d;
+      <h2 id="dist-label" className="label-caps mb-1">{regionLabelPlural()}</h2>
+      {groups.map((g) => {
+        const list = g.codes.map((d) => rows.get(d)).filter((r): r is DistrictRow => !!r);
+        if (!list.length) return null;
+        const total = countryRow(list);
+        const expanded = open[g.key] ?? (!!district && g.codes.includes(district));
+        const Icon = expanded ? ChevronDown : ChevronRight;
+        const listId = `regions-${g.key}`;
         return (
-          <button
-            key={d}
-            type="button"
-            aria-pressed={on}
-            onClick={() => toggle(d)}
-            className={`flex w-full items-center gap-3 rounded border p-2 text-left transition-colors ${
-              on ? 'border-border-strong bg-white' : 'border-transparent hover:bg-panel'
-            }`}
-          >
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-sm font-medium">{DISTRICT_NAMES[d]}</span>
-              <span className="text-xs text-text-2">
-                {num(row.km2)} km² · {row.dec}% decline
+          <div key={g.key} className="flex flex-col gap-1">
+            <button
+              type="button"
+              aria-expanded={expanded}
+              aria-controls={listId}
+              onClick={() => setOpen({ ...open, [g.key]: !expanded })}
+              className="flex w-full items-center gap-2 rounded p-2 text-left transition-colors hover:bg-panel"
+            >
+              <Icon size={14} strokeWidth={1.5} className="flex-none text-text-2" aria-hidden="true" />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-sm font-medium">{g.countryName}</span>
+                <span className="text-xs text-text-2">
+                  {list.length} {list.length === 1 ? 'region' : 'regions'} · {total.dec}% decline
+                </span>
               </span>
-            </span>
-            <span className="flex h-2 w-16 flex-none gap-px overflow-hidden rounded-xs" aria-hidden="true">
-              <span className="bg-trend-dec-strong" style={{ width: `${row.dec}%` }} />
-              <span className="hatch" style={{ width: `${row.nr}%` }} />
-              <span className="bg-trend-inc-strong" style={{ width: `${row.inc}%` }} />
-            </span>
-          </button>
+              <ShareBar row={total} />
+            </button>
+            {expanded && (
+              <div id={listId} className="flex flex-col gap-1">
+                {list.map((row) => (
+                  <RegionRow key={row.d} row={row} on={district === row.d} onToggle={() => toggle(row.d)} indent />
+                ))}
+              </div>
+            )}
+          </div>
         );
       })}
     </section>

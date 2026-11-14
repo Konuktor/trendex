@@ -1,10 +1,10 @@
 import { isReal } from '../data/info';
-import { useEffect, useId, useMemo } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Download } from 'lucide-react';
+import { ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { useApp } from '../store';
-import { DISTRICT_NAMES, DISTRICT_ORDER } from '../lib/mask';
-import { cellsCsv, districtPanels, downloadText, matrixTable, scopeTrend, trendShares } from '../lib/trends';
+import { isRegion, regionGroups, regionLabelPlural, regionName, regionOrder, studyTitle } from '../lib/regions';
+import { cellsCsv, districtPanels, downloadText, matrixTable, scopeTrend, trendShares, type DistrictPanel } from '../lib/trends';
 import { unionDomain, yDomain } from '../lib/chart';
 import { num, signed } from '../lib/format';
 import { LEVEL_NAME, NO_TREND_RESULT, TREND_NAME } from '../lib/labels';
@@ -16,9 +16,6 @@ import { C } from '../theme';
 const TREND_BAR: Record<Trend, string> = { dec: 'bg-trend-dec-strong', nr: 'hatch', inc: 'bg-trend-inc-strong' };
 const MATRIX_BG: Record<Trend, string> = { dec: C.dec, nr: '', inc: C.inc };
 
-function isDistrict(v: string | null): v is District {
-  return !!v && (DISTRICT_ORDER as string[]).includes(v);
-}
 
 function Stat({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
@@ -33,13 +30,16 @@ function Stat({ label, value, sub }: { label: string; value: string; sub: string
 export function TrendsRoute() {
   const data = useApp((s) => s.data);
   const load = useApp((s) => s.load);
+  const dataset = useApp((s) => s.dataset);
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const raw = params.get('scope');
-  const scope: District | null = isDistrict(raw) ? raw : null;
+  const scope: District | null = data && isRegion(raw) ? raw : null;
+  /** collapsed country groups of the region panels (Central Asia) */
+  const [closed, setClosed] = useState<Record<string, boolean>>({});
   const selectId = useId();
   const [chartRef, chartW] = useWidth<HTMLDivElement>(900);
-  const [gridRef, gridW] = useWidth<HTMLDivElement>(900);
+  const [gridRef, gridW] = useWidth<HTMLElement>(900);
 
   useEffect(() => {
     void load();
@@ -59,10 +59,18 @@ export function TrendsRoute() {
     const t = scopeTrend(past)!;
     const panels = districtPanels(data.past);
     const shared = unionDomain(panels.map((p) => yDomain(p.model)));
-    return { past, all, t, shares: trendShares(past), matrix: matrixTable(past), panels, shared };
+    // Several countries: one group per country, each sorted by slope like the flat list.
+    const byD = new Map(panels.map((p) => [p.d, p] as const));
+    const groups = regionGroups().map((g) => ({
+      ...g,
+      panels: g.codes.map((d) => byD.get(d)).filter((p): p is DistrictPanel => !!p).sort((a, b) => a.slope - b.slope || a.d.localeCompare(b.d)),
+    }));
+    return { past, all, t, shares: trendShares(past), matrix: matrixTable(past), panels, shared, groups };
   }, [data, scope]);
 
-  const scopeName = scope ? DISTRICT_NAMES[scope] : 'Naryn oblast';
+  const title = data ? studyTitle() : dataset === 'ca' ? 'Central Asia' : 'Naryn oblast';
+  const scopeName = scope ? regionName(scope) : title;
+  const multi = !!v && v.groups.length > 1;
 
   return (
     <main className="min-w-0 flex-1 overflow-y-auto bg-white">
@@ -81,21 +89,32 @@ export function TrendsRoute() {
             <select
               id={selectId}
               value={scope ?? ''}
-              onChange={(e) => setScope(isDistrict(e.target.value) ? e.target.value : null)}
-              className="h-control rounded border border-border-strong bg-white px-2 text-sm coarse:h-touch"
+              onChange={(e) => setScope(isRegion(e.target.value) ? e.target.value : null)}
+              className="h-control max-w-[260px] rounded border border-border-strong bg-white px-2 text-sm coarse:h-touch"
             >
-              <option value="">Naryn oblast</option>
-              {DISTRICT_ORDER.map((d) => (
-                <option key={d} value={d}>
-                  {DISTRICT_NAMES[d]}
-                </option>
-              ))}
+              <option value="">{title}</option>
+              {data && multi
+                ? v!.groups.map((g) => (
+                    <optgroup key={g.key} label={g.countryName}>
+                      {g.codes.map((d) => (
+                        <option key={d} value={d}>
+                          {regionName(d)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))
+                : data &&
+                  regionOrder().map((d) => (
+                    <option key={d} value={d}>
+                      {regionName(d)}
+                    </option>
+                  ))}
             </select>
             <button
               type="button"
               className="btn-secondary"
               disabled={!v}
-              onClick={() => v && downloadText(`trendex-${scope ?? 'naryn'}-cells.csv`, cellsCsv(v.all))}
+              onClick={() => v && downloadText(`trendex-${scope ?? dataset}-cells.csv`, cellsCsv(v.all))}
             >
               <Download size={14} strokeWidth={1.5} aria-hidden="true" />
               Download CSV
@@ -190,70 +209,113 @@ export function TrendsRoute() {
                     ))}
                   </tbody>
                 </table>
-                <p className="text-xs text-text-2">Share of pasture area in the scope. Level is relative to other pastures in Naryn oblast.</p>
+                <p className="text-xs text-text-2">Share of pasture area in the scope. Level is relative to other pastures in {title}.</p>
               </section>
             </div>
 
-            <section className="flex flex-col gap-4">
+            <section ref={gridRef} className="flex flex-col gap-4">
               <div className="flex items-baseline justify-between">
-                <h2 className="text-md font-semibold">Districts, sorted by slope</h2>
+                <h2 className="text-md font-semibold">
+                  {regionLabelPlural()}, {multi ? 'by country, sorted by slope' : 'sorted by slope'}
+                </h2>
                 <span className="text-xs text-text-2">All panels share one y-scale{isReal() ? '' : ' · Sample data'}</span>
               </div>
-              <div ref={gridRef} className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {v.panels.map((p) => {
-                  const cols = gridW >= 1024 ? 3 : gridW >= 640 ? 2 : 1;
-                  const pw = Math.floor((gridW - (cols - 1) * 16) / cols) - 34;
+              {multi ? (
+                v.groups.map((g) => {
+                  if (!g.panels.length) return null;
+                  const open = !closed[g.key];
+                  const Icon = open ? ChevronDown : ChevronRight;
                   return (
-                    <article key={p.d} className={`card flex flex-col gap-2 p-4 ${scope === p.d ? 'border-text' : ''}`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex flex-col">
-                          <h3 className="text-sm font-semibold">{p.name}</h3>
-                          <span className="text-xs text-text-2">
-                            {signed(p.slope)}% / yr · {num(p.km2)} km²
-                          </span>
-                        </div>
-                        <span className={`rounded-sm border px-1.5 text-xs ${p.reliable ? 'border-text text-text' : 'border-border-strong text-text-2'}`}>
-                          {p.reliable ? 'Reliable' : 'Not reliable'}
+                    <div key={g.key} className="flex flex-col gap-3">
+                      <button
+                        type="button"
+                        aria-expanded={open}
+                        aria-controls={`trend-group-${g.key}`}
+                        onClick={() => setClosed({ ...closed, [g.key]: open })}
+                        className="-ml-2 flex items-center gap-2 self-start rounded px-2 py-1 text-left transition-colors hover:bg-panel"
+                      >
+                        <Icon size={14} strokeWidth={1.5} className="text-text-2" aria-hidden="true" />
+                        <h3 className="text-sm font-semibold">{g.countryName}</h3>
+                        <span className="text-xs text-text-2">
+                          {g.panels.length} {g.panels.length === 1 ? 'region' : 'regions'}
                         </span>
-                      </div>
-                      <TrendChart
-                        model={p.model}
-                        trend={p.trend}
-                        width={Math.max(200, pw)}
-                        height={128}
-                        domain={v.shared}
-                        labels={false}
-                        xTicks={[0, 25]}
-                        title={`${p.name} average ${isReal() ? 'summer' : 'peak-season'} greenness`}
-                      />
-                      <div>
-                        <button
-                          type="button"
-                          className="btn-ghost -ml-2"
-                          aria-pressed={scope === p.d}
-                          onClick={() => setScope(scope === p.d ? null : p.d)}
-                        >
-                          {scope === p.d ? 'Clear scope' : 'Set as scope'}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-ghost"
-                          onClick={() => {
-                            useApp.getState().setDistrict(p.d);
-                            navigate('/map');
-                          }}
-                        >
-                          Show on map
-                        </button>
-                      </div>
-                    </article>
+                      </button>
+                      {open && (
+                        <div id={`trend-group-${g.key}`}>
+                          <PanelGrid panels={g.panels} gridW={gridW} domain={v.shared} scope={scope} setScope={setScope} onMap={(d) => { useApp.getState().setDistrict(d); navigate('/map'); }} />
+                        </div>
+                      )}
+                    </div>
                   );
-                })}
-              </div>
+                })
+              ) : (
+                <PanelGrid panels={v.panels} gridW={gridW} domain={v.shared} scope={scope} setScope={setScope} onMap={(d) => { useApp.getState().setDistrict(d); navigate('/map'); }} />
+              )}
             </section>
           </>
         )}
       </div>
     </main>
+  );
+}
+
+function PanelGrid({
+  panels,
+  gridW,
+  domain,
+  scope,
+  setScope,
+  onMap,
+}: {
+  panels: DistrictPanel[];
+  gridW: number;
+  domain: [number, number];
+  scope: District | null;
+  setScope: (d: District | null) => void;
+  onMap: (d: District) => void;
+}) {
+  const cols = gridW >= 1024 ? 3 : gridW >= 640 ? 2 : 1;
+  const pw = Math.floor((gridW - (cols - 1) * 16) / cols) - 34;
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {panels.map((p) => (
+        <article key={p.d} className={`card flex flex-col gap-2 p-4 ${scope === p.d ? 'border-text' : ''}`}>
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex flex-col">
+              <h3 className="text-sm font-semibold">{p.name}</h3>
+              <span className="text-xs text-text-2">
+                {signed(p.slope)}% / yr · {num(p.km2)} km²
+              </span>
+            </div>
+            <span className={`rounded-sm border px-1.5 text-xs ${p.reliable ? 'border-text text-text' : 'border-border-strong text-text-2'}`}>
+              {p.reliable ? 'Reliable' : 'Not reliable'}
+            </span>
+          </div>
+          <TrendChart
+            model={p.model}
+            trend={p.trend}
+            width={Math.max(200, pw)}
+            height={128}
+            domain={domain}
+            labels={false}
+            xTicks={[0, 25]}
+            title={`${p.name} average ${isReal() ? 'summer' : 'peak-season'} greenness`}
+          />
+          <div>
+            <button
+              type="button"
+              className="btn-ghost -ml-2"
+              aria-pressed={scope === p.d}
+              onClick={() => setScope(scope === p.d ? null : p.d)}
+            >
+              {scope === p.d ? 'Clear scope' : 'Set as scope'}
+            </button>
+            <button type="button" className="btn-ghost" onClick={() => onMap(p.d)}>
+              Show on map
+            </button>
+          </div>
+        </article>
+      ))}
+    </div>
   );
 }

@@ -6,7 +6,8 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import type { FeatureCollection, MultiPolygon } from 'geojson';
 import { useApp } from '../../store';
 import { cellAt, type ZoneFeature } from '../../lib/zones';
-import type { LonLat, StudyMask } from '../../lib/types';
+import { DLON } from '../../lib/geo';
+import type { DatasetMeta, LonLat, StudyMask } from '../../lib/types';
 import { C, DOTS_ID, HATCH_ID, zoneFill } from '../../theme';
 
 import { BASEMAP, HILLSHADE_URL } from './basemap';
@@ -88,11 +89,15 @@ function Zones({ zones, grey }: { zones: FeatureCollection<MultiPolygon, ZoneFea
   return null;
 }
 
-function Boundaries({ mask }: { mask: StudyMask | null }) {
+function Boundaries({ mask, meta }: { mask: StudyMask | null; meta: DatasetMeta | null }) {
   const map = useMap();
-  const fitted = useRef(false);
+  /** dataset the view was last fitted to (fit once per dataset per mount) */
+  const fitted = useRef<string | null>(null);
   useEffect(() => {
     if (!mask) return;
+    const ds = meta?.dataset ?? 'naryn';
+    // Central Asia spans ~40° of longitude: allow zooming out far enough to see all of it.
+    map.setMinZoom(ds === 'ca' ? 3 : 5);
     const group = L.layerGroup().addTo(map);
     if (mask.districts.length) {
       L.geoJSON({ type: 'FeatureCollection', features: mask.districts } as GeoJSON.FeatureCollection, {
@@ -105,18 +110,21 @@ function Boundaries({ mask }: { mask: StudyMask | null }) {
       const style = { pane: 'bounds', interactive: false } as const;
       L.geoJSON(mask.oblast, { ...style, style: { color: '#FFFFFF', weight: 3.5, fill: false, opacity: 0.9 } }).addTo(group);
       const line = L.geoJSON(mask.oblast, { ...style, style: { color: C.boundary, weight: 1.4, fill: false } }).addTo(group);
+      // Central Asia fits meta.view.bounds. Naryn keeps its original fit to the oblast outline (its
+      // view.bounds is padded 0.9° to the west and would open the pilot 0.3 zoom levels further out).
+      const target = meta?.bounds && ds !== 'naryn' ? L.latLngBounds(meta.bounds) : line.getBounds();
       const fit = (animate: boolean) => {
         const narrow = map.getSize().x < 768;
         const h = map.getSize().y;
-        map.fitBounds(line.getBounds(), {
+        map.fitBounds(target, {
           paddingTopLeft: [narrow ? 12 : 24, narrow ? 116 : 64],
           paddingBottomRight: [narrow ? 12 : DRAWER_PAD + 24, narrow ? Math.round(h * 0.45) : 24],
           animate,
         });
       };
       mapApi.current = { fitOblast: () => fit(true) };
-      if (!fitted.current) {
-        fitted.current = true;
+      if (fitted.current !== ds) {
+        fitted.current = ds;
         fit(false);
       }
     }
@@ -124,7 +132,7 @@ function Boundaries({ mask }: { mask: StudyMask | null }) {
       group.remove();
       mapApi.current = null;
     };
-  }, [map, mask]);
+  }, [map, mask, meta]);
   return null;
 }
 
@@ -227,7 +235,8 @@ function Fly() {
   const fly = useApp((s) => s.fly);
   useEffect(() => {
     if (!fly) return;
-    const zoom = Math.max(map.getZoom(), 8.6);
+    // 8.6 on the Naryn grid; one step out per doubling of the cell size (7.6 for 0.24° cells).
+    const zoom = Math.max(map.getZoom(), 8.6 - Math.log2(DLON / 0.12));
     const narrow = map.getSize().x < 768;
     // Shift the target so it lands in the middle of the part of the map the drawer leaves visible.
     const p = map.project([fly.lat, fly.lon], zoom).add(narrow ? [0, map.getSize().y * 0.22] : [DRAWER_PAD / 2, 0]);
@@ -249,14 +258,17 @@ export interface MapViewProps {
   zones: FeatureCollection<MultiPolygon, ZoneFeature['properties']> | null;
   grey?: boolean;
   mask: StudyMask | null;
+  meta?: DatasetMeta | null;
+  /** "Naryn oblast" | "Central Asia" */
+  title?: string;
   outline: MultiPolygon | null;
   poly: LonLat[] | null;
 }
 
-export function MapView({ zones, grey = false, mask, outline, poly }: MapViewProps) {
+export function MapView({ zones, grey = false, mask, meta = null, title = 'Naryn oblast', outline, poly }: MapViewProps) {
   return (
     <MapContainer
-      bounds={START_BOUNDS}
+      bounds={meta?.bounds && meta.dataset !== 'naryn' ? L.latLngBounds(meta.bounds) : START_BOUNDS}
       boundsOptions={{ paddingBottomRight: [DRAWER_PAD, 0] }}
       minZoom={5}
       maxZoom={11}
@@ -264,7 +276,7 @@ export function MapView({ zones, grey = false, mask, outline, poly }: MapViewPro
       zoomControl={false}
       attributionControl={false}
       className="absolute inset-0 z-0"
-      aria-label="Map of Naryn oblast pastures"
+      aria-label={`Map of ${title} pastures`}
     >
       <Panes />
       <TileLayer url={BASEMAP.base} pane="base" subdomains={BASEMAP.subdomains ?? 'abc'} maxNativeZoom={16} />
@@ -272,7 +284,7 @@ export function MapView({ zones, grey = false, mask, outline, poly }: MapViewPro
       <TileLayer url={BASEMAP.labels} pane="labels" subdomains={BASEMAP.subdomains ?? 'abc'} maxNativeZoom={16} />
       <Controls />
       <Zones zones={zones} grey={grey} />
-      <Boundaries mask={mask} />
+      <Boundaries mask={mask} meta={meta} />
       <Selection outline={outline} poly={poly} />
       <Interaction />
       <Fly />

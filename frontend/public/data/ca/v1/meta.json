@@ -1,0 +1,375 @@
+{
+ "dataset": "ca",
+ "title": "Central Asia",
+ "dataStatus": "sample",
+ "pipelineVersion": "ca-sample (synthetic, for frontend development)",
+ "generatedAt": "2026-11-14T17:14:00Z",
+ "years": [
+  2000,
+  2025
+ ],
+ "grid": {
+  "lon0": 46.4,
+  "lat0": 55.5,
+  "dlon": 0.24,
+  "dlat": 0.18,
+  "cols": 171,
+  "rows": 114,
+  "cellKm2": 400
+ },
+ "view": {
+  "bounds": [
+   [
+    35.07862980242362,
+    46.492161
+   ],
+   [
+    55.48040019999998,
+    87.31563160000005
+   ]
+  ]
+ },
+ "regions": [
+  {
+   "code": "KZ-pavlodar-region",
+   "name": "Pavlodar Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-jambyl-region",
+   "name": "Jambyl Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-kostanay-region",
+   "name": "Kostanay Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-mangystau-region",
+   "name": "Mangystau Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-karaganda-region",
+   "name": "Karaganda Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-kyzylorda-region",
+   "name": "Kyzylorda Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-east-kazakhstan-region",
+   "name": "East Kazakhstan Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-aktobe-region",
+   "name": "Aktobe Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-atyrau-region",
+   "name": "Atyrau Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-south-kazakhstan-region",
+   "name": "South Kazakhstan Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-akmola-region",
+   "name": "Akmola Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-almaty-region",
+   "name": "Almaty Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-north-kazakhstan-region",
+   "name": "North Kazakhstan Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-almaty",
+   "name": "Almaty",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-west-kazakhstan-region",
+   "name": "West Kazakhstan Region",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KZ-astana",
+   "name": "Astana",
+   "country": "KAZ",
+   "iso2": "KZ",
+   "countryName": "Kazakhstan"
+  },
+  {
+   "code": "KG-batken-region",
+   "name": "Batken Region",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "KG-osh-region",
+   "name": "Osh Region",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "KG-talas-region",
+   "name": "Talas Region",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "KG-jalal-abad-region",
+   "name": "Jalal-Abad Region",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "KG-issyk-kul-region",
+   "name": "Issyk-Kul Region",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "KG-chuy-region",
+   "name": "Chuy Region",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "KG-naryn-region",
+   "name": "Naryn Region",
+   "country": "KGZ",
+   "iso2": "KG",
+   "countryName": "Kyrgyzstan"
+  },
+  {
+   "code": "TJ-sughd-region",
+   "name": "Sughd Region",
+   "country": "TJK",
+   "iso2": "TJ",
+   "countryName": "Tajikistan"
+  },
+  {
+   "code": "TJ-gorno-badakhshan-autonomous-region",
+   "name": "Gorno-Badakhshan Autonomous Region",
+   "country": "TJK",
+   "iso2": "TJ",
+   "countryName": "Tajikistan"
+  },
+  {
+   "code": "TJ-districts-of-republican-subordination",
+   "name": "Districts of Republican Subordination",
+   "country": "TJK",
+   "iso2": "TJ",
+   "countryName": "Tajikistan"
+  },
+  {
+   "code": "TJ-khatlon-region",
+   "name": "Khatlon Region",
+   "country": "TJK",
+   "iso2": "TJ",
+   "countryName": "Tajikistan"
+  },
+  {
+   "code": "TJ-dushanbe",
+   "name": "Dushanbe",
+   "country": "TJK",
+   "iso2": "TJ",
+   "countryName": "Tajikistan"
+  },
+  {
+   "code": "TM-balkan",
+   "name": "Balkan",
+   "country": "TKM",
+   "iso2": "TM",
+   "countryName": "Turkmenistan"
+  },
+  {
+   "code": "TM-ahai",
+   "name": "Ahai",
+   "country": "TKM",
+   "iso2": "TM",
+   "countryName": "Turkmenistan"
+  },
+  {
+   "code": "TM-dasoguz",
+   "name": "Dasoguz",
+   "country": "TKM",
+   "iso2": "TM",
+   "countryName": "Turkmenistan"
+  },
+  {
+   "code": "TM-lebap",
+   "name": "Lebap",
+   "country": "TKM",
+   "iso2": "TM",
+   "countryName": "Turkmenistan"
+  },
+  {
+   "code": "TM-mary",
+   "name": "Mary",
+   "country": "TKM",
+   "iso2": "TM",
+   "countryName": "Turkmenistan"
+  },
+  {
+   "code": "UZ-andijan-region",
+   "name": "Andijan Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-namangan-region",
+   "name": "Namangan Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-fergana-region",
+   "name": "Fergana Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-republic-of-karakalpakstan",
+   "name": "Republic of Karakalpakstan",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-xorazm-region",
+   "name": "Xorazm Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-navoiy-region",
+   "name": "Navoiy Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-surxondaryo-region",
+   "name": "Surxondaryo Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-samarqand-region",
+   "name": "Samarqand Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-tashkent-region",
+   "name": "Tashkent Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-sirdaryo-region",
+   "name": "Sirdaryo Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-jizzakh-region",
+   "name": "Jizzakh Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-bukhara-region",
+   "name": "Bukhara Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-qashqadaryo-region",
+   "name": "Qashqadaryo Region",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  },
+  {
+   "code": "UZ-tashkent",
+   "name": "Tashkent",
+   "country": "UZB",
+   "iso2": "UZ",
+   "countryName": "Uzbekistan"
+  }
+ ],
+ "boundaryFile": "boundary.geojson",
+ "regionsFile": "regions.geojson",
+ "regionLabel": {
+  "en": "Region",
+  "ru": "Регион"
+ },
+ "defaultCellId": "115,68",
+ "lowCellId": null,
+ "excludedCellId": "20,58",
+ "sources": {
+  "note": "SAMPLE data. The real Central Asia export (NASA MODIS 1 km, aggregated) replaces this file."
+ }
+}

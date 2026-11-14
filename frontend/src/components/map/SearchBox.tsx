@@ -1,8 +1,8 @@
 import { useId, useMemo, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
 import { useApp } from '../../store';
-import { NO_MATCH_TEXT, parseSearch, type Suggestion } from '../../lib/places';
-import { toCell } from '../../lib/geo';
+import { noMatchText, parseSearch, searchPlaceholder, type Suggestion } from '../../lib/places';
+import { DLON, toCell } from '../../lib/geo';
 
 /** Select the zone under a point, or a small outline around it when no data cell is near. */
 export function goTo(lon: number, lat: number) {
@@ -23,7 +23,7 @@ export function goTo(lon: number, lat: number) {
   if (s.drawing) s.setDrawing(false);
   if (best && bd < 9) s.selectZone(best.id, true);
   else {
-    const e = 0.08;
+    const e = 0.08 * (DLON / 0.12); // 0.08° on the Naryn grid, scaled with the cell size
     s.selectDrawn(
       [
         [lon - e, lat + e * 0.75],
@@ -39,7 +39,8 @@ export function goTo(lon: number, lat: number) {
 export function SearchBox({ className = 'w-80' }: { className?: string }) {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
-  const list = useMemo(() => parseSearch(q), [q]);
+  const meta = useApp((s) => s.meta); // places and copy follow the active dataset
+  const list = useMemo(() => parseSearch(q), [q, meta]); // eslint-disable-line react-hooks/exhaustive-deps
   const id = useId();
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +69,7 @@ export function SearchBox({ className = 'w-80' }: { className?: string }) {
         id={`${id}-q`}
         type="text"
         autoComplete="off"
-        placeholder="Search a place or 42.15, 74.02"
+        placeholder={searchPlaceholder()}
         value={q}
         aria-controls={`${id}-list`}
         aria-expanded={open && !!q.trim()}
@@ -118,7 +119,7 @@ export function SearchBox({ className = 'w-80' }: { className?: string }) {
               </button>
             ))
           ) : (
-            <span className="p-2 text-sm text-text-2">{NO_MATCH_TEXT}</span>
+            <span className="p-2 text-sm text-text-2">{noMatchText()}</span>
           )}
         </div>
       )}

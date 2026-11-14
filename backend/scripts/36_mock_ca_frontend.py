@@ -51,7 +51,7 @@ def main(out: Path):
         trend = ("dec" if slope[i] < 0 else "inc") if rel else "nr"
         p = int(pct[i])
         cells.append({"id": f"{c[i]},{r[i]}", "c": int(c[i]), "r": int(r[i]), "lon": round(float(lon[i]), 4),
-                      "lat": round(float(lat[i]), 4), "d": reg[i], "country": reg[i][:2], "kind": kind[i],
+                      "lat": round(float(lat[i]), 4), "d": reg[i], "country": {"KZ": "KAZ", "KG": "KGZ", "TJ": "TJK", "TM": "TKM", "UZ": "UZB"}[reg[i][:2]], "kind": kind[i],
                       "why": "Desert and bare ground" if kind[i] == "excluded" else "", "water": False,
                       "pct": p if kind[i] == "pasture" else 0,
                       "level": ("low" if p < 33 else "moderate" if p < 67 else "good") if kind[i] == "pasture" else "low",

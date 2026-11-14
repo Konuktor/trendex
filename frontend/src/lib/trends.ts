@@ -1,7 +1,7 @@
 import { dataInfo, isReal } from '../data/info';
 import { avg } from './format';
 import { CELL_KM2 } from './geo';
-import { DISTRICT_NAMES, DISTRICT_ORDER } from './mask';
+import { multiCountry, regionLabel, regionName, regionOrder } from './regions';
 import { fit, meanSeries, series } from './series';
 import type { ChartModel } from './chart';
 import type { Cell, District, Level, Trend } from './types';
@@ -79,11 +79,17 @@ export interface DistrictPanel extends ScopeTrend {
 /** One panel per district with pasture, sorted by slope (steepest decline first). */
 export function districtPanels(past: readonly Cell[]): DistrictPanel[] {
   const out: DistrictPanel[] = [];
-  for (const d of DISTRICT_ORDER) {
-    const cells = past.filter((x) => x.d === d);
+  const by = new Map<District, Cell[]>();
+  for (const x of past) {
+    const a = by.get(x.d);
+    if (a) a.push(x);
+    else by.set(x.d, [x]);
+  }
+  for (const d of regionOrder()) {
+    const cells = by.get(d) ?? [];
     const t = scopeTrend(cells);
     if (!t) continue;
-    out.push({ ...t, d, name: DISTRICT_NAMES[d], km2: cells.length * CELL_KM2, reliable: t.trend !== 'nr' });
+    out.push({ ...t, d, name: regionName(d), km2: cells.length * CELL_KM2, reliable: t.trend !== 'nr' });
   }
   return out.sort((a, b) => a.slope - b.slope || a.d.localeCompare(b.d));
 }
@@ -100,16 +106,18 @@ function esc(v: string | number | boolean): string {
 
 /** Per-cell table for a scope. Level/trend are blank for cells that are not pasture. */
 export function cellsCsv(cells: readonly Cell[]): string {
+  const withCountry = multiCountry();
   const rows = cells.map((x) => {
     const p = x.kind === 'pasture';
     return [
-      x.id, DISTRICT_NAMES[x.d], x.lon.toFixed(3), x.lat.toFixed(3), x.kind, x.why,
+      x.id, regionName(x.d), ...(withCountry ? [x.country ?? ''] : []), x.lon.toFixed(3), x.lat.toFixed(3), x.kind, x.why,
       p ? x.level : '', p ? x.pct : '', p ? x.trend : '', p ? x.slope.toFixed(1) : '', p ? x.strong : '',
       x.cov.toFixed(2), x.seasons, p ? x.conf : '',
     ].map(esc).join(',');
   });
   const head = isReal() ? `# TrendeX, NASA MODIS MOD13A3 summer NDVI 2000–2025, pipeline ${dataInfo.pipelineVersion}` : '# TrendeX sample data, not real measurements';
-  return [head, CSV_COLS.join(','), ...rows].join('\n') + '\n';
+  const cols = CSV_COLS.flatMap((c) => (c === 'district' ? [regionLabel().toLowerCase(), ...(withCountry ? ['country'] : [])] : [c])).join(',');
+  return [head, cols, ...rows].join('\n') + '\n';
 }
 
 export function downloadText(filename: string, text: string, type = 'text/csv') {
