@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Layers, X } from 'lucide-react';
 import type { Answer } from '../../lib/answer';
-import { AnswerCardHeader, AnswerDetails, AnswerSummary, NotAccounted, type CardActions } from '../card/AnswerCard';
+import { AnswerCardHeader, AnswerDetails, AnswerSummary, AreaHeading, NotAccounted, type CardActions } from '../card/AnswerCard';
+import { PixelBlock } from '../card/PixelBlock';
 import { CountrySelect, DistrictList, LayerSwitch, Legend, Matrix } from './Rail';
 import { HeadlineSummary } from './HeadlineStrip';
 import { useWidth } from '../../hooks/useWidth';
@@ -66,6 +67,8 @@ export function AnswerSheet({ a, act }: { a: Answer; act: CardActions }) {
         <AnswerCardHeader a={a} onClose={act.onClose} compact={!expanded} />
       </div>
       <div ref={ref} className={`flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-6 ${expanded ? 'gap-6 pt-5' : 'gap-4 pt-4'}`}>
+        <PixelBlock />
+        <AreaHeading />
         <AnswerSummary a={a} />
         {expanded ? (
           <AnswerDetails a={a} act={act} chartWidth={Math.max(260, w - 48)} />

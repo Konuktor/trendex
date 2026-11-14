@@ -4,6 +4,23 @@ import { useApp } from '../../store';
 import { LEVEL_NAME, TREND_SHORT } from '../../lib/labels';
 import { areaNoun, countries, multiCountry, regionGroups, regionLabelPlural, regionName, regionOrder, regionsOf, studyTitle } from '../../lib/regions';
 import { countryRow, districtRows, matrixShare, scopeCells, type DistrictRow } from '../../lib/stats';
+import {
+  CHORO_LABELS,
+  CHORO_OPACITY,
+  inlineLabel,
+  legendCodes,
+  OVERVIEW_MAX_ZOOM,
+  overviewActive,
+  pxMatrixShare,
+  pxScope,
+  shortLabel,
+  TIER_CODE,
+  TIER_KEYS,
+  tierPercents,
+  type PxInfo,
+  type PxStats,
+} from '../../lib/px';
+import { CELL_KM } from '../../lib/geo';
 import { num } from '../../lib/format';
 import type { Answer } from '../../lib/answer';
 import type { Level, Trend } from '../../lib/types';
@@ -35,9 +52,92 @@ export function LayerSwitch() {
   );
 }
 
+/** Central Asia at low zoom: what the region shading means, with a decline / growth toggle. */
+function OverviewLegend() {
+  const kind = useApp((s) => s.overviewKind);
+  const setKind = useApp((s) => s.setOverviewKind);
+  const color = kind === 'decline' ? C.decStrong : C.incStrong;
+  return (
+    <div className="flex flex-col gap-2 rounded border border-hairline bg-white p-2" data-testid="overview-legend">
+      <span className="text-xs font-medium text-text">Regions at this zoom</span>
+      <div role="group" aria-label="Shade regions by" className="grid h-control grid-cols-2 gap-0.5 rounded border border-hairline bg-seg p-0.5">
+        {(['decline', 'growth'] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            aria-pressed={kind === k}
+            onClick={() => setKind(k)}
+            className={`rounded-sm text-sm font-medium transition-colors ${kind === k ? 'bg-white text-text shadow-hair' : 'text-text-2 hover:text-text'}`}
+          >
+            {k === 'decline' ? 'Decline' : 'Growth'}
+          </button>
+        ))}
+      </div>
+      <ul className="grid grid-cols-2 gap-x-3 gap-y-1">
+        {CHORO_LABELS.map((label, i) => (
+          <li key={label} className="flex items-center gap-1.5 text-xs text-text-2">
+            <span aria-hidden="true" className="h-3 w-3 flex-none rounded-[3px] border border-hairline bg-white">
+              <span className="block h-full w-full rounded-[2px]" style={{ background: color, opacity: CHORO_OPACITY[i] }} />
+            </span>
+            {label}
+          </li>
+        ))}
+      </ul>
+      <span className="text-xs text-text-2">
+        Share of pasture with {kind === 'decline' ? 'a reliable or possible decline' : 'reliable or possible growth'}. Zoom in past level{' '}
+        {OVERVIEW_MAX_ZOOM} for the 1 km pixels.
+      </span>
+    </div>
+  );
+}
+
+/** Legend of the 1 km layer: real class labels and colours from px/meta.json; masks that cover no area are left out. */
+function PxLegend({ px }: { px: PxInfo }) {
+  const layer = useApp((s) => s.layer);
+  const data = useApp((s) => s.data);
+  const zoom = useApp((s) => s.mapZoom);
+  const filtered = useApp((s) => !!s.matrix || !!s.district);
+  const showOverview = overviewActive({ hasStats: !!px.regions, multi: !!data && multiCountry(), layer, zoom, filtered });
+  const codes = legendCodes(px.meta, layer, px.regions?.all ?? null);
+  const item = (code: number) => {
+    const c = px.meta.codes[String(code)];
+    return (
+      <li key={code} className="flex items-center gap-1.5 text-xs text-text-2">
+        <span aria-hidden="true" className="h-3 w-3 flex-none rounded-[3px] border border-hairline" style={{ background: c.color }} />
+        {c.label}
+      </li>
+    );
+  };
+  const dataCodes = codes.filter((c) => c < 40);
+  const masks = codes.filter((c) => c >= 40);
+  return (
+    <div className="flex flex-col gap-2" data-testid="px-legend">
+      {showOverview && <OverviewLegend />}
+      <ul className="flex flex-col gap-1">{dataCodes.map(item)}</ul>
+      {layer === 'trend' ? (
+        <div className="text-xs text-text-2">
+          {shortLabel(px.meta, 2)} or {inlineLabel(px.meta, 4)}: the pixel’s own test passes (p &lt; 0.05), but not the
+          correction for testing every pixel.
+        </div>
+      ) : (
+        <div className="text-xs text-text-2">Relative to other pastures in {studyTitle()}</div>
+      )}
+      {masks.length > 0 && (
+        <>
+          <div className="text-xs font-medium text-text-2">Not pasture</div>
+          <ul className="grid grid-cols-2 gap-x-3 gap-y-1">{masks.map(item)}</ul>
+        </>
+      )}
+      <div className="text-xs text-text-2">1 km pixels, NASA MODIS 2000–2025</div>
+    </div>
+  );
+}
+
 export function Legend() {
   const layer = useApp((s) => s.layer);
+  const px = useApp((s) => s.px);
   useApp((s) => s.meta); // re-render on dataset switch (copy depends on it)
+  if (px) return <PxLegend px={px} />;
   return (
     <div className="flex flex-col gap-2">
       {layer === 'trend' ? (
@@ -93,7 +193,11 @@ export function Matrix({ card, loading = false }: { card: Answer | null; loading
   const toggleMatrix = useApp((s) => s.toggleMatrix);
   const clear = useApp((s) => s.toggleMatrix);
   const country = useApp((s) => s.country);
+  const px = useApp((s) => s.px);
   const scope = useMemo(() => (data ? scopeCells(data.past, district, country) : []), [data, district, country]);
+  // 1 km pixel shares when the export has the joint level × trend table for this scope.
+  const pxStats = pxScope(px?.regions, district, country);
+  const fromPx = pxMatrixShare(pxStats, 'low', 'dec') !== null;
   if (!data || loading) return <MatrixSkeleton />;
   return (
     <section className="flex flex-col gap-2" aria-labelledby="mx-label">
@@ -116,7 +220,7 @@ export function Matrix({ card, loading = false }: { card: Answer | null; loading
           <span className="text-xs text-text-2">{LEVEL_NAME[lv]}</span>
           {TRENDS.map((tr) => {
             const on = !!matrix && matrix.level === lv && matrix.trend === tr;
-            const p = matrixShare(scope, lv, tr);
+            const p = fromPx ? pxMatrixShare(pxStats, lv, tr)! : matrixShare(scope, lv, tr);
             const here = card?.kind === 'pasture' && card.level === lv && card.trend === tr;
             const bg = layer === 'trend' ? (tr === 'dec' ? C.dec : tr === 'inc' ? C.inc : undefined) : LEVEL_BG[lv];
             return (
@@ -148,7 +252,9 @@ export function Matrix({ card, loading = false }: { card: Answer | null; loading
         </div>
       ))}
       <p className="text-xs text-text-2">
-        Share of pasture area. Click a cell to filter the map. The black dot marks the selected area.
+        {fromPx
+          ? `Share of pasture area (1 km pixels); ${inlineLabel(px!.meta, 2).split(' ')[0]} trends count as not reliable. Click a cell to filter the map by ${Math.round(CELL_KM)} km cells. The black dot marks the selected area.`
+          : 'Share of pasture area. Click a cell to filter the map. The black dot marks the selected area.'}
       </p>
     </section>
   );
@@ -170,17 +276,52 @@ export function MatrixSkeleton() {
   );
 }
 
-function ShareBar({ row }: { row: Pick<DistrictRow, 'dec' | 'nr' | 'inc'> }) {
+interface BarSeg {
+  pct: number;
+  cls?: string;
+  color?: string;
+}
+
+function ShareBar({ segs }: { segs: BarSeg[] }) {
   return (
     <span className="flex h-2 w-16 flex-none gap-px overflow-hidden rounded-xs" aria-hidden="true">
-      <span className="bg-trend-dec-strong" style={{ width: `${row.dec}%` }} />
-      <span className="hatch" style={{ width: `${row.nr}%` }} />
-      <span className="bg-trend-inc-strong" style={{ width: `${row.inc}%` }} />
+      {segs.map((g, i) => (
+        <span key={i} className={g.cls} style={{ width: `${g.pct}%`, background: g.color }} />
+      ))}
     </span>
   );
 }
 
-function RegionRow({ row, on, onToggle, indent = false }: { row: DistrictRow; on: boolean; onToggle: () => void; indent?: boolean }) {
+/** Bar and summary of a row: 1 km pixel shares (five tiers) when available, else 10/20 km cell counts. */
+interface RowView {
+  km2: number;
+  sub: string;
+  segs: BarSeg[];
+}
+
+function cellView(row: Pick<DistrictRow, 'km2' | 'dec' | 'nr' | 'inc'>, extra = ''): RowView {
+  return {
+    km2: row.km2,
+    sub: `${extra}${num(row.km2)} km² · ${row.dec}% decline`,
+    segs: [
+      { cls: 'bg-trend-dec-strong', pct: row.dec },
+      { cls: 'hatch', pct: row.nr },
+      { cls: 'bg-trend-inc-strong', pct: row.inc },
+    ],
+  };
+}
+
+function pxView(st: PxStats, px: PxInfo, extra = ''): RowView {
+  const pc = tierPercents(st);
+  const keys = TIER_KEYS.filter((k) => k !== 'insufficient' || st.trend.insufficient > 0);
+  return {
+    km2: st.pasture_km2,
+    sub: `${extra}${num(Math.round(st.pasture_km2))} km² · ${pc.decline}% decline · ${pc.early_decline}% ${inlineLabel(px.meta, 2).split(' ')[0]}`,
+    segs: keys.map((k) => ({ pct: 100 * (st.trend[k] ?? 0), color: px.meta.codes[String(TIER_CODE[k])]?.color })),
+  };
+}
+
+function RegionRow({ name, view, on, onToggle, indent = false }: { name: string; view: RowView; on: boolean; onToggle: () => void; indent?: boolean }) {
   return (
     <button
       type="button"
@@ -191,12 +332,10 @@ function RegionRow({ row, on, onToggle, indent = false }: { row: DistrictRow; on
       }`}
     >
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-sm font-medium">{regionName(row.d)}</span>
-        <span className="text-xs text-text-2">
-          {num(row.km2)} km² · {row.dec}% decline
-        </span>
+        <span className="text-sm font-medium">{name}</span>
+        <span className="text-xs text-text-2">{view.sub}</span>
       </span>
-      <ShareBar row={row} />
+      <ShareBar segs={view.segs} />
     </button>
   );
 }
@@ -206,7 +345,15 @@ export function DistrictList({ loading = false }: { loading?: boolean }) {
   const district = useApp((s) => s.district);
   const country = useApp((s) => s.country);
   const toggle = useApp((s) => s.toggleDistrict);
+  const px = useApp((s) => s.px);
   const rows = useMemo(() => (data ? districtRows(data.past) : null), [data]);
+  /** a region's row: 1 km pixel shares when px/regions.json has it, else its 10/20 km cells */
+  const viewOf = (d: string): RowView | null => {
+    const st = px?.regions?.regions[d];
+    if (px && st) return pxView(st, px);
+    const row = rows?.get(d);
+    return row ? cellView(row) : null;
+  };
   /** expanded state per country, by group key (Central Asia only) */
   const [open, setOpen] = useState<Record<string, boolean>>({});
   if (!data || !rows || loading) {
@@ -226,9 +373,9 @@ export function DistrictList({ loading = false }: { loading?: boolean }) {
       <section className="flex flex-col gap-1" aria-labelledby="dist-label">
         <h2 id="dist-label" className="label-caps mb-1">{regionLabelPlural()}</h2>
         {(country ? regionsOf(country) : regionOrder()).map((d) => {
-          const row = rows.get(d);
-          if (!row) return null;
-          return <RegionRow key={d} row={row} on={district === d} onToggle={() => toggle(d)} />;
+          const view = viewOf(d);
+          if (!view) return null;
+          return <RegionRow key={d} name={regionName(d)} view={view} on={district === d} onToggle={() => toggle(d)} />;
         })}
       </section>
     );
@@ -240,7 +387,9 @@ export function DistrictList({ loading = false }: { loading?: boolean }) {
       {groups.map((g) => {
         const list = g.codes.map((d) => rows.get(d)).filter((r): r is DistrictRow => !!r);
         if (!list.length) return null;
-        const total = countryRow(list);
+        const cst = px?.regions?.countries?.[g.key];
+        const total = px && cst ? pxView(cst, px) : cellView(countryRow(list));
+        const pc = px && cst ? tierPercents(cst) : null;
         const expanded = open[g.key] ?? (!!district && g.codes.includes(district));
         const Icon = expanded ? ChevronDown : ChevronRight;
         const listId = `regions-${g.key}`;
@@ -257,15 +406,15 @@ export function DistrictList({ loading = false }: { loading?: boolean }) {
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="text-sm font-medium">{g.countryName}</span>
                 <span className="text-xs text-text-2">
-                  {list.length} {list.length === 1 ? 'region' : 'regions'} · {total.dec}% decline
+                  {list.length} {list.length === 1 ? 'region' : 'regions'} · {pc && px ? `${pc.decline}% decline · ${pc.early_decline}% ${inlineLabel(px.meta, 2).split(' ')[0]}` : `${countryRow(list).dec}% decline`}
                 </span>
               </span>
-              <ShareBar row={total} />
+              <ShareBar segs={total.segs} />
             </button>
             {expanded && (
               <div id={listId} className="flex flex-col gap-1">
                 {list.map((row) => (
-                  <RegionRow key={row.d} row={row} on={district === row.d} onToggle={() => toggle(row.d)} indent />
+                  <RegionRow key={row.d} name={regionName(row.d)} view={viewOf(row.d)!} on={district === row.d} onToggle={() => toggle(row.d)} indent />
                 ))}
               </div>
             )}

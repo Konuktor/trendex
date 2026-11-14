@@ -4,6 +4,7 @@ import { HAS_DATASETS, initialCountry, initialDataset } from './data/dataset';
 import { countryOf, countryOfRegion, resolveCountry } from './lib/regions';
 import { isReal } from './data/info';
 import type { DataSet, DatasetId, DatasetMeta, District, Layer, LonLat, MatrixFilter, StudyMask } from './lib/types';
+import type { OverviewKind, PxInfo } from './lib/px';
 
 export type SelectionRef = { type: 'zone'; id: string } | { type: 'drawn'; poly: LonLat[] } | null;
 
@@ -67,6 +68,17 @@ interface AppState {
   /** switch dataset: clears data, filters and selection, then loads (selection resets to meta.defaultCellId) */
   setDataset: (ds: DatasetId) => void;
   meta: DatasetMeta | null;
+  /** native 1 km layer of the active dataset (null: mock, or no px/ export yet) */
+  px: PxInfo | null;
+  /** current map zoom (the Central Asia overview shades regions up to OVERVIEW_MAX_ZOOM) */
+  mapZoom: number;
+  setMapZoom: (z: number) => void;
+  /** which direction the overview shades: share of pasture in decline or in growth */
+  overviewKind: OverviewKind;
+  setOverviewKind: (k: OverviewKind) => void;
+  /** the clicked or searched point, for the card's "This 1 km pixel" block */
+  pixel: { lat: number; lon: number } | null;
+  setPixel: (p: { lat: number; lon: number } | null) => void;
   /** Central Asia: the chosen country (ISO3), null = the whole dataset */
   country: string | null;
   /** choose a country: the map fits and outlines it, lists and shares are scoped to it */
@@ -116,6 +128,8 @@ export const useApp = create<AppState>((set, get) => ({
     set({
       dataset: ds,
       country: null,
+      px: null,
+      pixel: null,
       data: null,
       mask: null,
       meta: null,
@@ -130,6 +144,15 @@ export const useApp = create<AppState>((set, get) => ({
     void get().load();
   },
   meta: null,
+  px: null,
+  pixel: null,
+  setPixel: (pixel) => set({ pixel }),
+  mapZoom: 0,
+  setMapZoom: (mapZoom) => {
+    if (get().mapZoom !== mapZoom) set({ mapZoom });
+  },
+  overviewKind: 'decline',
+  setOverviewKind: (overviewKind) => set({ overviewKind }),
   country: initialCountry(),
   setCountry(c) {
     const s = get();
@@ -157,7 +180,7 @@ export const useApp = create<AppState>((set, get) => ({
       if (get().dataset !== ds) return;
       if (get().data === loaded.data) return;
       activate(loaded);
-      const { data, mask, meta } = loaded;
+      const { data, mask, meta, px } = loaded;
       set((s) => {
         // A country from the URL must exist in this dataset; the default area is kept only inside it.
         const country = ds === 'ca' ? resolveCountry(s.country) : null;
@@ -166,6 +189,7 @@ export const useApp = create<AppState>((set, get) => ({
           data,
           mask,
           meta,
+          px,
           country,
           real: isReal(),
           loadError: null,
@@ -195,21 +219,21 @@ export const useApp = create<AppState>((set, get) => ({
 
   sel: null,
   selectZone: (id, fly = false) => {
-    set({ sel: { type: 'zone', id }, drawing: false, drawCount: 0 });
+    set({ sel: { type: 'zone', id }, drawing: false, drawCount: 0, pixel: null });
     if (fly) {
       const c = get().data?.byId[id];
       if (c) get().flyTo(c.lon, c.lat);
     }
   },
   selectDrawn: (poly, fly = false) => {
-    set({ sel: { type: 'drawn', poly }, drawing: false, drawCount: 0 });
+    set({ sel: { type: 'drawn', poly }, drawing: false, drawCount: 0, pixel: null });
     if (fly && poly.length) {
       const lon = poly.reduce((a, p) => a + p[0], 0) / poly.length;
       const lat = poly.reduce((a, p) => a + p[1], 0) / poly.length;
       get().flyTo(lon, lat);
     }
   },
-  clearSelection: () => set({ sel: null }),
+  clearSelection: () => set({ sel: null, pixel: null }),
   fly: null,
   flyTo: (lon, lat) => set((s) => ({ fly: { lon, lat, seq: (s.fly?.seq ?? 0) + 1 } })),
 

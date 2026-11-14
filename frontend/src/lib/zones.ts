@@ -232,3 +232,17 @@ export function buildZoneGeoJSON(
   push('dim', dim);
   return { type: 'FeatureCollection', features };
 }
+
+/**
+ * With the 1 km tiles as the data layer: only the grey "dim" overlay for cells outside the filter
+ * (region, country or level × trend), empty when no filter is set.
+ */
+export function buildDimGeoJSON(cells: readonly Cell[], filter: ZoneFilter): FeatureCollection<MultiPolygon, ZoneFeature['properties']> {
+  const features: ZoneFeature[] = [];
+  if (filter.matrix || filter.district || filter.country) {
+    const dim = cells.filter((x) => !x.water && !matchesFilter(x, filter));
+    const g = smoothPolygon(dim);
+    if (g) features.push({ type: 'Feature', geometry: g, properties: { cls: 'dim', cells: dim.length } });
+  }
+  return { type: 'FeatureCollection', features };
+}

@@ -53,3 +53,6 @@
 .leaflet-left .leaflet-control { margin-left: 16px; }
 .leaflet-bottom .leaflet-control { margin-bottom: 8px; }
 .leaflet-bottom.leaflet-left { bottom: 8px; }
+
+/* 1 km pixel tiles: show each pixel as a crisp square when zoomed past the native level. */
+.px-tiles img { image-rendering: crisp-edges; image-rendering: pixelated; }

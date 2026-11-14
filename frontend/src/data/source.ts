@@ -6,11 +6,15 @@ import { series } from '../lib/series';
 import type { BoundaryFeature, Cell, DataSet, DatasetId, DatasetMeta, District, Region, StudyMask } from '../lib/types';
 import { API_URL, datasetBase } from './dataset';
 import { setDataInfo } from './info';
+import { loadPx } from './px';
+import type { PxInfo } from '../lib/px';
 
 export interface Loaded {
   data: DataSet;
   mask: StudyMask;
   meta: DatasetMeta;
+  /** native 1 km layer (px/), null when the export has none (mock, or an export from before px) */
+  px: PxInfo | null;
 }
 
 /**
@@ -60,7 +64,7 @@ export const mockSource: DataSource = {
         ([a1, a2]) => {
           setGrid(NARYN_GRID);
           const mask = (a1 && buildMask(a1, a2)) || approxMask();
-          return { data: buildData(mask), mask, meta: MOCK_META };
+          return { data: buildData(mask), mask, meta: MOCK_META, px: null };
         },
       );
     }
@@ -172,7 +176,11 @@ export const apiSource: DataSource = {
       p = (async () => {
         const [m, body] = await Promise.all([getJson<ApiMeta>(`${base}/meta.json`), getJson<{ cells: Cell[] }>(`${base}/cells.json`)]);
         const [bf, rf] = DEFAULT_FILES[m.dataset === 'ca' ? 'ca' : ds];
-        const [obl, dis] = await Promise.all([loadJson(`${base}/${m.boundaryFile || bf}`), loadJson(`${base}/${m.regionsFile || rf}`)]);
+        const [obl, dis, px] = await Promise.all([
+          loadJson(`${base}/${m.boundaryFile || bf}`),
+          loadJson(`${base}/${m.regionsFile || rf}`),
+          loadPx(base),
+        ]);
         const cells = [...body.cells].sort((a, b) => a.r - b.r || a.c - b.c);
         const byId: Record<string, Cell> = {};
         const mm: Record<string, District> = {};
@@ -191,7 +199,7 @@ export const apiSource: DataSource = {
           excl: pick(m.excludedCellId),
         };
         const mask: StudyMask = { m: mm, oblast: obl?.features?.[0] ?? null, districts: dis?.features ?? [] };
-        return { data, mask, meta: normaliseMeta(ds, m, cells) };
+        return { data, mask, meta: normaliseMeta(ds, m, cells), px };
       })().catch((e) => {
         apiCached.delete(ds);
         throw e;

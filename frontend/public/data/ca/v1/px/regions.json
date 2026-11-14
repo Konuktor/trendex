@@ -1,0 +1,2762 @@
+{
+ "all": {
+  "pasture_km2": 2977504.7,
+  "n_pasture_px": 3467720,
+  "trend": {
+   "decline": 0.02574573494976526,
+   "early_decline": 0.09606744489174442,
+   "stable": 0.809227676975073,
+   "early_growth": 0.046992836791897835,
+   "growth": 0.021966306391519492,
+   "insufficient": 0.0
+  },
+  "level": {
+   "low": 0.31429700206475725,
+   "moderate": 0.34975834265742317,
+   "good": 0.3359446552778193
+  },
+  "matrix": {
+   "low": {
+    "decline": 0.007821854128937746,
+    "early_decline": 0.034869597314662076,
+    "stable": 0.2512552916613798,
+    "early_growth": 0.013016045124750557,
+    "growth": 0.007334213835027049,
+    "insufficient": 0.0
+   },
+   "moderate": {
+    "decline": 0.008502416573425767,
+    "early_decline": 0.030852548648679822,
+    "stable": 0.28521420414566345,
+    "early_growth": 0.018494572802879125,
+    "growth": 0.006694600486775172,
+    "insufficient": 0.0
+   },
+   "good": {
+    "decline": 0.009421464247401751,
+    "early_decline": 0.030345298928402518,
+    "stable": 0.27275818116802975,
+    "early_growth": 0.015482218864268165,
+    "growth": 0.007937492069717278,
+    "insufficient": 0.0
+   }
+  },
+  "excluded_km2": {
+   "water": 100118.5,
+   "snow_ice": 18385.9,
+   "urban": 19564.0,
+   "cropland": 204959.5,
+   "forest": 9853.7,
+   "steep": 33822.5,
+   "bare": 600826.2
+  }
+ },
+ "regions": {
+  "KG-batken-region": {
+   "pasture_km2": 11662.8,
+   "n_pasture_px": 13583,
+   "trend": {
+    "decline": 0.010822351468747694,
+    "early_decline": 0.042332327173672954,
+    "stable": 0.8270632408157252,
+    "early_growth": 0.07472576014135315,
+    "growth": 0.0450563204005006,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.3647206066406536,
+    "moderate": 0.3636899065007729,
+    "good": 0.2715894868585732
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.00905543694323787,
+     "early_decline": 0.03555915482588529,
+     "stable": 0.28911138923654567,
+     "early_growth": 0.020982109990429203,
+     "growth": 0.010012515644555691,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.00147242877125819,
+     "early_decline": 0.005153500699403665,
+     "stable": 0.3089155562099683,
+     "early_growth": 0.03003754693366708,
+     "growth": 0.01811087388647574,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.00029448575425163796,
+     "early_decline": 0.0016196716483840086,
+     "stable": 0.22903629536921147,
+     "early_growth": 0.023706103217256858,
+     "growth": 0.016932930869469186,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 0.0,
+    "snow_ice": 468.0,
+    "urban": 123.6,
+    "cropland": 284.2,
+    "forest": 0.0,
+    "steep": 3250.8,
+    "bare": 1463.1
+   }
+  },
+  "KG-chuy-region": {
+   "pasture_km2": 12805.7,
+   "n_pasture_px": 14914,
+   "trend": {
+    "decline": 0.03278798444414644,
+    "early_decline": 0.09078717983103125,
+    "stable": 0.785637655893791,
+    "early_growth": 0.061754056591122444,
+    "growth": 0.029033123239908813,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.09333512136247818,
+    "moderate": 0.1956550891779536,
+    "good": 0.7110097894595682
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0008046131151937776,
+     "early_decline": 0.0012069196727906664,
+     "stable": 0.06939788118546333,
+     "early_growth": 0.016628671047338072,
+     "growth": 0.005297036341692367,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.011398685798578516,
+     "early_decline": 0.0190425103929194,
+     "stable": 0.14912163068258008,
+     "early_growth": 0.011331634705645698,
+     "growth": 0.004760627598229851,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.02058468553037414,
+     "early_decline": 0.07053774976532118,
+     "stable": 0.5671181440257476,
+     "early_growth": 0.03379375083813867,
+     "growth": 0.018975459299986584,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 0.0,
+    "snow_ice": 269.6,
+    "urban": 455.9,
+    "cropland": 4973.2,
+    "forest": 64.4,
+    "steep": 935.9,
+    "bare": 622.5
+   }
+  },
+  "KG-issyk-kul-region": {
+   "pasture_km2": 24464.2,
+   "n_pasture_px": 28492,
+   "trend": {
+    "decline": 0.02720061771725396,
+    "early_decline": 0.0642636529552155,
+    "stable": 0.6861926154710091,
+    "early_growth": 0.148708409378071,
+    "growth": 0.07363470447845008,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.210199354204689,
+    "moderate": 0.30211989330338335,
+    "good": 0.48768075249192755
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0017197809911554116,
+     "early_decline": 0.0031236838410781966,
+     "stable": 0.13902147971360382,
+     "early_growth": 0.03948476765407832,
+     "growth": 0.02684964200477326,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.004106415836024146,
+     "early_decline": 0.015723711919135196,
+     "stable": 0.2084444756422855,
+     "early_growth": 0.050189526884739565,
+     "growth": 0.023655763021198928,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.021374420890074394,
+     "early_decline": 0.04541625719500209,
+     "stable": 0.33872666011511987,
+     "early_growth": 0.059034114839253124,
+     "growth": 0.023129299452477884,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 6081.7,
+    "snow_ice": 2599.9,
+    "urban": 403.6,
+    "cropland": 1566.1,
+    "forest": 158.0,
+    "steep": 2915.1,
+    "bare": 3630.3
+   }
+  },
+  "KG-jalal-abad-region": {
+   "pasture_km2": 24708.1,
+   "n_pasture_px": 28776,
+   "trend": {
+    "decline": 0.03812204614956907,
+    "early_decline": 0.10911871003614125,
+    "stable": 0.8007714762301918,
+    "early_growth": 0.03346538782318599,
+    "growth": 0.018522379760911867,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.09323742007228245,
+    "moderate": 0.20385043091465105,
+    "good": 0.7029121490130663
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.003023352793994994,
+     "early_decline": 0.014873505699193773,
+     "stable": 0.07002363080344731,
+     "early_growth": 0.004065888240200166,
+     "growth": 0.0012510425354462047,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.004135390603280511,
+     "early_decline": 0.022623019182652207,
+     "stable": 0.16176675006950234,
+     "early_growth": 0.008444537114261885,
+     "growth": 0.006880733944954127,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.030963302752293576,
+     "early_decline": 0.07162218515429525,
+     "stable": 0.5689810953572422,
+     "early_growth": 0.020954962468723932,
+     "growth": 0.010390603280511536,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 206.1,
+    "snow_ice": 21.5,
+    "urban": 251.6,
+    "cropland": 2419.6,
+    "forest": 64.4,
+    "steep": 1727.6,
+    "bare": 237.0
+   }
+  },
+  "KG-naryn-region": {
+   "pasture_km2": 44455.0,
+   "n_pasture_px": 51774,
+   "trend": {
+    "decline": 0.01695831884729787,
+    "early_decline": 0.04751419631475256,
+    "stable": 0.7645343222466873,
+    "early_growth": 0.11084714335380691,
+    "growth": 0.060146019237455085,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.17615019121566805,
+    "moderate": 0.3676362653069107,
+    "good": 0.456213543477421
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.003186927801599257,
+     "early_decline": 0.006257967319503997,
+     "stable": 0.1346235562251323,
+     "early_growth": 0.021806312048518555,
+     "growth": 0.01027542782091397,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0067987793100784165,
+     "early_decline": 0.021574535481129517,
+     "stable": 0.27029010700351525,
+     "early_growth": 0.04038706686753969,
+     "growth": 0.028585776644647887,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.006972611735620194,
+     "early_decline": 0.019681693514119056,
+     "stable": 0.3596206590180398,
+     "early_growth": 0.04865376443774866,
+     "growth": 0.021284814771893222,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 401.8,
+    "snow_ice": 419.9,
+    "urban": 85.9,
+    "cropland": 283.3,
+    "forest": 6.9,
+    "steep": 1684.6,
+    "bare": 1771.4
+   }
+  },
+  "KG-osh-region": {
+   "pasture_km2": 20640.7,
+   "n_pasture_px": 24039,
+   "trend": {
+    "decline": 0.02525063438578976,
+    "early_decline": 0.06090103581679771,
+    "stable": 0.7471192645284745,
+    "early_growth": 0.1079079828611839,
+    "growth": 0.05882108240775408,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.13736012313324183,
+    "moderate": 0.2715171180165565,
+    "good": 0.5911227588502019
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0036607179999168025,
+     "early_decline": 0.014850867340571573,
+     "stable": 0.09546986147510296,
+     "early_growth": 0.01614043845417863,
+     "growth": 0.007238237863471858,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0021631515454053835,
+     "early_decline": 0.00786222388618495,
+     "stable": 0.21465119181330342,
+     "early_growth": 0.029660135612962275,
+     "growth": 0.01718041515870045,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.01942676484046758,
+     "early_decline": 0.03818794459004119,
+     "stable": 0.4369982112400684,
+     "early_growth": 0.062107408794043015,
+     "growth": 0.034402429385581766,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 18.9,
+    "snow_ice": 779.6,
+    "urban": 351.2,
+    "cropland": 3000.9,
+    "forest": 9.4,
+    "steep": 2391.3,
+    "bare": 1476.0
+   }
+  },
+  "KG-talas-region": {
+   "pasture_km2": 9761.8,
+   "n_pasture_px": 11369,
+   "trend": {
+    "decline": 0.012226229219808244,
+    "early_decline": 0.06702436449995601,
+    "stable": 0.8626968071070452,
+    "early_growth": 0.04054886093763743,
+    "growth": 0.01750373823555281,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.20661447796639976,
+    "moderate": 0.3688978802005453,
+    "good": 0.4244876418330546
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.005893218400914767,
+     "early_decline": 0.02225349634972293,
+     "stable": 0.17063945817574105,
+     "early_growth": 0.0057173014337232805,
+     "growth": 0.002111003606297827,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.004661799630574368,
+     "early_decline": 0.032632597414020574,
+     "stable": 0.32043275573929103,
+     "early_growth": 0.007828305040021109,
+     "growth": 0.0033424223766382252,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.001671211188319113,
+     "early_decline": 0.012138270736212502,
+     "stable": 0.37162459319201335,
+     "early_growth": 0.027003254463893032,
+     "growth": 0.01205031225261676,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 5.2,
+    "snow_ice": 18.9,
+    "urban": 161.4,
+    "cropland": 775.3,
+    "forest": 0.0,
+    "steep": 421.6,
+    "bare": 289.4
+   }
+  },
+  "KZ-akmola-region": {
+   "pasture_km2": 108478.2,
+   "n_pasture_px": 126338,
+   "trend": {
+    "decline": 0.021497886621602368,
+    "early_decline": 0.0757491807690481,
+    "stable": 0.8765058810492489,
+    "early_growth": 0.0177381310452912,
+    "growth": 0.00850892051480948,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.0016938688280643986,
+    "moderate": 0.33111177951210236,
+    "good": 0.6671943516598332
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.00016622077284744096,
+     "early_decline": 0.00030869572100239033,
+     "stable": 0.0011952065095220752,
+     "early_growth": 2.3745824692491567e-05,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.011358419477908468,
+     "early_decline": 0.037383843340879214,
+     "stable": 0.2810318352356377,
+     "early_growth": 0.0010685621111621206,
+     "growth": 0.0002691193465149044,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.009973246370846456,
+     "early_decline": 0.03805664170716648,
+     "stable": 0.5942788393040889,
+     "early_growth": 0.016645823109436592,
+     "growth": 0.008239801168294576,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 2175.8,
+    "snow_ice": 0.0,
+    "urban": 98.7,
+    "cropland": 33023.9,
+    "forest": 1278.5,
+    "steep": 0.0,
+    "bare": 454.2
+   }
+  },
+  "KZ-aktobe-region": {
+   "pasture_km2": 288938.3,
+   "n_pasture_px": 336509,
+   "trend": {
+    "decline": 0.02754458276004504,
+    "early_decline": 0.16275344790183913,
+    "stable": 0.8052622663881202,
+    "early_growth": 0.0036492337500631466,
+    "growth": 0.0007904691999322453,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.23668609160527643,
+    "moderate": 0.5647129794448289,
+    "good": 0.1986009289498943
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.006617950782891391,
+     "early_decline": 0.03590988651120772,
+     "stable": 0.19356094487814587,
+     "early_growth": 0.000505187082663465,
+     "growth": 9.212235036804359e-05,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.014650425397240482,
+     "early_decline": 0.08725175255342353,
+     "stable": 0.4594260480403197,
+     "early_growth": 0.002823104285472305,
+     "growth": 0.0005616491683729111,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0062762065799131656,
+     "early_decline": 0.039591808837207906,
+     "stable": 0.1522752734696546,
+     "early_growth": 0.00032094238192737775,
+     "growth": 0.00013669768119129057,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 1057.0,
+    "snow_ice": 442.2,
+    "urban": 83.3,
+    "cropland": 3601.1,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 4901.9
+   }
+  },
+  "KZ-almaty": {
+   "pasture_km2": 322.0,
+   "n_pasture_px": 375,
+   "trend": {
+    "decline": 0.10666666666666666,
+    "early_decline": 0.12000000000000004,
+    "stable": 0.7306666666666666,
+    "early_growth": 0.03200000000000001,
+    "growth": 0.010666666666666666,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.026666666666666665,
+    "moderate": 0.1386666666666667,
+    "good": 0.8346666666666667
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0,
+     "early_decline": 0.0,
+     "stable": 0.021333333333333333,
+     "early_growth": 0.005333333333333333,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.03466666666666667,
+     "early_decline": 0.03466666666666667,
+     "stable": 0.05333333333333333,
+     "early_growth": 0.016,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.07199999999999998,
+     "early_decline": 0.08533333333333333,
+     "stable": 0.6560000000000001,
+     "early_growth": 0.010666666666666666,
+     "growth": 0.010666666666666666,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 0.0,
+    "snow_ice": 0.0,
+    "urban": 302.2,
+    "cropland": 12.0,
+    "forest": 49.8,
+    "steep": 8.6,
+    "bare": 9.4
+   }
+  },
+  "KZ-almaty-region": {
+   "pasture_km2": 194344.2,
+   "n_pasture_px": 226341,
+   "trend": {
+    "decline": 0.023115564568505036,
+    "early_decline": 0.07330974061261548,
+    "stable": 0.7648901436328371,
+    "early_growth": 0.10014977401354593,
+    "growth": 0.03853477717249636,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.34526665517957406,
+    "moderate": 0.32994905916294426,
+    "good": 0.3247842856574813
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0033400930454491225,
+     "early_decline": 0.016311671327775352,
+     "stable": 0.2507632289333351,
+     "early_growth": 0.05524849673722392,
+     "growth": 0.01960316513579068,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.004572746431269634,
+     "early_decline": 0.02095952567144264,
+     "stable": 0.26704839158614657,
+     "early_growth": 0.027904798511979714,
+     "growth": 0.009463596962105848,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.015202725091786285,
+     "early_decline": 0.036038543613397485,
+     "stable": 0.24707852311335549,
+     "early_growth": 0.0169964787643423,
+     "growth": 0.009468015074599828,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 13806.0,
+    "snow_ice": 578.7,
+    "urban": 622.5,
+    "cropland": 5035.0,
+    "forest": 951.4,
+    "steep": 1804.0,
+    "bare": 4878.8
+   }
+  },
+  "KZ-astana": {
+   "pasture_km2": 579.6,
+   "n_pasture_px": 675,
+   "trend": {
+    "decline": 0.14370370370370372,
+    "early_decline": 0.10518518518518521,
+    "stable": 0.568888888888889,
+    "early_growth": 0.0725925925925926,
+    "growth": 0.10962962962962963,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.002962962962962963,
+    "moderate": 0.07111111111111111,
+    "good": 0.925925925925926
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0,
+     "early_decline": 0.0,
+     "stable": 0.0014814814814814814,
+     "early_growth": 0.0014814814814814814,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.03259259259259259,
+     "early_decline": 0.013333333333333332,
+     "stable": 0.020740740740740747,
+     "early_growth": 0.0044444444444444444,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.1111111111111111,
+     "early_decline": 0.09185185185185188,
+     "stable": 0.5466666666666667,
+     "early_growth": 0.0666666666666667,
+     "growth": 0.10962962962962963,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 0.0,
+    "snow_ice": 0.0,
+    "urban": 122.8,
+    "cropland": 2.6,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 0.9
+   }
+  },
+  "KZ-atyrau-region": {
+   "pasture_km2": 103946.3,
+   "n_pasture_px": 121060,
+   "trend": {
+    "decline": 0.10558400792995211,
+    "early_decline": 0.2700974723277715,
+    "stable": 0.6169007103915413,
+    "early_growth": 0.004435816950272592,
+    "growth": 0.0029819924004625803,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.3207169998347927,
+    "moderate": 0.5500743433008427,
+    "good": 0.1292086568643648
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.029803403271105245,
+     "early_decline": 0.08177763092681314,
+     "stable": 0.20868164546505868,
+     "early_growth": 0.0003221543036510821,
+     "growth": 0.0001321658681645465,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.057764744754667106,
+     "early_decline": 0.1571286965141252,
+     "stable": 0.3336444738146374,
+     "early_growth": 0.0010160251115149514,
+     "growth": 0.000520403105897902,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.018015859904179744,
+     "early_decline": 0.031191144886832983,
+     "stable": 0.07457459111184536,
+     "early_growth": 0.0030976375351065588,
+     "growth": 0.002329423426400132,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 1258.8,
+    "snow_ice": 99.6,
+    "urban": 61.0,
+    "cropland": 24.0,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 5004.1
+   }
+  },
+  "KZ-east-kazakhstan-region": {
+   "pasture_km2": 262031.3,
+   "n_pasture_px": 305172,
+   "trend": {
+    "decline": 0.0036504004299214867,
+    "early_decline": 0.012084988137837028,
+    "stable": 0.8315048562777716,
+    "early_growth": 0.11260535042533391,
+    "growth": 0.04015440472913637,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.04889373861297893,
+    "moderate": 0.3228572739307669,
+    "good": 0.6282489874562542
+   },
+   "matrix": {
+    "low": {
+     "decline": 5.2429449621852596e-05,
+     "early_decline": 0.00029163881352155507,
+     "stable": 0.043149437038784696,
+     "early_growth": 0.004191079129146842,
+     "growth": 0.0012091541819039757,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.000999436383416565,
+     "early_decline": 0.0038076887787870444,
+     "stable": 0.27757789050109455,
+     "early_growth": 0.03194264218211369,
+     "growth": 0.008529616085355145,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.00259853459688307,
+     "early_decline": 0.007985660545528423,
+     "stable": 0.5107775287378921,
+     "early_growth": 0.07647162911407338,
+     "growth": 0.030415634461877235,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 6389.1,
+    "snow_ice": 18.9,
+    "urban": 399.3,
+    "cropland": 4982.7,
+    "forest": 6329.9,
+    "steep": 290.2,
+    "bare": 724.7
+   }
+  },
+  "KZ-jambyl-region": {
+   "pasture_km2": 134901.0,
+   "n_pasture_px": 157111,
+   "trend": {
+    "decline": 0.010260261853084767,
+    "early_decline": 0.031067207261108388,
+    "stable": 0.7118661328614804,
+    "early_growth": 0.16143363609168046,
+    "growth": 0.08537276193264638,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.41013041734824435,
+    "moderate": 0.5138150734194296,
+    "good": 0.07605450923232619
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0017885444049111777,
+     "early_decline": 0.006886850697914214,
+     "stable": 0.26647402155164185,
+     "early_growth": 0.0723055674013914,
+     "growth": 0.06267543329238563,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.005041021952632218,
+     "early_decline": 0.016090534717492732,
+     "stable": 0.38610918395274696,
+     "early_growth": 0.08541731641960147,
+     "growth": 0.02115701637695643,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0034306954955413698,
+     "early_decline": 0.008089821845701449,
+     "stable": 0.05928292735709148,
+     "early_growth": 0.0037107522706876033,
+     "growth": 0.0015403122633042886,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 2520.1,
+    "snow_ice": 10.3,
+    "urban": 330.6,
+    "cropland": 5223.1,
+    "forest": 0.0,
+    "steep": 97.9,
+    "bare": 820.0
+   }
+  },
+  "KZ-karaganda-region": {
+   "pasture_km2": 415938.1,
+   "n_pasture_px": 484418,
+   "trend": {
+    "decline": 0.003986226771094386,
+    "early_decline": 0.025533733263421256,
+    "stable": 0.915651358950328,
+    "early_growth": 0.04625757094079906,
+    "growth": 0.00857111007435727,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.14822942169778988,
+    "moderate": 0.576735381426784,
+    "good": 0.27503519687542577
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0003757085822574717,
+     "early_decline": 0.0024544917818908455,
+     "stable": 0.135327341263124,
+     "early_growth": 0.008721806373834167,
+     "growth": 0.0013500736966834425,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0023512751384135184,
+     "early_decline": 0.01615546903707129,
+     "stable": 0.5219376654046712,
+     "early_growth": 0.030461295823028874,
+     "growth": 0.005829676023599453,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.001259243050423394,
+     "early_decline": 0.006923772444459124,
+     "stable": 0.25838635228253287,
+     "early_growth": 0.007074468743936022,
+     "growth": 0.0013913603540743735,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 4600.6,
+    "snow_ice": 4.3,
+    "urban": 493.7,
+    "cropland": 2740.8,
+    "forest": 31.8,
+    "steep": 0.0,
+    "bare": 2608.5
+   }
+  },
+  "KZ-kostanay-region": {
+   "pasture_km2": 168335.3,
+   "n_pasture_px": 196050,
+   "trend": {
+    "decline": 0.01580719204284621,
+    "early_decline": 0.07482274929864831,
+    "stable": 0.9008569242540166,
+    "early_growth": 0.006610558530986991,
+    "growth": 0.0019025758735016574,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.016001020147921447,
+    "moderate": 0.41547054322876803,
+    "good": 0.5685284366233103
+   },
+   "matrix": {
+    "low": {
+     "decline": 9.181331293037489e-05,
+     "early_decline": 0.0003927569497577147,
+     "stable": 0.015241009946442232,
+     "early_growth": 0.00022443254271869423,
+     "growth": 5.10073960724305e-05,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.006222902320836519,
+     "early_decline": 0.03216016322366743,
+     "stable": 0.3757612853863809,
+     "early_growth": 0.0010711553175210406,
+     "growth": 0.0002550369803621525,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.009492476409079319,
+     "early_decline": 0.04226982912522316,
+     "stable": 0.5098546289211936,
+     "early_growth": 0.0053149706707472585,
+     "growth": 0.0015965314970670746,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 1603.1,
+    "snow_ice": 0.0,
+    "urban": 103.0,
+    "cropland": 24619.6,
+    "forest": 74.7,
+    "steep": 0.0,
+    "bare": 602.8
+   }
+  },
+  "KZ-kyzylorda-region": {
+   "pasture_km2": 156323.0,
+   "n_pasture_px": 182060,
+   "trend": {
+    "decline": 0.029830825002746347,
+    "early_decline": 0.06289684719323299,
+    "stable": 0.8676754915961766,
+    "early_growth": 0.03030868944304075,
+    "growth": 0.009288146764802812,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.6599912116884543,
+    "moderate": 0.2512633197846863,
+    "good": 0.0887454685268593
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0076238602658464235,
+     "early_decline": 0.027249258486213332,
+     "stable": 0.6121773041854333,
+     "early_growth": 0.011122706799956061,
+     "growth": 0.0018180819510051627,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.010073602109194772,
+     "early_decline": 0.02086125453147314,
+     "stable": 0.2013841590684389,
+     "early_growth": 0.014324947819400196,
+     "growth": 0.004619356256179282,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.012133362627705148,
+     "early_decline": 0.014786334175546522,
+     "stable": 0.05411402834230471,
+     "early_growth": 0.004861034823684499,
+     "growth": 0.002850708557618368,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 11443.0,
+    "snow_ice": 2044.4,
+    "urban": 184.6,
+    "cropland": 1813.4,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 52183.5
+   }
+  },
+  "KZ-mangystau-region": {
+   "pasture_km2": 92599.5,
+   "n_pasture_px": 107845,
+   "trend": {
+    "decline": 0.047225184292271315,
+    "early_decline": 0.22585191710325003,
+    "stable": 0.7261161852658907,
+    "early_growth": 0.0005099911910612454,
+    "growth": 0.00029672214752654265,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.9615373916268719,
+    "moderate": 0.036821363994621915,
+    "good": 0.0016412443785061893
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.04464741063563447,
+     "early_decline": 0.22025128656868653,
+     "stable": 0.6962307014697018,
+     "early_growth": 0.00029672214752654265,
+     "growth": 0.00011127080532245352,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0016505169456163939,
+     "early_decline": 0.0053502712225879726,
+     "stable": 0.029458945709119576,
+     "early_growth": 0.00018545134220408917,
+     "growth": 0.00017617877509388472,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0009272567110204459,
+     "early_decline": 0.00025035931197552036,
+     "stable": 0.0004265380870694053,
+     "early_growth": 2.7817701330613377e-05,
+     "growth": 9.272567110204458e-06,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 954.8,
+    "snow_ice": 376.1,
+    "urban": 80.7,
+    "cropland": 0.0,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 61140.8
+   }
+  },
+  "KZ-north-kazakhstan-region": {
+   "pasture_km2": 63234.2,
+   "n_pasture_px": 73645,
+   "trend": {
+    "decline": 0.010238305383936453,
+    "early_decline": 0.04795980718310817,
+    "stable": 0.9029533573222895,
+    "early_growth": 0.02985946092742209,
+    "growth": 0.00898906918324394,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.00028515174146242106,
+    "moderate": 0.029547151877248965,
+    "good": 0.9701676963812886
+   },
+   "matrix": {
+    "low": {
+     "decline": 1.3578654355353385e-05,
+     "early_decline": 4.073596306606015e-05,
+     "stable": 0.00020367981533030082,
+     "early_growth": 1.3578654355353385e-05,
+     "growth": 1.3578654355353385e-05,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0005974607916355491,
+     "early_decline": 0.001289972163758571,
+     "stable": 0.027388145834747784,
+     "early_growth": 0.00014936519790888724,
+     "growth": 0.00012220788919818046,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.00962726593794555,
+     "early_decline": 0.046629099056283534,
+     "stable": 0.8753615316722114,
+     "early_growth": 0.02969651707515785,
+     "growth": 0.008853282639690407,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 2295.1,
+    "snow_ice": 0.0,
+    "urban": 57.5,
+    "cropland": 31384.0,
+    "forest": 541.8,
+    "steep": 0.0,
+    "bare": 91.0
+   }
+  },
+  "KZ-pavlodar-region": {
+   "pasture_km2": 120869.1,
+   "n_pasture_px": 140769,
+   "trend": {
+    "decline": 0.007800012786906208,
+    "early_decline": 0.0522913425541135,
+    "stable": 0.9076501218308011,
+    "early_growth": 0.015671063941634877,
+    "growth": 0.016587458886544622,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.0009661218023854684,
+    "moderate": 0.13685541560997092,
+    "good": 0.8621784625876437
+   },
+   "matrix": {
+    "low": {
+     "decline": 7.1038367822460905e-06,
+     "early_decline": 6.393453104021481e-05,
+     "stable": 0.0008453565770872848,
+     "early_growth": 4.972685747572263e-05,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0011366138851593747,
+     "early_decline": 0.005675965589014628,
+     "stable": 0.12836633065518688,
+     "early_growth": 0.0012502752736753121,
+     "growth": 0.00042623020693476554,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.006656295064964589,
+     "early_decline": 0.046551442434058635,
+     "stable": 0.7784384345985269,
+     "early_growth": 0.014371061810483844,
+     "growth": 0.016161228679609858,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 1303.4,
+    "snow_ice": 0.0,
+    "urban": 194.1,
+    "cropland": 826.0,
+    "forest": 286.8,
+    "steep": 0.0,
+    "bare": 620.8
+   }
+  },
+  "KZ-south-kazakhstan-region": {
+   "pasture_km2": 108153.6,
+   "n_pasture_px": 125960,
+   "trend": {
+    "decline": 0.0588520165131788,
+    "early_decline": 0.17756430612892976,
+    "stable": 0.7347570657351539,
+    "early_growth": 0.02392029215624007,
+    "growth": 0.004906319466497298,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.6704509368053347,
+    "moderate": 0.24707843759923787,
+    "good": 0.08247062559542709
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.047324547475388994,
+     "early_decline": 0.1475309622102254,
+     "stable": 0.4679660209590346,
+     "early_growth": 0.006922832645284216,
+     "growth": 0.0007065735154017146,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.006041600508097808,
+     "early_decline": 0.020982851698952046,
+     "stable": 0.20402508732931088,
+     "early_growth": 0.013798031120990789,
+     "growth": 0.002230866941886312,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.005485868529691964,
+     "early_decline": 0.0090504922197523,
+     "stable": 0.0627659574468085,
+     "early_growth": 0.003199428389965068,
+     "growth": 0.001968879009209273,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 632.8,
+    "snow_ice": 9.4,
+    "urban": 561.5,
+    "cropland": 6388.2,
+    "forest": 0.0,
+    "steep": 317.7,
+    "bare": 1023.5
+   }
+  },
+  "KZ-west-kazakhstan-region": {
+   "pasture_km2": 150020.7,
+   "n_pasture_px": 174720,
+   "trend": {
+    "decline": 0.07910370879120882,
+    "early_decline": 0.29354395604395617,
+    "stable": 0.6261446886446888,
+    "early_growth": 0.0010359432234432234,
+    "growth": 0.00017170329670329666,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.011154990842490846,
+    "moderate": 0.388158195970696,
+    "good": 0.6006868131868133
+   },
+   "matrix": {
+    "low": {
+     "decline": 6.295787545787546e-05,
+     "early_decline": 0.0003605769230769232,
+     "stable": 0.010702838827838831,
+     "early_growth": 2.2893772893772894e-05,
+     "growth": 5.7234432234432234e-06,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.02037545787545788,
+     "early_decline": 0.09092834249084253,
+     "stable": 0.2764709249084249,
+     "early_growth": 0.00030906593406593416,
+     "growth": 7.440476190476193e-05,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.05866529304029305,
+     "early_decline": 0.2022550366300366,
+     "stable": 0.3389709249084251,
+     "early_growth": 0.0007039835164835166,
+     "growth": 9.157509157509158e-05,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 2062.4,
+    "snow_ice": 0.0,
+    "urban": 52.4,
+    "cropland": 511.7,
+    "forest": 5.2,
+    "steep": 0.0,
+    "bare": 152.8
+   }
+  },
+  "TJ-districts-of-republican-subordination": {
+   "pasture_km2": 18270.0,
+   "n_pasture_px": 21278,
+   "trend": {
+    "decline": 0.02067863521007613,
+    "early_decline": 0.06781652410940878,
+    "stable": 0.8491399567628534,
+    "early_growth": 0.04521101607293919,
+    "growth": 0.017153867844722243,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.16364319954882972,
+    "moderate": 0.24330294200582755,
+    "good": 0.5930538584453425
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0008459441676849325,
+     "early_decline": 0.0036187611617633218,
+     "stable": 0.14258858915311587,
+     "early_growth": 0.012031205940407933,
+     "growth": 0.004558699125857693,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0033367797725350123,
+     "early_decline": 0.009916345521195599,
+     "stable": 0.21411786822069737,
+     "early_growth": 0.01146724316195131,
+     "growth": 0.004464705329448254,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.016495911269856185,
+     "early_decline": 0.05428141742644983,
+     "stable": 0.49243349938904013,
+     "early_growth": 0.02171256697057994,
+     "growth": 0.008130463389416294,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 12.0,
+    "snow_ice": 1783.4,
+    "urban": 168.3,
+    "cropland": 2014.4,
+    "forest": 0.0,
+    "steep": 4204.7,
+    "bare": 1589.3
+   }
+  },
+  "TJ-dushanbe": {
+   "pasture_km2": 73.0,
+   "n_pasture_px": 85,
+   "trend": {
+    "decline": 0.08235294117647061,
+    "early_decline": 0.02352941176470589,
+    "stable": 0.7058823529411767,
+    "early_growth": 0.058823529411764726,
+    "growth": 0.1294117647058824,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.03529411764705884,
+    "moderate": 0.4941176470588238,
+    "good": 0.4705882352941178
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0,
+     "early_decline": 0.0,
+     "stable": 0.03529411764705884,
+     "early_growth": 0.0,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.03529411764705884,
+     "early_decline": 0.011764705882352944,
+     "stable": 0.411764705882353,
+     "early_growth": 0.011764705882352944,
+     "growth": 0.02352941176470589,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.04705882352941178,
+     "early_decline": 0.011764705882352944,
+     "stable": 0.2588235294117648,
+     "early_growth": 0.04705882352941178,
+     "growth": 0.1058823529411765,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 0.0,
+    "snow_ice": 0.0,
+    "urban": 189.8,
+    "cropland": 103.0,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 0.9
+   }
+  },
+  "TJ-gorno-badakhshan-autonomous-region": {
+   "pasture_km2": 24226.4,
+   "n_pasture_px": 28215,
+   "trend": {
+    "decline": 0.0014531277689172424,
+    "early_decline": 0.005847953216374267,
+    "stable": 0.5698032961190856,
+    "early_growth": 0.2612085769980507,
+    "growth": 0.16168704589757216,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.5569732411837675,
+    "moderate": 0.37469431153641675,
+    "good": 0.0683324472798157
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0006734006734006733,
+     "early_decline": 0.001488569909622541,
+     "stable": 0.3247208931419457,
+     "early_growth": 0.14208754208754207,
+     "growth": 0.08800283537125639,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.00021265284423179154,
+     "early_decline": 0.0009923799397483603,
+     "stable": 0.19475456317561576,
+     "early_growth": 0.1112528796739323,
+     "growth": 0.06748183590288853,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0005670742512847774,
+     "early_decline": 0.003367003367003365,
+     "stable": 0.050327839801524,
+     "early_growth": 0.007868155236576286,
+     "growth": 0.006202374623427252,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 380.4,
+    "snow_ice": 6650.1,
+    "urban": 11.2,
+    "cropland": 18.9,
+    "forest": 0.9,
+    "steep": 8842.2,
+    "bare": 22343.4
+   }
+  },
+  "TJ-khatlon-region": {
+   "pasture_km2": 18186.7,
+   "n_pasture_px": 21181,
+   "trend": {
+    "decline": 0.007176242859166231,
+    "early_decline": 0.06708842830838958,
+    "stable": 0.8757849015627212,
+    "early_growth": 0.025352910627449123,
+    "growth": 0.024597516642273734,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.5532788820169019,
+    "moderate": 0.2269014682970586,
+    "good": 0.21981964968603931
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0030687880647750337,
+     "early_decline": 0.05528539729002407,
+     "stable": 0.48227184741041496,
+     "early_growth": 0.006940182238798922,
+     "growth": 0.00571266701288891,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0015107879703507856,
+     "early_decline": 0.0052877578962277514,
+     "stable": 0.20310655776403377,
+     "early_growth": 0.007790000472121238,
+     "growth": 0.009206364194325101,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.002596666824040414,
+     "early_decline": 0.006515273122137763,
+     "stable": 0.1904064963882725,
+     "early_growth": 0.010622727916528964,
+     "growth": 0.009678485435059721,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 27.5,
+    "snow_ice": 0.0,
+    "urban": 226.7,
+    "cropland": 5204.2,
+    "forest": 0.0,
+    "steep": 332.3,
+    "bare": 380.4
+   }
+  },
+  "TJ-sughd-region": {
+   "pasture_km2": 17310.9,
+   "n_pasture_px": 20161,
+   "trend": {
+    "decline": 0.013441793561827288,
+    "early_decline": 0.050493527106790344,
+    "stable": 0.7406378651852589,
+    "early_growth": 0.11006398492138283,
+    "growth": 0.08536282922474084,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.3934824661475126,
+    "moderate": 0.42081245969941966,
+    "good": 0.18570507415306783
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.010019344278557612,
+     "early_decline": 0.04007737711423045,
+     "stable": 0.3022171519269878,
+     "early_growth": 0.025296364267645456,
+     "growth": 0.015872228560091264,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0019344278557611226,
+     "early_decline": 0.007192103566291353,
+     "stable": 0.3098556619215317,
+     "early_growth": 0.05932245424334109,
+     "growth": 0.04250781211249442,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0014880214275085556,
+     "early_decline": 0.0032240464262685378,
+     "stable": 0.12856505133673923,
+     "early_growth": 0.025445166410396312,
+     "growth": 0.02698278855215515,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 388.1,
+    "snow_ice": 636.2,
+    "urban": 662.9,
+    "cropland": 1383.3,
+    "forest": 0.0,
+    "steep": 2730.5,
+    "bare": 2438.5
+   }
+  },
+  "TM-ahai": {
+   "pasture_km2": 33106.4,
+   "n_pasture_px": 38557,
+   "trend": {
+    "decline": 0.03073371890966621,
+    "early_decline": 0.10332754104313098,
+    "stable": 0.7615478382654255,
+    "early_growth": 0.053142101304562095,
+    "growth": 0.05124880047721557,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.7919184583862855,
+    "moderate": 0.1612158622299453,
+    "good": 0.046865679383769496
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.019347978317815186,
+     "early_decline": 0.08621002671369664,
+     "stable": 0.6182534948258424,
+     "early_growth": 0.03306792540913453,
+     "growth": 0.03503903311979667,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.008299400886998471,
+     "early_decline": 0.012163809425007137,
+     "stable": 0.11157507067458569,
+     "early_growth": 0.01595041107970018,
+     "growth": 0.013227170163653814,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.003086339704852556,
+     "early_decline": 0.004953704904427212,
+     "stable": 0.031719272764997274,
+     "early_growth": 0.004123764815727364,
+     "growth": 0.0029825971937650756,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 64.4,
+    "snow_ice": 0.0,
+    "urban": 334.9,
+    "cropland": 5460.1,
+    "forest": 0.0,
+    "steep": 64.4,
+    "bare": 55487.5
+   }
+  },
+  "TM-balkan": {
+   "pasture_km2": 36933.3,
+   "n_pasture_px": 43014,
+   "trend": {
+    "decline": 0.011717115357790487,
+    "early_decline": 0.09685218765983168,
+    "stable": 0.8633235690705349,
+    "early_growth": 0.009369042637280884,
+    "growth": 0.01873808527456177,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.9667782582415025,
+    "moderate": 0.0325242944157716,
+    "good": 0.0006974473427256238
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.010856930301762217,
+     "early_decline": 0.09471334914213977,
+     "stable": 0.8436323057609149,
+     "early_growth": 0.005602826986562515,
+     "growth": 0.011972846050123215,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0008601850560282694,
+     "early_decline": 0.002092342028176872,
+     "stable": 0.019179801924954665,
+     "early_growth": 0.0036964709164458067,
+     "growth": 0.00669549449016599,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0,
+     "early_decline": 4.6496489515041597e-05,
+     "stable": 0.0005114613846654575,
+     "early_growth": 6.97447342725624e-05,
+     "growth": 6.97447342725624e-05,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 21438.4,
+    "snow_ice": 24.0,
+    "urban": 124.5,
+    "cropland": 311.7,
+    "forest": 0.0,
+    "steep": 12.9,
+    "bare": 77812.1
+   }
+  },
+  "TM-dasoguz": {
+   "pasture_km2": 16676.4,
+   "n_pasture_px": 19422,
+   "trend": {
+    "decline": 0.04093296261970961,
+    "early_decline": 0.13845124086087943,
+    "stable": 0.5942230460302749,
+    "early_growth": 0.10616826279476883,
+    "growth": 0.12022448769436718,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.45247657295850063,
+    "moderate": 0.15606013798784882,
+    "good": 0.3914632890536505
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.027443105756358766,
+     "early_decline": 0.11234682319019668,
+     "stable": 0.28925960251261457,
+     "early_growth": 0.00561219235918031,
+     "growth": 0.017814849140150347,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.004582432293275667,
+     "early_decline": 0.007929152507465759,
+     "stable": 0.0780043249922768,
+     "early_growth": 0.029863041911234674,
+     "growth": 0.03568118628359592,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.00890742457007517,
+     "early_decline": 0.01817526516321697,
+     "stable": 0.22695911852538356,
+     "early_growth": 0.07069302852435383,
+     "growth": 0.06672845227062094,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 2904.8,
+    "snow_ice": 18.0,
+    "urban": 533.2,
+    "cropland": 1020.1,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 52571.6
+   }
+  },
+  "TM-lebap": {
+   "pasture_km2": 39347.8,
+   "n_pasture_px": 45826,
+   "trend": {
+    "decline": 0.027080696547811277,
+    "early_decline": 0.1573560860646794,
+    "stable": 0.7584995417448608,
+    "early_growth": 0.023567407148780164,
+    "growth": 0.03349626849386811,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.8894077597870202,
+    "moderate": 0.06245362894426744,
+    "good": 0.04813861126871207
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.022148998385196173,
+     "early_decline": 0.15083140575219306,
+     "stable": 0.6982717234757561,
+     "early_growth": 0.007746694016497182,
+     "growth": 0.010408938157377907,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0024222057347357386,
+     "early_decline": 0.00366604111203247,
+     "stable": 0.034369135425304405,
+     "early_growth": 0.007964910749356258,
+     "growth": 0.01403133592283856,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0025094924278793694,
+     "early_decline": 0.0028586392004538897,
+     "stable": 0.025858682843800454,
+     "early_growth": 0.007855802382926722,
+     "growth": 0.009055994413651637,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 444.8,
+    "snow_ice": 0.0,
+    "urban": 226.7,
+    "cropland": 3129.7,
+    "forest": 0.0,
+    "steep": 3.4,
+    "bare": 53871.6
+   }
+  },
+  "TM-mary": {
+   "pasture_km2": 63066.7,
+   "n_pasture_px": 73450,
+   "trend": {
+    "decline": 0.011327433628318588,
+    "early_decline": 0.048481960517358764,
+    "stable": 0.9053233492171548,
+    "early_growth": 0.012811436351259366,
+    "growth": 0.022055820285908787,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.9165282505105518,
+    "moderate": 0.04899931926480601,
+    "good": 0.034472430224642615
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.004615384615384616,
+     "early_decline": 0.04121170864533697,
+     "stable": 0.8544860449285231,
+     "early_growth": 0.005282505105513956,
+     "growth": 0.01093260721579306,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.00404356705241661,
+     "early_decline": 0.0041797140912185156,
+     "stable": 0.02720217835262084,
+     "early_growth": 0.004833219877467665,
+     "growth": 0.008740639891082369,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.002668481960517359,
+     "early_decline": 0.0030905377808032684,
+     "stable": 0.023635125936010897,
+     "early_growth": 0.0026957113682777403,
+     "growth": 0.0023825731790333557,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 128.8,
+    "snow_ice": 0.0,
+    "urban": 334.9,
+    "cropland": 5040.2,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 19916.0
+   }
+  },
+  "UZ-andijan-region": {
+   "pasture_km2": 480.8,
+   "n_pasture_px": 560,
+   "trend": {
+    "decline": 0.16785714285714282,
+    "early_decline": 0.15892857142857145,
+    "stable": 0.5875,
+    "early_growth": 0.06071428571428571,
+    "growth": 0.02500000000000001,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.5357142857142857,
+    "moderate": 0.20892857142857144,
+    "good": 0.2553571428571428
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.12500000000000003,
+     "early_decline": 0.11071428571428575,
+     "stable": 0.28750000000000003,
+     "early_growth": 0.007142857142857143,
+     "growth": 0.005357142857142857,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.021428571428571432,
+     "early_decline": 0.021428571428571432,
+     "stable": 0.14464285714285713,
+     "early_growth": 0.01785714285714286,
+     "growth": 0.0035714285714285713,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.021428571428571432,
+     "early_decline": 0.026785714285714295,
+     "stable": 0.1553571428571428,
+     "early_growth": 0.03571428571428572,
+     "growth": 0.01607142857142857,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 0.9,
+    "snow_ice": 0.0,
+    "urban": 1215.8,
+    "cropland": 2516.7,
+    "forest": 0.0,
+    "steep": 1.7,
+    "bare": 2.6
+   }
+  },
+  "UZ-bukhara-region": {
+   "pasture_km2": 6223.4,
+   "n_pasture_px": 7248,
+   "trend": {
+    "decline": 0.04249448123620307,
+    "early_decline": 0.151766004415011,
+    "stable": 0.6477649006622513,
+    "early_growth": 0.06705298013245033,
+    "growth": 0.09092163355408388,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.6543874172185428,
+    "moderate": 0.20957505518763792,
+    "good": 0.13603752759381899
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.01821192052980132,
+     "early_decline": 0.12155077262693158,
+     "stable": 0.4783388520971302,
+     "early_growth": 0.01862582781456953,
+     "growth": 0.017660044150110375,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.012417218543046353,
+     "early_decline": 0.013520971302428252,
+     "stable": 0.10485651214128035,
+     "early_growth": 0.030077262693156727,
+     "growth": 0.04870309050772626,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.011865342163355401,
+     "early_decline": 0.016694260485651213,
+     "stable": 0.06456953642384106,
+     "early_growth": 0.01834988962472406,
+     "growth": 0.024558498896247234,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 300.5,
+    "snow_ice": 0.0,
+    "urban": 702.4,
+    "cropland": 2748.5,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 28341.0
+   }
+  },
+  "UZ-fergana-region": {
+   "pasture_km2": 1957.7,
+   "n_pasture_px": 2280,
+   "trend": {
+    "decline": 0.0337719298245614,
+    "early_decline": 0.050877192982456146,
+    "stable": 0.38377192982456143,
+    "early_growth": 0.1535087719298246,
+    "growth": 0.3780701754385966,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.27543859649122804,
+    "moderate": 0.2157894736842106,
+    "good": 0.5087719298245613
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.022368421052631583,
+     "early_decline": 0.034649122807017534,
+     "stable": 0.19254385964912285,
+     "early_growth": 0.010964912280701754,
+     "growth": 0.014912280701754384,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.005263157894736843,
+     "early_decline": 0.003947368421052632,
+     "stable": 0.08070175438596491,
+     "early_growth": 0.03421052631578946,
+     "growth": 0.09166666666666669,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.006140350877192984,
+     "early_decline": 0.012280701754385963,
+     "stable": 0.11052631578947371,
+     "early_growth": 0.10833333333333335,
+     "growth": 0.2714912280701754,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 16.3,
+    "snow_ice": 0.0,
+    "urban": 2031.5,
+    "cropland": 2278.8,
+    "forest": 0.0,
+    "steep": 3.4,
+    "bare": 425.9
+   }
+  },
+  "UZ-jizzakh-region": {
+   "pasture_km2": 13849.8,
+   "n_pasture_px": 16130,
+   "trend": {
+    "decline": 0.016305021698698078,
+    "early_decline": 0.0837569745815251,
+    "stable": 0.851518908865468,
+    "early_growth": 0.03155610663360199,
+    "growth": 0.016862988220706754,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.6766893986360817,
+    "moderate": 0.2409795412275264,
+    "good": 0.08233106013639183
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.013081215127092373,
+     "early_decline": 0.06931184128952261,
+     "stable": 0.5756974581525107,
+     "early_growth": 0.011965282083075015,
+     "growth": 0.0066336019838809665,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0029138251704897713,
+     "early_decline": 0.01332920024798512,
+     "stable": 0.20743955362678237,
+     "early_growth": 0.011221326720396774,
+     "growth": 0.006075635461872287,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.000309981401115933,
+     "early_decline": 0.0011159330440173587,
+     "stable": 0.06838189708617481,
+     "early_growth": 0.00836949783013019,
+     "growth": 0.004153750774953503,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 1719.0,
+    "snow_ice": 0.0,
+    "urban": 322.8,
+    "cropland": 4802.3,
+    "forest": 0.0,
+    "steep": 21.5,
+    "bare": 266.2
+   }
+  },
+  "UZ-namangan-region": {
+   "pasture_km2": 3498.1,
+   "n_pasture_px": 4074,
+   "trend": {
+    "decline": 0.032646048109965624,
+    "early_decline": 0.08615611192930778,
+    "stable": 0.6811487481590571,
+    "early_growth": 0.10432007854688265,
+    "growth": 0.09572901325478642,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.2714776632302404,
+    "moderate": 0.5149729995090818,
+    "good": 0.21354933726067743
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.011291114383897889,
+     "early_decline": 0.03657339224349532,
+     "stable": 0.21232204221894938,
+     "early_growth": 0.007854688267059397,
+     "growth": 0.0034364261168384875,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.018900343642611672,
+     "early_decline": 0.04123711340206185,
+     "stable": 0.36156111929307794,
+     "early_growth": 0.06013745704467353,
+     "growth": 0.033136966126656835,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.002454590083456062,
+     "early_decline": 0.00834560628375061,
+     "stable": 0.10726558664702993,
+     "early_growth": 0.03632793323514971,
+     "growth": 0.059155621011291105,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 0.0,
+    "snow_ice": 0.0,
+    "urban": 968.5,
+    "cropland": 2478.9,
+    "forest": 0.0,
+    "steep": 22.3,
+    "bare": 382.1
+   }
+  },
+  "UZ-navoiy-region": {
+   "pasture_km2": 83890.3,
+   "n_pasture_px": 97702,
+   "trend": {
+    "decline": 0.020204294692022687,
+    "early_decline": 0.15534994165933147,
+    "stable": 0.8169638287854905,
+    "early_growth": 0.003971259544328673,
+    "growth": 0.0035106753188266357,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.9867044686905081,
+    "moderate": 0.01030685144623447,
+    "good": 0.0029886798632576604
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.01953900636629752,
+     "early_decline": 0.1545720660784836,
+     "stable": 0.8088063703915989,
+     "early_growth": 0.002190333872387464,
+     "growth": 0.0015966919817403937,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0005936418906470697,
+     "early_decline": 0.0006243475056805389,
+     "stable": 0.006315121491883482,
+     "early_growth": 0.001289635831405703,
+     "growth": 0.001484104726617674,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 7.164643507809462e-05,
+     "early_decline": 0.00015352807516734565,
+     "stable": 0.0018423369020081472,
+     "early_growth": 0.0004912898405355059,
+     "growth": 0.00042987861046856775,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 1098.2,
+    "snow_ice": 0.0,
+    "urban": 474.0,
+    "cropland": 922.2,
+    "forest": 0.0,
+    "steep": 8.6,
+    "bare": 23284.5
+   }
+  },
+  "UZ-qashqadaryo-region": {
+   "pasture_km2": 19053.1,
+   "n_pasture_px": 22190,
+   "trend": {
+    "decline": 0.04064894096439839,
+    "early_decline": 0.11027489860297429,
+    "stable": 0.7789094186570528,
+    "early_growth": 0.036953582694907616,
+    "growth": 0.033213159080666965,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.7075259125732314,
+    "moderate": 0.22023433979269935,
+    "good": 0.07223974763406942
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.03420459666516448,
+     "early_decline": 0.09792699414150517,
+     "stable": 0.5285714285714286,
+     "early_growth": 0.02406489409643984,
+     "growth": 0.022757999098693107,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.00509238395673727,
+     "early_decline": 0.010590356016223525,
+     "stable": 0.18747183415953134,
+     "early_growth": 0.009013068949977469,
+     "growth": 0.008066696710229833,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0013519603424966195,
+     "early_decline": 0.0017575484452456058,
+     "stable": 0.06286615592609283,
+     "early_growth": 0.003875619648490309,
+     "growth": 0.002388463271744029,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 84.1,
+    "snow_ice": 4.3,
+    "urban": 468.0,
+    "cropland": 7316.4,
+    "forest": 0.0,
+    "steep": 160.6,
+    "bare": 700.6
+   }
+  },
+  "UZ-republic-of-karakalpakstan": {
+   "pasture_km2": 31252.6,
+   "n_pasture_px": 36398,
+   "trend": {
+    "decline": 0.10412660036265732,
+    "early_decline": 0.09085664047475138,
+    "stable": 0.7095444804659599,
+    "early_growth": 0.045497005329963196,
+    "growth": 0.049975273366668516,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.514890928072971,
+    "moderate": 0.21932523765042042,
+    "good": 0.2657838342766086
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.00986317929556569,
+     "early_decline": 0.025578328479586798,
+     "stable": 0.46513544700258264,
+     "early_growth": 0.009643386999285675,
+     "growth": 0.004670586295950328,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.07080059343919995,
+     "early_decline": 0.03656794329358757,
+     "stable": 0.09915379965932197,
+     "early_growth": 0.006895983295785483,
+     "growth": 0.005906917962525414,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.023462827627891647,
+     "early_decline": 0.028710368701577015,
+     "stable": 0.14525523380405517,
+     "early_growth": 0.028957635034892036,
+     "growth": 0.039397769108192766,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 12174.6,
+    "snow_ice": 1070.7,
+    "urban": 759.0,
+    "cropland": 4106.0,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 113206.7
+   }
+  },
+  "UZ-samarqand-region": {
+   "pasture_km2": 11060.1,
+   "n_pasture_px": 12881,
+   "trend": {
+    "decline": 0.011722692337551426,
+    "early_decline": 0.04898687990062881,
+    "stable": 0.8807545997981522,
+    "early_growth": 0.03439173977175685,
+    "growth": 0.024144088191910558,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.8243925161089979,
+    "moderate": 0.1430789534973993,
+    "good": 0.03252853039360298
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.009704215511218072,
+     "early_decline": 0.045648629764769806,
+     "stable": 0.7481561990528682,
+     "early_growth": 0.014750407577051466,
+     "growth": 0.006133064203089819,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0013197733095256577,
+     "early_decline": 0.002794814067230804,
+     "stable": 0.11637295241052711,
+     "early_growth": 0.014672773852961724,
+     "growth": 0.007918639857153945,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0006987035168077011,
+     "early_decline": 0.000543436068628212,
+     "stable": 0.016225448334756618,
+     "early_growth": 0.004968558341743652,
+     "growth": 0.010092384131666793,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 35.2,
+    "snow_ice": 0.0,
+    "urban": 1876.1,
+    "cropland": 3523.8,
+    "forest": 0.0,
+    "steep": 9.4,
+    "bare": 24.9
+   }
+  },
+  "UZ-sirdaryo-region": {
+   "pasture_km2": 335.7,
+   "n_pasture_px": 391,
+   "trend": {
+    "decline": 0.07672634271099742,
+    "early_decline": 0.16112531969309465,
+    "stable": 0.6777493606138107,
+    "early_growth": 0.05626598465473145,
+    "growth": 0.028132992327365727,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.20716112531969305,
+    "moderate": 0.3913043478260869,
+    "good": 0.40153452685421986
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.017902813299232732,
+     "early_decline": 0.05882352941176469,
+     "stable": 0.12531969309462915,
+     "early_growth": 0.005115089514066495,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.04092071611253196,
+     "early_decline": 0.06393861892583119,
+     "stable": 0.2634271099744245,
+     "early_growth": 0.017902813299232732,
+     "growth": 0.005115089514066495,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.017902813299232732,
+     "early_decline": 0.03836317135549873,
+     "stable": 0.28900255754475707,
+     "early_growth": 0.03324808184143223,
+     "growth": 0.023017902813299226,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 12.9,
+    "snow_ice": 0.0,
+    "urban": 259.3,
+    "cropland": 3735.9,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 13.7
+   }
+  },
+  "UZ-surxondaryo-region": {
+   "pasture_km2": 13720.1,
+   "n_pasture_px": 15979,
+   "trend": {
+    "decline": 0.011577695725639901,
+    "early_decline": 0.0477501721008824,
+    "stable": 0.8927967957944801,
+    "early_growth": 0.02584642343075286,
+    "growth": 0.022028912948244567,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.6525439639526879,
+    "moderate": 0.25139245259402965,
+    "good": 0.09606358345328242
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.006821453157268913,
+     "early_decline": 0.03448275862068965,
+     "stable": 0.5934664246823954,
+     "early_growth": 0.010263470805432126,
+     "growth": 0.007509856686901558,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.002691031979473058,
+     "early_decline": 0.00951248513674197,
+     "stable": 0.21866199386695034,
+     "early_growth": 0.010701545778834715,
+     "growth": 0.009825395832029534,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.002065210588897928,
+     "early_decline": 0.0037549283434507785,
+     "stable": 0.0806683772451342,
+     "early_growth": 0.00488140684648601,
+     "growth": 0.0046936604293134725,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 23.2,
+    "snow_ice": 18.0,
+    "urban": 293.7,
+    "cropland": 3976.3,
+    "forest": 0.0,
+    "steep": 812.3,
+    "bare": 800.2
+   }
+  },
+  "UZ-tashkent": {
+   "pasture_km2": 3.4,
+   "n_pasture_px": 4,
+   "trend": {
+    "decline": 0.25,
+    "early_decline": 0.75,
+    "stable": 0.0,
+    "early_growth": 0.0,
+    "growth": 0.0,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.0,
+    "moderate": 0.5,
+    "good": 0.5
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0,
+     "early_decline": 0.0,
+     "stable": 0.0,
+     "early_growth": 0.0,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0,
+     "early_decline": 0.5,
+     "stable": 0.0,
+     "early_growth": 0.0,
+     "growth": 0.0,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.25,
+     "early_decline": 0.25,
+     "stable": 0.0,
+     "early_growth": 0.0,
+     "growth": 0.0,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 0.0,
+    "snow_ice": 0.0,
+    "urban": 335.7,
+    "cropland": 2.6,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 0.0
+   }
+  },
+  "UZ-tashkent-region": {
+   "pasture_km2": 6623.5,
+   "n_pasture_px": 7714,
+   "trend": {
+    "decline": 0.032667876588021776,
+    "early_decline": 0.09891107078039925,
+    "stable": 0.8059372569354418,
+    "early_growth": 0.042390458905885386,
+    "growth": 0.020093336790251482,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.12885662431941922,
+    "moderate": 0.3386051335234637,
+    "good": 0.532538242157117
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.007778065854290898,
+     "early_decline": 0.021648949961109658,
+     "stable": 0.08646616541353382,
+     "early_growth": 0.008555872439719987,
+     "growth": 0.004407570650764841,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.013741249675913919,
+     "early_decline": 0.04200155561317084,
+     "stable": 0.25875032408607723,
+     "early_growth": 0.01646357272491573,
+     "growth": 0.00764843142338605,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.011148561057816949,
+     "early_decline": 0.035260565206118734,
+     "stable": 0.46072076743583096,
+     "early_growth": 0.01737101374124967,
+     "growth": 0.008037334716100596,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 24.0,
+    "snow_ice": 19.7,
+    "urban": 1002.0,
+    "cropland": 6535.1,
+    "forest": 0.0,
+    "steep": 747.0,
+    "bare": 222.4
+   }
+  },
+  "UZ-xorazm-region": {
+   "pasture_km2": 845.8,
+   "n_pasture_px": 985,
+   "trend": {
+    "decline": 0.01725888324873096,
+    "early_decline": 0.020304568527918777,
+    "stable": 0.43451776649746193,
+    "early_growth": 0.19187817258883244,
+    "growth": 0.33604060913705575,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.05583756345177666,
+    "moderate": 0.5593908629441623,
+    "good": 0.3847715736040608
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.005076142131979694,
+     "early_decline": 0.0010152284263959387,
+     "stable": 0.013197969543147208,
+     "early_growth": 0.010152284263959388,
+     "growth": 0.026395939086294406,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.007106598984771571,
+     "early_decline": 0.013197969543147208,
+     "stable": 0.28223350253807095,
+     "early_growth": 0.09644670050761416,
+     "growth": 0.16040609137055828,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.005076142131979694,
+     "early_decline": 0.006091370558375633,
+     "stable": 0.13908629441624362,
+     "early_growth": 0.08527918781725884,
+     "growth": 0.149238578680203,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 24.9,
+    "snow_ice": 0.0,
+    "urban": 461.1,
+    "cropland": 2839.5,
+    "forest": 0.0,
+    "steep": 0.0,
+    "bare": 2036.7
+   }
+  }
+ },
+ "countries": {
+  "KAZ": {
+   "pasture_km2": 2369014.3,
+   "n_pasture_px": 2759048,
+   "trend": {
+    "decline": 0.02591546069513832,
+    "early_decline": 0.09775364546031821,
+    "stable": 0.8149329043931094,
+    "early_growth": 0.04470310048973415,
+    "growth": 0.016694888961699836,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.23977727100072194,
+    "moderate": 0.3926792864785245,
+    "good": 0.36754344252075366
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.006990092234712842,
+     "early_decline": 0.02737320988978807,
+     "stable": 0.18788364682310715,
+     "early_growth": 0.01180443399317446,
+     "growth": 0.005725888059939516,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.008851241442700525,
+     "early_decline": 0.03606026426506534,
+     "stable": 0.32503312736857065,
+     "early_growth": 0.018221502489264418,
+     "growth": 0.004513150912923588,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.010074127017724954,
+     "early_decline": 0.03432017130546478,
+     "stable": 0.30201613020143186,
+     "early_growth": 0.01467716400729527,
+     "growth": 0.006455849988836728,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 52102.0,
+    "snow_ice": 3583.9,
+    "urban": 3747.9,
+    "cropland": 120188.2,
+    "forest": 9549.7,
+    "steep": 2518.4,
+    "bare": 135217.8
+   }
+  },
+  "KGZ": {
+   "pasture_km2": 148498.3,
+   "n_pasture_px": 172947,
+   "trend": {
+    "decline": 0.02389171248995357,
+    "early_decline": 0.06699162171069747,
+    "stable": 0.7684203831231534,
+    "early_growth": 0.09210914326354316,
+    "growth": 0.04858713941265243,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.1722435196910036,
+    "moderate": 0.3011731917870793,
+    "good": 0.5265832885219172
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.003417231868722787,
+     "early_decline": 0.011286694767761223,
+     "stable": 0.12803344377179135,
+     "early_growth": 0.019410570868531974,
+     "growth": 0.010095578414196255,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.00510561038931002,
+     "early_decline": 0.018098030032322042,
+     "stable": 0.2301919085037612,
+     "early_growth": 0.029737434011575792,
+     "growth": 0.01804020885011015,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.015368870231920762,
+     "early_decline": 0.03760689691061424,
+     "stable": 0.41019503084760056,
+     "early_growth": 0.0429611383834354,
+     "growth": 0.020451352148346025,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 6713.7,
+    "snow_ice": 4577.4,
+    "urban": 1833.2,
+    "cropland": 13302.8,
+    "forest": 303.1,
+    "steep": 13326.9,
+    "bare": 9489.6
+   }
+  },
+  "TJK": {
+   "pasture_km2": 78067.1,
+   "n_pasture_px": 90920,
+   "trend": {
+    "decline": 0.010019797624285088,
+    "early_decline": 0.044533655961284654,
+    "stable": 0.7444676638803344,
+    "early_growth": 0.12200835899692036,
+    "growth": 0.07897052353717555,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.4273207215134183,
+    "moderate": 0.31985261768587775,
+    "good": 0.252826660800704
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.0033435987681478215,
+     "early_decline": 0.02307523097228333,
+     "stable": 0.31353937527496706,
+     "early_growth": 0.05413550373955125,
+     "growth": 0.03322701275846899,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0016608007039155294,
+     "early_decline": 0.005466344038715354,
+     "stable": 0.2269577650681918,
+     "early_growth": 0.052188737351517814,
+     "growth": 0.03357897052353718,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.005015398152221734,
+     "early_decline": 0.015992080950285967,
+     "stable": 0.2039705235371755,
+     "early_growth": 0.0156841179058513,
+     "growth": 0.012164540255169378,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 808.0,
+    "snow_ice": 9069.8,
+    "urban": 1258.8,
+    "cropland": 8723.7,
+    "forest": 0.9,
+    "steep": 16109.7,
+    "bare": 26752.5
+   }
+  },
+  "TKM": {
+   "pasture_km2": 189130.6,
+   "n_pasture_px": 220269,
+   "trend": {
+    "decline": 0.02068834016588807,
+    "early_decline": 0.09811185414198094,
+    "stable": 0.81397745483931,
+    "early_growth": 0.029668269252595688,
+    "growth": 0.037554081600225185,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.8579691195765178,
+    "moderate": 0.07766412886062042,
+    "good": 0.06436675156286177
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.01407370079312114,
+     "early_decline": 0.08861437605836497,
+     "stable": 0.728677208322551,
+     "early_growth": 0.010750491444551888,
+     "growth": 0.015853342957928715,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.0038770775733307913,
+     "early_decline": 0.0053934053362025515,
+     "stable": 0.046375114065074975,
+     "early_growth": 0.009415759820946208,
+     "growth": 0.012602772065065897,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.0027375617994361435,
+     "early_decline": 0.00410407274741339,
+     "stable": 0.03892513245168408,
+     "early_growth": 0.009502017987097594,
+     "growth": 0.00909796657723057,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 24981.1,
+    "snow_ice": 42.1,
+    "urban": 1554.1,
+    "cropland": 14961.7,
+    "forest": 0.0,
+    "steep": 80.7,
+    "bare": 259658.9
+   }
+  },
+  "UZB": {
+   "pasture_km2": 192794.4,
+   "n_pasture_px": 224536,
+   "trend": {
+    "decline": 0.036417322834645674,
+    "early_decline": 0.11660490968040757,
+    "stable": 0.7921179677200981,
+    "early_growth": 0.026997897887198485,
+    "growth": 0.027861901877649906,
+    "insufficient": 0.0
+   },
+   "level": {
+    "low": 0.7602878825667152,
+    "moderate": 0.13881070296077244,
+    "good": 0.10090141447251218
+   },
+   "matrix": {
+    "low": {
+     "decline": 0.01711529554280828,
+     "early_decline": 0.0972004489257847,
+     "stable": 0.6312929775180814,
+     "early_growth": 0.008550967328179001,
+     "growth": 0.006128193251861615,
+     "insufficient": 0.0
+    },
+    "moderate": {
+     "decline": 0.01414027149321267,
+     "early_decline": 0.01194017885773328,
+     "stable": 0.09619838244201373,
+     "early_growth": 0.008452987494210282,
+     "growth": 0.00807888267360245,
+     "insufficient": 0.0
+    },
+    "good": {
+     "decline": 0.005161755798624717,
+     "early_decline": 0.007464281896889584,
+     "stable": 0.06462660776000284,
+     "early_growth": 0.009993943064809203,
+     "growth": 0.013654825952185838,
+     "insufficient": 0.0
+    }
+   },
+   "excluded_km2": {
+    "water": 15513.8,
+    "snow_ice": 1112.8,
+    "urban": 11170.0,
+    "cropland": 47783.0,
+    "forest": 0.0,
+    "steep": 1786.8,
+    "bare": 169707.4
+   }
+  }
+ }
+}

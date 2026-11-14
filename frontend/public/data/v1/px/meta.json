@@ -1,0 +1,224 @@
+{
+ "dataset": "naryn",
+ "years": [
+  2000,
+  2025
+ ],
+ "chunk": 64,
+ "chunkBytes": 139264,
+ "grid": {
+  "crs": "MODIS sinusoidal",
+  "R": 6371007.181,
+  "cell_m": 926.625433055833,
+  "x_origin": -20015109.354,
+  "y_origin": 10007554.677,
+  "row0": 5684,
+  "col0": 28133,
+  "H": 304,
+  "W": 531
+ },
+ "lookup": "x = R*lon_rad*cos(lat_rad); y = R*lat_rad; row = floor((y_origin - y)/cell_m) - row0; col = floor((x - x_origin)/cell_m) - col0; chunk = chunks/{row//64}_{col//64}.bin; i = (row%64)*64 + col%64",
+ "layout": [
+  {
+   "name": "tier",
+   "dtype": "uint8",
+   "offset": 0,
+   "count": 4096
+  },
+  {
+   "name": "level",
+   "dtype": "uint8",
+   "offset": 4096,
+   "count": 4096
+  },
+  {
+   "name": "score",
+   "dtype": "uint8",
+   "offset": 8192,
+   "count": 4096
+  },
+  {
+   "name": "slope_pct_decade_x10",
+   "dtype": "int16",
+   "offset": 12288,
+   "count": 4096
+  },
+  {
+   "name": "p_x250",
+   "dtype": "uint8",
+   "offset": 20480,
+   "count": 4096
+  },
+  {
+   "name": "q_x250",
+   "dtype": "uint8",
+   "offset": 24576,
+   "count": 4096
+  },
+  {
+   "name": "region",
+   "dtype": "uint8",
+   "offset": 28672,
+   "count": 4096
+  },
+  {
+   "name": "series",
+   "dtype": "uint8",
+   "offset": 32768,
+   "count": 106496
+  }
+ ],
+ "series_decode": "ndvi = v/254*1.2 - 0.2 (v=255 missing)",
+ "slope_decode": "pct per decade = v/10 (v=-32768 missing)",
+ "p_decode": "p = v/250 (255 missing)",
+ "regions": [
+  "AK",
+  "AT",
+  "JU",
+  "KO",
+  "NA",
+  "SU"
+ ],
+ "codes": {
+  "1": {
+   "key": "decline",
+   "label": "Reliable decline",
+   "color": "#C2410C"
+  },
+  "2": {
+   "key": "early_decline",
+   "label": "Possible decline (pixel p < 0.05)",
+   "color": "#FDBA74"
+  },
+  "3": {
+   "key": "stable",
+   "label": "No reliable trend",
+   "color": "#E4E4E7"
+  },
+  "4": {
+   "key": "early_growth",
+   "label": "Possible growth (pixel p < 0.05)",
+   "color": "#99D5E0"
+  },
+  "5": {
+   "key": "growth",
+   "label": "Reliable growth",
+   "color": "#0E7490"
+  },
+  "6": {
+   "key": "insufficient",
+   "label": "Not enough data",
+   "color": "#FFFFFF"
+  },
+  "21": {
+   "key": "low",
+   "label": "Low (relative)",
+   "color": "#DCEBD3"
+  },
+  "22": {
+   "key": "moderate",
+   "label": "Moderate (relative)",
+   "color": "#86C07F"
+  },
+  "23": {
+   "key": "good",
+   "label": "Good (relative)",
+   "color": "#2F7D3E"
+  },
+  "40": {
+   "key": "water",
+   "label": "Water",
+   "color": "#BFD7EA"
+  },
+  "41": {
+   "key": "snow_ice",
+   "label": "Snow and ice",
+   "color": "#F4F4F5"
+  },
+  "42": {
+   "key": "urban",
+   "label": "Built-up",
+   "color": "#71717A"
+  },
+  "43": {
+   "key": "cropland",
+   "label": "Cropland",
+   "color": "#D6C7A1"
+  },
+  "44": {
+   "key": "forest",
+   "label": "Forest",
+   "color": "#5B7F5E"
+  },
+  "45": {
+   "key": "steep",
+   "label": "Too steep",
+   "color": "#A1A1AA"
+  },
+  "46": {
+   "key": "bare",
+   "label": "Desert and bare ground",
+   "color": "#EDE6D6"
+  },
+  "47": {
+   "key": "insufficient",
+   "label": "Not enough data",
+   "color": "#FFFFFF"
+  }
+ },
+ "legend": {
+  "trend": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   40,
+   41,
+   42,
+   43,
+   44,
+   45,
+   46
+  ],
+  "level": [
+   23,
+   22,
+   21,
+   40,
+   41,
+   42,
+   43,
+   44,
+   45,
+   46
+  ]
+ },
+ "tiles": {
+  "url": "px/tiles/{layer}/{z}/{x}/{y}.png",
+  "layers": [
+   "trend",
+   "level"
+  ],
+  "minZoom": 3,
+  "maxNativeZoom": 8,
+  "bounds": [
+   [
+    40.054166671150085,
+    73.34388480165214
+   ],
+   [
+    42.67916667092332,
+    78.54965643774165
+   ]
+  ]
+ },
+ "method": {
+  "reliable": "Benjamini-Hochberg FDR q < 0.05 across all pasture pixels (Hamed-Rao Mann-Kendall)",
+  "possible": "per-pixel Mann-Kendall p < 0.05 but not FDR-significant (the per-pixel significance convention of Trends.Earth / SDG 15.3.1); labelled possible, not the Trends.Earth LPD class 'early signs of decline'",
+  "fdr_scope": "BH FDR is computed across all pasture pixels of this dataset, so the same Naryn pixel can be reliable in the Naryn pilot and possible in the Central Asia view",
+  "level": "TrendeX 4-component score per 1 km pixel, thresholds 60 / 40",
+  "greening_note": "Greening is not automatically better pasture: shrubs and crops also raise NDVI."
+ }
+}

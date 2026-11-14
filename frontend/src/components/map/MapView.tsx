@@ -7,7 +7,9 @@ import type { FeatureCollection, MultiLineString, MultiPolygon } from 'geojson';
 import { useApp } from '../../store';
 import { cellAt, type ZoneFeature } from '../../lib/zones';
 import { DLON } from '../../lib/geo';
-import type { DatasetMeta, LonLat, StudyMask } from '../../lib/types';
+import type { BoundaryFeature, DatasetMeta, LonLat, StudyMask } from '../../lib/types';
+import { choroplethBin, CHORO_OPACITY, type OverviewKind, type PxRegions } from '../../lib/px';
+import { countryOfRegion } from '../../lib/regions';
 import { C, DOTS_ID, HATCH_ID, zoneFill } from '../../theme';
 
 import { BASEMAP, HILLSHADE_URL } from './basemap';
@@ -33,6 +35,7 @@ export const DRAWER_PAD = 400;
 
 const PANES: [string, number][] = [
   ['base', 200],
+  ['px', 395],
   ['zones', 400],
   ['hillshade', 410],
   ['bounds', 420],
@@ -151,7 +154,7 @@ function Boundaries({ mask, meta, focus }: { mask: StudyMask | null; meta: Datas
   return null;
 }
 
-function Selection({ outline, poly }: { outline: MultiPolygon | null; poly: LonLat[] | null }) {
+function Selection({ outline, poly, footprint, outlineOnly }: { outline: MultiPolygon | null; poly: LonLat[] | null; footprint: LonLat[] | null; outlineOnly: boolean }) {
   const map = useMap();
   const drawing = useApp((s) => s.drawing);
   useEffect(() => {
@@ -166,13 +169,96 @@ function Selection({ outline, poly }: { outline: MultiPolygon | null; poly: LonL
     if (poly && poly.length >= 3 && !drawing) {
       L.polygon(
         poly.map(([lon, lat]) => [lat, lon] as [number, number]),
-        { pane: 'sel', interactive: false, color: C.text, weight: 2, fillColor: C.text, fillOpacity: 0.08, className: 'drawn-outline' },
+        { pane: 'sel', interactive: false, color: C.text, weight: 2, fillColor: C.text, fillOpacity: outlineOnly ? 0 : 0.08, className: 'drawn-outline' },
       ).addTo(group);
+    }
+    if (footprint) {
+      // The clicked 1 km pixel: a white halo under a thin dark square.
+      const ll = footprint.map(([lon, lat]) => [lat, lon] as [number, number]);
+      L.polygon(ll, { pane: 'sel', interactive: false, color: '#FFFFFF', weight: 3.5, fill: false }).addTo(group);
+      L.polygon(ll, { pane: 'sel', interactive: false, color: C.text, weight: 1.5, fill: false, className: 'pixel-footprint' }).addTo(group);
     }
     return () => {
       group.remove();
     };
-  }, [map, outline, poly, drawing]);
+  }, [map, outline, poly, drawing, footprint, outlineOnly]);
+
+  return null;
+}
+
+/** The native 1 km layer as the main data layer (palette tiles, one layer at a time). */
+function PxTiles({ url, bounds, minZoom, maxNativeZoom }: { url: string; bounds: [[number, number], [number, number]]; minZoom: number; maxNativeZoom: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setMaxZoom(12);
+    return () => {
+      map.setMaxZoom(11);
+    };
+  }, [map]);
+  // A new layer per URL: Leaflet's setUrl() redraw takes the fractional map zoom (zoomSnap 0.1) as the
+  // tile zoom and requests tiles like 7.8/158/82; a fresh layer rounds it.
+  return (
+    <TileLayer
+      key={url}
+      url={url}
+      pane="px"
+      bounds={L.latLngBounds(bounds)}
+      minZoom={minZoom}
+      maxNativeZoom={maxNativeZoom}
+      maxZoom={12}
+      className="px-tiles"
+      keepBuffer={2}
+    />
+  );
+}
+
+/** Keeps the store's map zoom current (the Central Asia overview depends on it). */
+function ZoomWatch() {
+  const map = useMap();
+  useEffect(() => {
+    const on = () => useApp.getState().setMapZoom(map.getZoom());
+    on();
+    map.on('zoomend', on);
+    return () => {
+      map.off('zoomend', on);
+    };
+  }, [map]);
+  return null;
+}
+
+export interface Overview {
+  features: BoundaryFeature[];
+  stats: PxRegions;
+  kind: OverviewKind;
+  /** only this country's regions (Central Asia country choice) */
+  country: string | null;
+}
+
+/**
+ * Central Asia overview: at low zoom the mode-downsampled tiles read as mostly "no reliable trend", so each
+ * region is shaded by its share of pasture with a reliable or possible decline (or growth), over the tiles.
+ */
+function Choropleth({ overview }: { overview: Overview | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!overview) return;
+    const color = overview.kind === 'decline' ? C.decStrong : C.incStrong;
+    const layer = L.geoJSON({ type: 'FeatureCollection', features: overview.features } as GeoJSON.FeatureCollection, {
+      pane: 'zones',
+      interactive: false,
+      style: (f) => {
+        const code = String((f?.properties as { code?: string } | undefined)?.code ?? '');
+        const inside = !overview.country || countryOfRegion(code) === overview.country;
+        const bin = inside ? choroplethBin(overview.stats.regions[code], overview.kind) : null;
+        return bin === null
+          ? { stroke: false, fill: false }
+          : { stroke: false, fillColor: color, fillOpacity: CHORO_OPACITY[bin], className: 'choropleth' };
+      },
+    }).addTo(map);
+    return () => {
+      layer.remove();
+    };
+  }, [map, overview]);
   return null;
 }
 
@@ -191,7 +277,11 @@ function Interaction() {
       const s = useApp.getState();
       if (s.drawing || !s.data) return;
       const c = cellAt(s.data, e.latlng.lng, e.latlng.lat);
-      if (c) s.selectZone(c.id);
+      if (c) {
+        s.selectZone(c.id);
+        // With the 1 km layer the card also describes the clicked pixel itself.
+        if (s.px) s.setPixel({ lat: e.latlng.lat, lon: e.latlng.lng });
+      }
     };
     const onDrawStart = (e: { workingLayer: L.Layer }) => {
       e.workingLayer.on('pm:vertexadded', count);
@@ -278,11 +368,17 @@ export interface MapViewProps {
   title?: string;
   /** Central Asia: the chosen country */
   focus?: MapFocus | null;
+  /** native 1 km tiles; when set they are the data layer and zones are drawn as outlines only */
+  tiles?: { url: string; bounds: [[number, number], [number, number]]; minZoom: number; maxNativeZoom: number } | null;
+  /** footprint of the clicked 1 km pixel */
+  footprint?: LonLat[] | null;
+  /** Central Asia overview shading (low zoom) */
+  overview?: Overview | null;
   outline: MultiPolygon | null;
   poly: LonLat[] | null;
 }
 
-export function MapView({ zones, grey = false, mask, meta = null, title = 'Naryn oblast', focus = null, outline, poly }: MapViewProps) {
+export function MapView({ zones, grey = false, mask, meta = null, title = 'Naryn oblast', focus = null, tiles = null, footprint = null, overview = null, outline, poly }: MapViewProps) {
   return (
     <MapContainer
       bounds={meta?.bounds && meta.dataset !== 'naryn' ? L.latLngBounds(meta.bounds) : START_BOUNDS}
@@ -300,9 +396,12 @@ export function MapView({ zones, grey = false, mask, meta = null, title = 'Naryn
       <TileLayer url={HILLSHADE_URL} pane="hillshade" maxNativeZoom={13} />
       <TileLayer url={BASEMAP.labels} pane="labels" subdomains={BASEMAP.subdomains ?? 'abc'} maxNativeZoom={16} />
       <Controls />
+      {tiles && <PxTiles url={tiles.url} bounds={tiles.bounds} minZoom={tiles.minZoom} maxNativeZoom={tiles.maxNativeZoom} />}
       <Zones zones={zones} grey={grey} />
+      <Choropleth overview={overview} />
+      <ZoomWatch />
       <Boundaries mask={mask} meta={meta} focus={focus} />
-      <Selection outline={outline} poly={poly} />
+      <Selection outline={outline} poly={poly} footprint={footprint} outlineOnly={!!tiles} />
       <Interaction />
       <Fly />
       <TestHook />

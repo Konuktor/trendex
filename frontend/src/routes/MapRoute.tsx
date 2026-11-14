@@ -2,11 +2,12 @@ import { useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useApp, queueFor, selectionKey } from '../store';
 import { resolveAnswer } from '../lib/selection';
-import { buildZoneGeoJSON, smoothPolygon } from '../lib/zones';
+import { buildDimGeoJSON, buildZoneGeoJSON, smoothPolygon } from '../lib/zones';
+import { overviewActive, pixelCorners, pixelRowCol, tileUrl } from '../lib/px';
 import { Rail } from '../components/map/Rail';
 import { HeadlineStrip } from '../components/map/HeadlineStrip';
-import { MapView, type MapFocus } from '../components/map/MapView';
-import { countryCellBounds, countryShape } from '../lib/regions';
+import { MapView, type MapFocus, type Overview } from '../components/map/MapView';
+import { countryCellBounds, countryShape, multiCountry } from '../lib/regions';
 import { DLAT, DLON } from '../lib/geo';
 import { SearchBox } from '../components/map/SearchBox';
 import { DrawBar } from '../components/map/DrawBar';
@@ -33,6 +34,8 @@ export function MapRoute() {
   const meta = useApp((s) => s.meta);
   const dataset = useApp((s) => s.dataset);
   const country = useApp((s) => s.country);
+  const px = useApp((s) => s.px);
+  const pixel = useApp((s) => s.pixel);
   const load = useApp((s) => s.load);
   const layer = useApp((s) => s.layer);
   const matrix = useApp((s) => s.matrix);
@@ -72,10 +75,41 @@ export function MapRoute() {
   const loading = forced === 'loading' || !data;
 
   // Zones rebuild only when the data, layer or filter change.
+  // With the 1 km layer the tiles carry the data; zones only dim what is outside a filter.
   const zones = useMemo(
-    () => (data ? buildZoneGeoJSON(data.cells, layer, { matrix, district, country }) : null),
-    [data, layer, matrix, district, country],
+    () =>
+      data
+        ? px
+          ? buildDimGeoJSON(data.cells, { matrix, district, country })
+          : buildZoneGeoJSON(data.cells, layer, { matrix, district, country })
+        : null,
+    [data, px, layer, matrix, district, country],
   );
+  const tiles = useMemo(
+    () =>
+      px
+        ? { url: tileUrl(px, layer), bounds: px.meta.tiles.bounds, minZoom: px.meta.tiles.minZoom, maxNativeZoom: px.meta.tiles.maxNativeZoom }
+        : null,
+    [px, layer],
+  );
+  const mapZoom = useApp((s) => s.mapZoom);
+  const overviewKind = useApp((s) => s.overviewKind);
+  const showOverview = overviewActive({
+    hasStats: !!px?.regions,
+    multi: !!data && multiCountry(),
+    layer,
+    zoom: mapZoom,
+    filtered: !!matrix || !!district,
+  });
+  const overview = useMemo<Overview | null>(
+    () => (showOverview && px?.regions && mask ? { features: mask.districts, stats: px.regions, kind: overviewKind, country } : null),
+    [showOverview, px, mask, overviewKind, country],
+  );
+  const footprint = useMemo(() => {
+    if (!px || !pixel) return null;
+    const rc = pixelRowCol(px.meta.grid, pixel.lat, pixel.lon);
+    return rc ? pixelCorners(px.meta.grid, rc.row, rc.col) : null;
+  }, [px, pixel]);
   // Central Asia: fit and outline the chosen country (bounds from its region polygons, else its cells).
   const focus = useMemo<MapFocus | null>(() => {
     if (!country || !mask || !data) return null;
@@ -113,6 +147,9 @@ export function MapRoute() {
       meta={meta}
       title={meta?.title}
       focus={focus}
+      tiles={tiles}
+      footprint={loading ? null : footprint}
+      overview={loading ? null : overview}
       outline={loading ? null : outline}
       poly={!loading && sel?.type === 'drawn' ? sel.poly : null}
     />
@@ -145,7 +182,7 @@ export function MapRoute() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1">
+    <div className="flex min-h-0 min-w-0 flex-1">
       <Rail card={loading ? null : card} loading={loading} />
       <main className="relative flex min-w-0 flex-1 flex-col" data-state={forced ?? 'ready'}>
         <HeadlineStrip loading={loading} />

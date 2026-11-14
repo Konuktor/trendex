@@ -21,7 +21,10 @@ export function goTo(lon: number, lat: number) {
     }
   }
   if (s.drawing) s.setDrawing(false);
-  if (best && bd < 9) s.selectZone(best.id, true);
+  if (best && bd < 9) {
+    s.selectZone(best.id, true);
+    if (s.px) s.setPixel({ lat, lon });
+  }
   else {
     const e = 0.08 * (DLON / 0.12); // 0.08° on the Naryn grid, scaled with the cell size
     s.selectDrawn(

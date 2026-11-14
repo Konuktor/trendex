@@ -3,6 +3,9 @@ import { AlertTriangle, Check, ChevronRight, Info, Plus, X } from 'lucide-react'
 import { nearKm, type Answer, type BetterRow, type NonPastureAnswer, type PastureAnswer } from '../../lib/answer';
 import { LEVEL_NAME, NOT_ACCOUNTED, TREND_NAME } from '../../lib/labels';
 import { relativeNote } from '../../lib/regions';
+import { CELL_KM } from '../../lib/geo';
+import { useApp } from '../../store';
+import { PixelBlock } from './PixelBlock';
 import { ord } from '../../lib/format';
 import { ConfidenceBadge, LevelChip, Swatch, TrendChip } from '../ui/Chips';
 import { TrendChart } from './TrendChart';
@@ -248,6 +251,17 @@ export function AnswerBody({ a, act }: { a: Answer; act: CardActions }) {
   );
 }
 
+/** Heading over the area answer when the card also shows a 1 km pixel. */
+export function AreaHeading() {
+  const px = useApp((s) => s.px);
+  if (!px) return null;
+  return (
+    <h3 className="-mb-2 border-t border-hairline pt-4 text-sm font-semibold">
+      Surrounding area (~{Math.round(CELL_KM)} km cells)
+    </h3>
+  );
+}
+
 export function AnswerCard({ a, act }: { a: Answer; act: CardActions }) {
   return (
     <aside
@@ -256,6 +270,8 @@ export function AnswerCard({ a, act }: { a: Answer; act: CardActions }) {
     >
       <AnswerCardHeader a={a} onClose={act.onClose} />
       <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-6 pb-6 pt-5">
+        <PixelBlock />
+        <AreaHeading />
         <AnswerBody a={a} act={act} />
       </div>
       <NotAccounted />

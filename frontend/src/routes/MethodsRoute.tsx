@@ -74,6 +74,7 @@ export function MethodsRoute() {
   const load = useApp((s) => s.load);
   const dataset = useApp((s) => s.dataset);
   const meta = useApp((s) => s.meta);
+  const px = useApp((s) => s.px);
   useEffect(() => {
     void load();
   }, [load]);
@@ -142,8 +143,10 @@ export function MethodsRoute() {
               it does not replace one.
             </p>
             <p>
-              The analysis grid is {COLS} × {ROWS} cells of about {km} × {km} km. Cells are a calculation unit only; the map shows
-              smoothed zones.
+              The analysis grid is {COLS} × {ROWS} cells of about {km} × {km} km.{' '}
+              {px
+                ? 'Cells are the unit of the area answers; the map itself shows the native 1 km pixels.'
+                : 'Cells are a calculation unit only; the map shows smoothed zones.'}
             </p>
           </Section>
 
@@ -193,6 +196,25 @@ export function MethodsRoute() {
                 ? 'Cell trends come from the TrendeX pipeline (Theil–Sen with Mann–Kendall, as above). For a drawn outline or a district average this page fits an ordinary least-squares line with a 95% interval to the averaged series, which behaves like Theil–Sen on smooth series.'
                 : 'In this pilot the series are sample data, and the slope and its 95% interval come from an ordinary least-squares fit, which behaves like Theil–Sen on smooth series. The production pipeline uses Theil–Sen with Mann–Kendall as described above.'}
             </p>
+            {px && (
+              <>
+                <h3 className="text-md font-semibold">Trend tiers for 1 km pixels</h3>
+                <p>
+                  The map shows every 1 km pasture pixel in one of five tiers. A <b className="font-semibold">reliable</b> decline
+                  or growth passes the Mann–Kendall test after the Benjamini–Hochberg correction for testing every pasture pixel
+                  at once (false discovery rate q &lt; 0.05). A <b className="font-semibold">possible</b> decline or growth passes
+                  the pixel’s own test (p &lt; 0.05) but not that correction: worth a look, not yet a finding. Judging each pixel by
+                  its own p &lt; 0.05 is the convention used by Trends.Earth and SDG indicator 15.3.1. Every other pasture pixel has no
+                  reliable trend. The correction runs over all pasture pixels of a dataset, so the same pixel can be reliable in the
+                  Naryn pilot and possible in the Central Asia view. Shares for a region are shares of its pasture area: the part of
+                  its 1 km pasture pixels in each tier, not one class per block.
+                </p>
+                <p>
+                  Greening is not automatically better pasture: shrubs and crops also raise NDVI. A rising trend can mean more
+                  grass, but also shrubs spreading or new fields, so it needs the same field check as a decline.
+                </p>
+              </>
+            )}
             <h3 className="text-md font-semibold">Confidence</h3>
             <ul className="flex list-disc flex-col gap-1 pl-5">
               <li><b className="font-medium">Low</b>: fewer than 16 of 26 clear seasons.</li>
@@ -302,7 +324,11 @@ export function MethodsRoute() {
             <p>{NOT_ACCOUNTED}.</p>
             <ul className="flex list-disc flex-col gap-1 pl-5">
               <li>Why greenness changed. A decline can follow heavier grazing, drier years, a change in species or a mapping error; the record alone cannot tell them apart.</li>
-              <li>Anything smaller than about {km} km. A cell can average a worn spring area with a healthy slope.</li>
+              {px ? (
+                <li>Anything smaller than one 1 km pixel. The area answer uses ~{km} km cells, which can average a worn spring area with a healthy slope.</li>
+              ) : (
+                <li>Anything smaller than about {km} km. A cell can average a worn spring area with a healthy slope.</li>
+              )}
               <li>Forage quality and plant species. Green cover is not the same as good feed.</li>
               <li>Seasons hidden by snow or cloud. Fewer clear seasons means less certainty, and the card says so.</li>
               <li>What is permitted or agreed locally. TrendeX ranks places for a look; decisions stay with the people who manage the pastures.</li>
