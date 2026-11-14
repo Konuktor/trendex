@@ -1,0 +1,41 @@
+# TrendeX core formula, Central Asia profile (KAZ, KGZ, TJK, TKM, UZB). Same open formula as core_v1.yaml.
+# Use with: TRENDEX_CONFIG=core_ca.yaml. FREEZE (commit) BEFORE THE FIRST REAL CA RUN.
+version: core_ca
+zones: ca_adm1                   # zones = geoBoundaries ADM1 regions of the 5 countries (data/boundaries/ca)
+district_names: {}               # filled at load time from the ADM1 files
+title: {en: Central Asia, ru: Центральная Азия}
+years: [2000, 2025]
+summer_months: [5, 6, 7, 8, 9]
+season_months: [4, 5, 6, 7, 8, 9, 10]
+spring_autumn_months: [4, 5, 9, 10]
+min_valid_months_per_summer: 3
+min_valid_years: 18
+exclude:                         # IGBP LC_Type1 (MCD12Q1, 2020)
+  water: [17]
+  snow_ice: [15]
+  urban: [13]
+  cropland: [12, 14]
+  forest: [1, 2, 3, 4, 5]
+  bare: [16]                     # deserts and bare ground (Karakum, Kyzylkum, high Pamir rock): not rangeland here
+max_slope_deg: 35
+weights: {green: 0.4, stability: 0.2, season: 0.2, terrain: 0.2}
+level_thresholds: {suitable: 60, limited: 40}
+trend: {method: hamed_rao, alpha: 0.05, fdr_q: 0.05}
+season_terciles: [33.3, 66.7]
+confidence: {min_pasture_km2: 20, max_excluded_share: 0.5, min_valid_frac: 0.7, max_flip_share: 0.3}
+alternatives: {radius_km: 50, max_n: 3}
+queue: {min_zone_cells: 3}
+sensitivity_sets:
+  equal: {green: 0.25, stability: 0.25, season: 0.25, terrain: 0.25}
+  green_heavy: {green: 0.6, stability: 0.1, season: 0.15, terrain: 0.15}
+  terrain_heavy: {green: 0.3, stability: 0.15, season: 0.15, terrain: 0.4}
+  no_season: {green: 0.5, stability: 0.25, season: 0.0, terrain: 0.25}
+  stability_heavy: {green: 0.3, stability: 0.4, season: 0.15, terrain: 0.15}
+placebo: {n_perm: 50, seed: 42, max_cells: 200000}
+layers: {res_m: 2500}            # PNG overlay pixel size (EPSG:3857 m) for the much larger extent
+export: {cards: false, cells_bin: false}   # per-block cards and per-cell binary do not scale to ~4.6M cells
+ext_disabled: [access, passport]           # OSM for all of Central Asia and per-block PDFs are out of scope tonight
+fe:                              # frontend overview grid (frontend/docs contract), ~20 x 20 km cells
+  dataset: ca
+  grid: {lon0: 46.4, lat0: 55.5, dlon: 0.24, dlat: 0.18, cols: 171, rows: 114, cellKm2: 400}
+  out: ca/v1

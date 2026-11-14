@@ -32,7 +32,7 @@ from trendex_core.formula import COMPONENTS  # noqa: E402
 
 OUT = Path(os.environ.get("TRENDEX_EXPORT", config.ROOT / "export" / "v1"))
 LANGS = ("en", "ru")
-STATUS_CODES = ["pasture", "insufficient", "water", "snow_ice", "urban", "cropland", "forest", "steep"]
+STATUS_CODES = ["pasture", "insufficient", "water", "snow_ice", "urban", "cropland", "forest", "steep", "bare"]
 LEVEL_CODES = [None, "suitable", "limited", "low"]
 TREND_CODES = [None, "growth", "decline", "unreliable", "insufficient"]
 
@@ -127,7 +127,8 @@ def main():
         get(f"/api/zones/{z}.geojson", f"zones/{z}.geojson")
     shutil.copy(deps.ART / "summary.json", OUT / "summary.json")
 
-    if not a.no_cards:
+    exp_cfg = core.cfg.get("export", {})
+    if not a.no_cards and exp_cfg.get("cards", True):
         sels = [f"district:{d}" for d in core.cfg["district_names"]] + [f"block:{int(b)}" for b in core.blocks["block_id"]]
         jobs = [(s, lang) for s in sels for lang in LANGS]
 
@@ -139,7 +140,8 @@ def main():
             list(ex.map(one, jobs))
         print(f"cards: {len(jobs)}")
 
-    write_bin(core, OUT)
+    if exp_cfg.get("cells_bin", True):
+        write_bin(core, OUT)
     for name, _ in ext.run("export", core, OUT):
         print("ext export:", name)
     n = sum(1 for _ in OUT.rglob("*") if _.is_file())

@@ -15,6 +15,7 @@ mask:
   cropland: "#c9a66b"
   forest: "#2f5d3a"
   steep: "#8c7b6b"
+  bare: "#d8c9a3"
   insufficient: "#3d3d3d"
 season_class:
   below: "#d6604d"

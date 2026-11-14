@@ -22,8 +22,10 @@ def modules():
     global _MODS
     if _MODS is None:
         _MODS = []
+        from .. import config
+        disabled = set(config.core().get("ext_disabled", []) or [])
         for m in sorted(pkgutil.iter_modules(__path__), key=lambda m: m.name):
-            if m.name.startswith("_"):
+            if m.name.startswith("_") or m.name in disabled:
                 continue
             try:
                 _MODS.append(importlib.import_module(f"{__name__}.{m.name}"))

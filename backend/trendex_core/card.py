@@ -13,7 +13,7 @@ from .selection import Selection
 from .stats import trend as T
 
 LEVEL_RANK = {"suitable": 2, "limited": 1, "low": 0}
-EXCL_REASONS = ("water", "snow_ice", "urban", "cropland", "forest", "steep")
+EXCL_REASONS = ("water", "snow_ice", "urban", "cropland", "forest", "steep", "bare")
 
 
 def area_series(core, m: np.ndarray, min_frac: float = 0.5, S: np.ndarray | None = None):

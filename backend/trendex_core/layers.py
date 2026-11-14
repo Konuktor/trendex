@@ -90,7 +90,8 @@ def build_all(core, out_dir: Path, extra_specs: list | None = None) -> dict:
 
     meta = []
     for key, kind, codes, legend in specs:
-        bounds = render(core, codes, [c for _, c in legend], out_dir / f"{key}.png")
+        bounds = render(core, codes, [c for _, c in legend], out_dir / f"{key}.png",
+                        res_m=float(core.cfg.get("layers", {}).get("res_m", 800)))
         meta.append({"key": key, "kind": kind, "url": f"/api/layers/{key}.png", "bounds": bounds, "crs": "EPSG:3857",
                      "legend": [{"value": k, "color": c} for k, c in legend]})
     (out_dir / "layers.json").write_text(json.dumps(meta, indent=1))

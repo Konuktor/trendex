@@ -89,9 +89,11 @@ def trend_many(Y, years, method: str = "hamed_rao", alpha: float = 0.05, min_n: 
     return {k: df[k].to_numpy() for k in df.columns}
 
 
-def sen_vectorized(Y, years) -> np.ndarray:
-    """Sen slope for each row (NaN-aware)."""
+def sen_vectorized(Y, years, chunk: int = 200_000) -> np.ndarray:
+    """Sen slope for each row (NaN-aware). Processes `chunk` rows at a time to bound memory."""
     Y = np.asarray(Y, dtype=np.float32)
+    if len(Y) > chunk:
+        return np.concatenate([sen_vectorized(Y[i:i + chunk], years, chunk) for i in range(0, len(Y), chunk)])
     t = np.asarray(years, dtype=np.float32)
     i, j = np.triu_indices(len(t), k=1)
     s = (Y[:, j] - Y[:, i]) / (t[j] - t[i])
@@ -100,11 +102,14 @@ def sen_vectorized(Y, years) -> np.ndarray:
         return np.nanmedian(s, axis=1)
 
 
-def mk_vectorized(Y, years=None):
+def mk_vectorized(Y, years=None, chunk: int = 200_000):
     """Original Mann-Kendall for each row (NaN-aware, no tie/autocorrelation correction).
 
-    Returns (S, var_s, z, p)."""
+    Returns (S, var_s, z, p). Processes `chunk` rows at a time to bound memory."""
     Y = np.asarray(Y, dtype=np.float32)
+    if len(Y) > chunk:
+        parts = [mk_vectorized(Y[i:i + chunk], years, chunk) for i in range(0, len(Y), chunk)]
+        return tuple(np.concatenate([p[k] for p in parts]) for k in range(4))
     n_t = Y.shape[1]
     i, j = np.triu_indices(n_t, k=1)
     d = Y[:, j] - Y[:, i]

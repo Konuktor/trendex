@@ -21,7 +21,7 @@ labels:
   season: {below: Below usual, within: Within usual range, above: Above usual}
   confidence: {high: High, medium: Medium, low: Low}
   status: {ok: OK, excluded: Excluded, insufficient: Not enough data, outside_aoi: Outside the study area}
-  mask: {water: Water, snow_ice: Snow and ice, urban: Built-up, cropland: Cropland, forest: Forest, steep: Too steep, insufficient: Not enough data, pasture: Pasture}
+  mask: {water: Water, snow_ice: Snow and ice, urban: Built-up, cropland: Cropland, forest: Forest, steep: Too steep, bare: Desert and bare ground, insufficient: Not enough data, pasture: Pasture}
   component: {green: Summer greenness, stability: Year-to-year stability, season: Green season length, terrain: Gentle terrain}
 relative_note: "Relative to the pastures of Naryn region, not an absolute rating."
 reasons:
@@ -35,7 +35,7 @@ reasons:
   terrain_con: "Steeper terrain than {q}% of pastures (mean slope {slope}°)"
   trend_pro: "Summer greenness has risen since {y0}: {pct:+.1f}% per decade (95% CI {lo:+.3f} to {hi:+.3f} NDVI/decade)"
   trend_con: "Summer greenness has fallen since {y0}: {pct:+.1f}% per decade (95% CI {lo:+.3f} to {hi:+.3f} NDVI/decade)"
-  excluded_con: "{share}% of the area is not pasture (water, ice, built-up, cropland, forest or steep slopes)"
+  excluded_con: "{share}% of the area is not pasture (water, ice, built-up, cropland, forest, desert or steep slopes)"
 confidence:
   small_area: "Small pasture area ({km2} km²)"
   excluded_share: "More than half of the area is not pasture"
@@ -61,7 +61,7 @@ actions:
   caveat_low_priority: "Caveat, low priority."
   growth_without_forage_value_check: "Greening may not mean forage value (e.g. shrubs). Check the cover in the field (hypothesis)."
   do_not_recommend: "Do not recommend for grazing."
-  excluded: "Not a pasture area (water, ice, built-up, cropland, forest or too steep)."
+  excluded: "Not a pasture area (water, ice, built-up, cropland, forest, desert or too steep)."
   insufficient: "Not enough reliable satellite data to judge this area."
 action_note: "A direction to discuss with specialists, not an instruction."
 not_considered:

@@ -19,6 +19,8 @@ def build_step(core, cube):
     S = core.S[m]
     S = S[np.isfinite(S).sum(axis=1) >= core.cfg["min_valid_years"]]
     rng = np.random.default_rng(cfg["seed"])
+    if cfg.get("max_cells") and len(S) > cfg["max_cells"]:  # Central Asia: random subsample keeps it tractable
+        S = S[np.sort(rng.choice(len(S), cfg["max_cells"], replace=False))]
 
     def shares(Y):
         _, _, _, p = T.mk_vectorized(Y)

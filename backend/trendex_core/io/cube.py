@@ -89,7 +89,8 @@ def load(source: str, months=range(4, 11)) -> Cube:
     manifest = json.loads((path / "manifest.json").read_text()) if (path / "manifest.json").exists() else {}
 
     # our own district assignment from ADM2 polygons (cube's district column is optional)
-    cells["district"] = boundaries.assign_district(cells["x"].to_numpy(), cells["y"].to_numpy())
+    cells["district"] = boundaries.assign_zone(cells["x"].to_numpy(), cells["y"].to_numpy(),
+                                               cells["lon"].to_numpy(), cells["lat"].to_numpy())
     grid = Grid.from_xy(cells["x"].to_numpy(), cells["y"].to_numpy())
     r, c = grid.local_rc(cells["x"].to_numpy(), cells["y"].to_numpy())
     cells["r"], cells["c"] = r, c

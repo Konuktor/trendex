@@ -8,7 +8,7 @@ const CTORS: Record<string, any> = {
 };
 export const COMPONENTS = ["green", "stability", "season", "terrain"] as const;
 const LEVEL_RANK: Record<string, number> = { suitable: 2, limited: 1, low: 0 };
-const EXCL = ["water", "snow_ice", "urban", "cropland", "forest", "steep"];
+const EXCL = ["water", "snow_ice", "urban", "cropland", "forest", "steep", "bare"];
 const RAW: Record<string, [string, string]> = {
   green: ["green", "NDVI"], stability: ["cv", "CV"], season: ["season_len", "months"], terrain: ["slope_mean", "deg"],
 };

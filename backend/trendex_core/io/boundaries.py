@@ -52,6 +52,22 @@ def aoi_ll(buffer_km: float = 20.0):
     return shp_transform(lambda x, y, z=None: _to_ll.transform(x, y), reg)
 
 
+def zones_ll() -> dict:
+    """code -> geometry (EPSG:4326) for the active profile: Naryn districts or Central Asia ADM1 regions."""
+    if config.core().get("zones") == "ca_adm1":
+        from .regions import regions
+        return {r["code"]: r["geom"] for r in regions()}
+    return districts_ll()
+
+
+def assign_zone(x, y, lon=None, lat=None) -> np.ndarray:
+    """Zone code per cell for the active profile (district for Naryn, ADM1 region for Central Asia)."""
+    if config.core().get("zones") == "ca_adm1":
+        from .regions import assign
+        return assign(lon, lat)
+    return assign_district(x, y)
+
+
 def assign_district(x, y) -> np.ndarray:
     """District slug for sinusoidal points; None outside Naryn region."""
     x = np.asarray(x)
@@ -66,7 +82,7 @@ def assign_district(x, y) -> np.ndarray:
 
 def districts_geojson(props: dict | None = None, tolerance: float = 0.003) -> dict:
     feats = []
-    for slug, g in districts_ll().items():
+    for slug, g in zones_ll().items():
         p = {"id": slug}
         if props and slug in props:
             p.update(props[slug])

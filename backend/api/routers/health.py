@@ -30,8 +30,9 @@ def meta(lang: str = Depends(deps.lang_q)):
     for slug, names in cfg["district_names"].items():
         m = c.col("district") == slug
         lat, lon = c.col("lat")[m], c.col("lon")[m]
+        bbox = [float(lon.min()), float(lat.min()), float(lon.max()), float(lat.max())] if m.any() else None
         districts.append({"id": slug, "sel": f"district:{slug}", "name": names.get(lang, names["en"]),
-                          "names": names, "bbox": [float(lon.min()), float(lat.min()), float(lon.max()), float(lat.max())]})
+                          "names": names, "country": names.get("country"), "bbox": bbox})
     feats = {"core": True, "polygon": True, "compare": True, "weights": True}
     feats.update(ext.features(c))
     return {"data_mode": c.meta.get("data_mode"), "mock_banner": t["mock_banner"] if c.meta.get("data_mode") == "mock" else None,

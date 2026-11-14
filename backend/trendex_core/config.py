@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -18,11 +19,19 @@ def _load(name: str) -> dict:
         return yaml.safe_load(f)
 
 
+PROFILE = os.environ.get("TRENDEX_CONFIG", "core_v1.yaml")
+
+
 @lru_cache
 def core() -> dict:
-    cfg = _load("core_v1.yaml")
-    raw = (CONFIGS / "core_v1.yaml").read_bytes()
+    """The frozen formula config. TRENDEX_CONFIG picks the profile: core_v1.yaml (Naryn) or core_ca.yaml (Central Asia)."""
+    cfg = _load(PROFILE)
+    raw = (CONFIGS / PROFILE).read_bytes()
     cfg["_hash"] = hashlib.sha256(raw).hexdigest()[:12]
+    cfg["_profile"] = PROFILE
+    if cfg.get("zones") == "ca_adm1":
+        from .io.regions import district_names
+        cfg["district_names"] = district_names()
     return cfg
 
 

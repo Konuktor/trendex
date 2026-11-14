@@ -152,7 +152,8 @@ def build(source: str, out: Path = config.ARTIFACTS, n_jobs: int = -1) -> Core:
     # districts geojson with summary props
     dprops = {r["id"]: {"pasture_km2": r["pasture_km2"], "score": r["score"], "level_class": r["level_class"],
                         "trend_class": r["trend"]["class"], "pct_per_decade": r["trend"]["pct_per_decade"],
-                        "name_en": core.cfg["district_names"][r["id"]]["en"], "name_ru": core.cfg["district_names"][r["id"]]["ru"]}
+                        "name_en": core.cfg["district_names"][r["id"]]["en"], "name_ru": core.cfg["district_names"][r["id"]]["ru"],
+                        "country": core.cfg["district_names"][r["id"]].get("country")}
               for r in ov["districts"]}
     _write(out / "zones" / "districts.geojson", boundaries.districts_geojson(dprops))
     _write(out / "zones" / "blocks.geojson", products.blocks_geojson(core, B))
