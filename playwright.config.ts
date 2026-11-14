@@ -7,9 +7,9 @@ export default defineConfig({
   workers: 1,
   reporter: 'list',
   use: {
+    ...devices['Desktop Chrome'],
     baseURL: 'http://localhost:5173',
     viewport: { width: 1440, height: 900 },
-    ...devices['Desktop Chrome'],
   },
   projects: [{ name: 'desktop', use: { viewport: { width: 1440, height: 900 } } }],
   webServer: {
