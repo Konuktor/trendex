@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
-import { HAS_DATASETS, parseDataset } from './data/dataset';
+import { DEFAULT_DATASET, HAS_DATASETS, parseDataset } from './data/dataset';
 import { TopBar } from './components/TopBar';
 import { Tour } from './components/Tour';
 import { useApp } from './store';
@@ -25,7 +25,7 @@ function DatasetSync() {
   const written = useRef<{ ds: string | null; country: string | null }>({ ds: urlDs, country: urlCountry });
   useEffect(() => {
     if (!HAS_DATASETS) return;
-    const wantDs = ds === 'naryn' ? null : ds;
+    const wantDs = ds === DEFAULT_DATASET ? null : ds;
     const wantCountry = ds === 'ca' ? country : null;
     if (urlDs !== null && urlDs !== wantDs && urlDs !== written.current.ds) {
       written.current.ds = urlDs;

@@ -1,7 +1,7 @@
 import { useApp } from '../store';
 import { NavLink, useSearchParams } from 'react-router-dom';
 import { Play } from 'lucide-react';
-import { DATASETS, DATASET_LABEL, DATASET_SHORT, HAS_DATASETS } from '../data/dataset';
+import { DEFAULT_DATASET, DATASETS, DATASET_LABEL, DATASET_SHORT, HAS_DATASETS } from '../data/dataset';
 import { drawApi } from './map/MapView';
 import type { DatasetId } from '../lib/types';
 
@@ -16,8 +16,11 @@ const TABS = [
 export function useDatasetSearch(): string {
   const dataset = useApp((s) => s.dataset);
   const country = useApp((s) => s.country);
-  if (!HAS_DATASETS || dataset === 'naryn') return '';
-  return `?ds=${dataset}${country ? `&country=${encodeURIComponent(country)}` : ''}`;
+  if (!HAS_DATASETS) return '';
+  const parts: string[] = [];
+  if (dataset !== DEFAULT_DATASET) parts.push(`ds=${dataset}`);
+  if (dataset === 'ca' && country) parts.push(`country=${encodeURIComponent(country)}`);
+  return parts.length ? `?${parts.join('&')}` : '';
 }
 
 function Tabs({ mobile }: { mobile?: boolean }) {
@@ -55,7 +58,7 @@ export function DatasetSwitch() {
     if (useApp.getState().drawing) drawApi.current?.cancel();
     const next = new URLSearchParams(params);
     DATASET_PARAMS.forEach((k) => next.delete(k));
-    if (ds === 'naryn') next.delete('ds');
+    if (ds === DEFAULT_DATASET) next.delete('ds');
     else next.set('ds', ds);
     // URL and store change in the same tick, so no page reads a stale ?area= against the new data.
     setParams(next, { replace: true });

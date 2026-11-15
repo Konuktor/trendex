@@ -32,11 +32,14 @@ export function datasetBase(ds: DatasetId, base: string = API_URL): string {
   return `${b.replace(/\/[^/]*$/, '')}/ca/v1`;
 }
 
+/** Opening view: all of Central Asia when the switch exists (production), Naryn otherwise (mock, tests). */
+export const DEFAULT_DATASET: DatasetId = HAS_DATASETS ? 'ca' : 'naryn';
+
 export function parseDataset(v: string | null | undefined): DatasetId {
-  return v === 'ca' ? 'ca' : 'naryn';
+  return v === 'ca' ? 'ca' : v === 'naryn' ? 'naryn' : DEFAULT_DATASET;
 }
 
-/** Dataset from the page URL (?ds=ca) at start-up; always Naryn without the switch. */
+/** Dataset from the page URL (?ds=naryn | ?ds=ca) at start-up; the default dataset when absent. */
 export function initialDataset(): DatasetId {
   if (!HAS_DATASETS || typeof window === 'undefined') return 'naryn';
   return parseDataset(new URLSearchParams(window.location.search).get('ds'));
