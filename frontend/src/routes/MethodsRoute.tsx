@@ -366,6 +366,15 @@ export function MethodsRoute() {
                   {(!naryn
                     ? [
                         ...Object.entries(meta?.sources ?? {}).map(([k, v]) => [SOURCE_LABEL[k] ?? k, v, k === 'note' ? 'Data status' : 'Central Asia export']),
+                        ...(ml
+                          ? [
+                              [
+                                'NASA GLDAS-2.1 Noah',
+                                'Monthly, 0.25° (GES DISC, doi:10.5067/SXAVCZFAQLNO)',
+                                `Air temperature, soil moisture and snow water for the expected-greenness model (${ml.version})`,
+                              ],
+                            ]
+                          : []),
                         ['TrendeX pipeline', dataInfo.pipelineVersion, `Analysis grid of ${DLON}° × ${DLAT}° cells`],
                       ]
                     : real
@@ -375,6 +384,15 @@ export function MethodsRoute() {
                         ['NASADEM', '30 m (LP DAAC)', 'Slope: terrain part of the level and the steep-slope mask'],
                         ['NASA GPM IMERG', 'Final V07, monthly (GES DISC)', 'Precipitation context in the TrendeX data cube'],
                         ['geoBoundaries', 'gbOpen KGZ ADM2', 'The 5 official Naryn districts and the oblast outline'],
+                        ...(ml
+                          ? [
+                              [
+                                'Weather model inputs',
+                                'NASA MODIS MOD11A2 (land surface temperature), MOD10A2 (snow cover), GLDAS-2.1 Noah monthly (soil moisture, snow water), GPM IMERG',
+                                `The expected-greenness model (${ml.version})`,
+                              ],
+                            ]
+                          : []),
                         ['TrendeX pipeline', dataInfo.pipelineVersion, 'Everything above, joined on the 0.12° × 0.09° grid. Data cube: huggingface.co/datasets/TrendeX90/naryn-cube'],
                       ]
                     : [

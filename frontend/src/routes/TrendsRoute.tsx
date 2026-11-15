@@ -9,7 +9,8 @@ import { cellsCsv, districtPanels, downloadText, matrixTable, scopeTrend, trendS
 import { unionDomain, yDomain } from '../lib/chart';
 import { num, signed } from '../lib/format';
 import { LEVEL_NAME, NO_TREND_RESULT, TREND_NAME } from '../lib/labels';
-import type { Cell, District, Trend } from '../lib/types';
+import type { Cell, District, Level, Trend } from '../lib/types';
+import { inlineLabel, pxScope, shortLabel, TIER_CODE, TIER_KEYS, tierPercents, type PxInfo, type PxStats as PxStatsT, type TierKey } from '../lib/px';
 import { TrendChart } from '../components/card/TrendChart';
 import { useWidth } from '../hooks/useWidth';
 import { C } from '../theme';
@@ -85,6 +86,8 @@ export function TrendsRoute() {
   const title = data ? studyTitle() : dataset === 'ca' ? 'Central Asia' : 'Naryn oblast';
   const scopeName = scope ? regionName(scope) : country ? countryName(country) : title;
   const multi = !!v && v.groups.length > 1;
+  // 1 km pixel shares for the scope (region, else country, else all), as on the map; cells when the export has none.
+  const pst = data ? pxScope(px?.regions, scope, scope ? null : country) : null;
   /** panels grouped by country: several countries and none chosen */
   const grouped = multi && !country;
   const pickScope = (value: string) => {
@@ -160,9 +163,15 @@ export function TrendsRoute() {
         ) : (
           <>
             <section className="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Summary">
+              {px && pst ? (
+                <PxStats px={px} st={pst} />
+              ) : (
+                <>
               <Stat label="Reliable decline" value={`${v.shares[0].pct}%`} sub={`${num(v.shares[0].km2)} km² of pasture`} />
               <Stat label="Reliable growth" value={`${v.shares[2].pct}%`} sub={`${num(v.shares[2].km2)} km² of pasture`} />
               <Stat label="Not reliable" value={`${v.shares[1].pct}%`} sub={`${num(v.shares[1].km2)} km² of pasture`} />
+                </>
+              )}
               <Stat
                 label="Trend of the average"
                 value={`${signed(v.t.slope)}% / yr`}
@@ -184,7 +193,10 @@ export function TrendsRoute() {
               <WeatherSection px={px} district={scope} country={scope ? null : country} scopeName={scopeName} />
             )}
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className={`grid gap-6 ${px && pst?.matrix ? 'lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]' : 'lg:grid-cols-2'}`}>
+              {px && pst ? (
+                <PxShareCard px={px} st={pst} />
+              ) : (
               <section className="card flex flex-col gap-4 p-6">
                 <h2 className="text-md font-semibold">Area share by trend class</h2>
                 <ul className="flex flex-col gap-3">
@@ -207,7 +219,11 @@ export function TrendsRoute() {
                   time. These areas are still checked and compared; they are not missing data.
                 </p>
               </section>
+              )}
 
+              {px && pst?.matrix ? (
+                <PxMatrixCard px={px} st={pst} title={title} />
+              ) : (
               <section className="card flex flex-col gap-3 p-6">
                 <h2 className="text-md font-semibold">Level × trend</h2>
                 <table className="w-full min-w-[300px] border-separate border-spacing-1 text-sm">
@@ -244,6 +260,7 @@ export function TrendsRoute() {
                 </table>
                 <p className="text-xs text-text-2">Share of pasture area in the scope. Level is relative to other pastures in {title}.</p>
               </section>
+              )}
             </div>
 
             <section ref={gridRef} className="flex flex-col gap-4">
@@ -351,5 +368,117 @@ function PanelGrid({
         </article>
       ))}
     </div>
+  );
+}
+
+/** Tiers in display order; "not enough data" only when it covers any area. */
+function tiersOf(st: PxStatsT): TierKey[] {
+  return TIER_KEYS.filter((k) => k !== 'insufficient' || (st.trend.insufficient ?? 0) > 0);
+}
+
+const kmOf = (st: PxStatsT, share: number) => num(Math.round(share * st.pasture_km2));
+
+/** Summary cards from the 1 km pixels: reliable decline and growth (with the possible share), no reliable trend. */
+function PxStats({ px, st }: { px: PxInfo; st: PxStatsT }) {
+  const pc = tierPercents(st);
+  return (
+    <>
+      <Stat
+        label={shortLabel(px.meta, 1)}
+        value={`${pc.decline}%`}
+        sub={`${kmOf(st, st.trend.decline)} km² · ${pc.early_decline}% ${inlineLabel(px.meta, 2)}`}
+      />
+      <Stat
+        label={shortLabel(px.meta, 5)}
+        value={`${pc.growth}%`}
+        sub={`${kmOf(st, st.trend.growth)} km² · ${pc.early_growth}% ${inlineLabel(px.meta, 4)}`}
+      />
+      <Stat label={shortLabel(px.meta, 3)} value={`${pc.stable}%`} sub={`${kmOf(st, st.trend.stable)} km² of pasture`} />
+    </>
+  );
+}
+
+/** "Area share by trend class" from the 1 km pixels: the five tiers with the map's labels and colours. */
+function PxShareCard({ px, st }: { px: PxInfo; st: PxStatsT }) {
+  const pc = tierPercents(st);
+  return (
+    <section className="card flex flex-col gap-4 p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-1">
+        <h2 className="text-md font-semibold">Area share by trend class</h2>
+        <span className="text-xs text-text-2">1 km pixels · {num(Math.round(st.pasture_km2))} km² of pasture</span>
+      </div>
+      <ul className="flex flex-col gap-3">
+        {tiersOf(st).map((k) => (
+          <li key={k} className="grid grid-cols-[120px_1fr_auto] items-center gap-3 text-sm md:grid-cols-[150px_1fr_150px]">
+            <span>{shortLabel(px.meta, TIER_CODE[k])}</span>
+            <span className="h-3 rounded-xs bg-panel" aria-hidden="true">
+              <span
+                className="block h-3 rounded-xs border border-hairline"
+                style={{ width: `${100 * (st.trend[k] ?? 0)}%`, background: px.meta.codes[String(TIER_CODE[k])]?.color }}
+              />
+            </span>
+            <span className="text-right">
+              <b className="font-medium">{pc[k]}%</b> <span className="text-text-2">· {kmOf(st, st.trend[k] ?? 0)} km²</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="text-md font-medium">{NO_TREND_RESULT}</p>
+      <p className="text-sm text-text-2">
+        Reliable: the trend passes the correction for testing every pasture pixel. {shortLabel(px.meta, 2)} or{' '}
+        {inlineLabel(px.meta, 4)}: the pixel’s own test passes (p &lt; 0.05), but not that correction. Elsewhere year-to-year
+        swings from weather are larger than any change over time; these areas are still checked and compared, they are
+        not missing data.
+      </p>
+    </section>
+  );
+}
+
+/** Level × trend from the joint 1 km shares: one column per tier, coloured as on the map. */
+function PxMatrixCard({ px, st, title }: { px: PxInfo; st: PxStatsT; title: string }) {
+  const keys = tiersOf(st);
+  const levels: Level[] = ['good', 'moderate', 'low'];
+  return (
+    <section className="card flex flex-col gap-3 p-6">
+      <h2 className="text-md font-semibold">Level × trend</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[420px] border-separate border-spacing-1 text-sm">
+          <caption className="sr-only-label">Share of pasture area by level and trend tier (1 km pixels), with area in km²</caption>
+          <thead>
+            <tr className="text-xs text-text-2">
+              <th scope="col" className="w-16 font-normal" />
+              {keys.map((k) => (
+                <th key={k} scope="col" className="font-normal leading-tight">
+                  {shortLabel(px.meta, TIER_CODE[k])}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {levels.map((lv) => (
+              <tr key={lv}>
+                <th scope="row" className="text-left text-xs font-normal text-text-2">
+                  {LEVEL_NAME[lv]}
+                </th>
+                {keys.map((k) => {
+                  const v = st.matrix?.[lv]?.[k] ?? 0;
+                  return (
+                    <td key={k} className="h-14 rounded-sm text-center" style={{ background: px.meta.codes[String(TIER_CODE[k])]?.color }}>
+                      <span className="inline-flex flex-col rounded-[3px] bg-white px-1.5 py-0.5 leading-tight">
+                        <span className="text-sm font-medium">{Math.round(100 * v)}%</span>
+                        <span className="whitespace-nowrap text-xs text-text-2">{kmOf(st, v)} km²</span>
+                      </span>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-text-2">
+        Share of pasture area in the scope (1 km pixels). Level is relative to other pastures in {title}.
+      </p>
+    </section>
   );
 }

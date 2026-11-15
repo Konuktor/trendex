@@ -99,6 +99,67 @@ export interface MapFocus {
   border: MultiLineString | null;
 }
 
+/*
+ * Guards for view changes. A map whose container has no size (a link opened in a hidden tab or a collapsed
+ * frame) gets a NaN zoom from fitBounds with padding, and every later view call can then throw. View calls
+ * run only on a map with panes and a container larger than the padding, inside try/catch; a fit that could
+ * not run is retried when the container gets a size or the page becomes visible.
+ */
+type LeafletInternals = { _mapPane?: HTMLElement; _loaded?: boolean };
+
+/** True when the map has its panes, a finite zoom and a container of at least `minW` × `minH` px. */
+export function mapReady(map: L.Map, minW = 1, minH = 1): boolean {
+  try {
+    const m = map as unknown as LeafletInternals;
+    if (!m._mapPane) return false;
+    const c = map.getContainer();
+    if (c.clientWidth < minW || c.clientHeight < minH) return false;
+    return !m._loaded || Number.isFinite(map.getZoom());
+  } catch {
+    return false;
+  }
+}
+
+/** setMinZoom / setMaxZoom without view side effects on a map that is not ready. */
+function setZoomLimit(map: L.Map, which: 'minZoom' | 'maxZoom', z: number) {
+  if (mapReady(map) && (map as unknown as LeafletInternals)._loaded) {
+    try {
+      if (which === 'minZoom') map.setMinZoom(z);
+      else map.setMaxZoom(z);
+      return;
+    } catch {
+      /* fall through: set the option only */
+    }
+  }
+  map.options[which] = z;
+}
+
+/**
+ * Calls `retry` whenever the map container changes size or the page becomes visible, after telling
+ * Leaflet about the new size. Returns a cleanup function.
+ */
+function onBecomeUsable(map: L.Map, retry: () => void): () => void {
+  const kick = () => {
+    if (!mapReady(map)) return;
+    try {
+      map.invalidateSize({ pan: false });
+    } catch {
+      /* not ready yet */
+    }
+    retry();
+  };
+  const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(kick) : null;
+  ro?.observe(map.getContainer());
+  const vis = () => document.visibilityState === 'visible' && kick();
+  document.addEventListener('visibilitychange', vis);
+  map.on('resize load', retry);
+  return () => {
+    ro?.disconnect();
+    document.removeEventListener('visibilitychange', vis);
+    map.off('resize load', retry);
+  };
+}
+
 function Boundaries({ mask, meta, focus }: { mask: StudyMask | null; meta: DatasetMeta | null; focus: MapFocus | null }) {
   const map = useMap();
   /** dataset the view was last fitted to (fit once per dataset per mount) */
@@ -107,8 +168,9 @@ function Boundaries({ mask, meta, focus }: { mask: StudyMask | null; meta: Datas
     if (!mask) return;
     const ds = meta?.dataset ?? 'naryn';
     // Central Asia spans ~40° of longitude: allow zooming out far enough to see all of it.
-    map.setMinZoom(ds === 'ca' ? 3 : 5);
+    setZoomLimit(map, 'minZoom', ds === 'ca' ? 3 : 5);
     const group = L.layerGroup().addTo(map);
+    let pending: (() => boolean) | null = null;
     if (mask.districts.length) {
       L.geoJSON({ type: 'FeatureCollection', features: mask.districts } as GeoJSON.FeatureCollection, {
         pane: 'bounds',
@@ -128,14 +190,34 @@ function Boundaries({ mask, meta, focus }: { mask: StudyMask | null; meta: Datas
         L.geoJSON(focus.border, { ...style, style: { color: C.boundary, weight: 1.4 } }).addTo(group);
       }
       const target = focus?.bounds ? L.latLngBounds(focus.bounds) : whole;
-      const fit = (animate: boolean) => {
-        const narrow = map.getSize().x < 768;
-        const h = map.getSize().y;
-        map.fitBounds(target, {
-          paddingTopLeft: [narrow ? 12 : 24, narrow ? 116 : 64],
-          paddingBottomRight: [narrow ? 12 : DRAWER_PAD + 24, narrow ? Math.round(h * 0.45) : 24],
-          animate,
-        });
+      /** Fit the target; false (and kept for later) when the container is too small for the padding. */
+      const fit = (animate: boolean): boolean => {
+        const run = () => {
+          if (!mapReady(map)) return false;
+          try {
+            // Measure the container now: Leaflet caches its size at creation, which can be stale.
+            map.invalidateSize({ pan: false, animate: false });
+          } catch {
+            return false;
+          }
+          const size = map.getSize();
+          const narrow = size.x < 768;
+          const tl: [number, number] = [narrow ? 12 : 24, narrow ? 116 : 64];
+          const br: [number, number] = [narrow ? 12 : DRAWER_PAD + 24, narrow ? Math.round(size.y * 0.45) : 24];
+          if (size.x <= tl[0] + br[0] + 40 || size.y <= tl[1] + br[1] + 40) return false;
+          try {
+            map.fitBounds(target, { paddingTopLeft: tl, paddingBottomRight: br, animate });
+            return true;
+          } catch {
+            return false;
+          }
+        };
+        if (run()) {
+          pending = null;
+          return true;
+        }
+        pending = () => run();
+        return false;
       };
       mapApi.current = { fitOblast: () => fit(true) };
       // Fit once per dataset and country; moving between countries of one dataset animates.
@@ -146,7 +228,12 @@ function Boundaries({ mask, meta, focus }: { mask: StudyMask | null; meta: Datas
         fit(sameDataset);
       }
     }
+    // A fit skipped while the map had no usable size runs once the container gets one.
+    const stop = onBecomeUsable(map, () => {
+      if (pending && pending()) pending = null;
+    });
     return () => {
+      stop();
       group.remove();
       mapApi.current = null;
     };
@@ -190,9 +277,10 @@ function Selection({ outline, poly, footprint, outlineOnly }: { outline: MultiPo
 function PxTiles({ url, bounds, minZoom, maxNativeZoom }: { url: string; bounds: [[number, number], [number, number]]; minZoom: number; maxNativeZoom: number }) {
   const map = useMap();
   useEffect(() => {
-    map.setMaxZoom(12);
+    setZoomLimit(map, 'maxZoom', 12);
     return () => {
-      map.setMaxZoom(11);
+      // The map may already be removed (route change): only touch it while it still has its panes.
+      if ((map as unknown as LeafletInternals)._mapPane) setZoomLimit(map, 'maxZoom', 11);
     };
   }, [map]);
   // A new layer per URL: Leaflet's setUrl() redraw takes the fractional map zoom (zoomSnap 0.1) as the
@@ -342,13 +430,17 @@ function Fly() {
   const map = useMap();
   const fly = useApp((s) => s.fly);
   useEffect(() => {
-    if (!fly) return;
-    // 8.6 on the Naryn grid; one step out per doubling of the cell size (7.6 for 0.24° cells).
-    const zoom = Math.max(map.getZoom(), 8.6 - Math.log2(DLON / 0.12));
-    const narrow = map.getSize().x < 768;
-    // Shift the target so it lands in the middle of the part of the map the drawer leaves visible.
-    const p = map.project([fly.lat, fly.lon], zoom).add(narrow ? [0, map.getSize().y * 0.22] : [DRAWER_PAD / 2, 0]);
-    map.flyTo(map.unproject(p, zoom), zoom, { duration: 0.9 });
+    if (!fly || !mapReady(map, 50, 50)) return;
+    try {
+      // 8.6 on the Naryn grid; one step out per doubling of the cell size (7.6 for 0.24° cells).
+      const zoom = Math.max(map.getZoom(), 8.6 - Math.log2(DLON / 0.12));
+      const narrow = map.getSize().x < 768;
+      // Shift the target so it lands in the middle of the part of the map the drawer leaves visible.
+      const p = map.project([fly.lat, fly.lon], zoom).add(narrow ? [0, map.getSize().y * 0.22] : [DRAWER_PAD / 2, 0]);
+      map.flyTo(map.unproject(p, zoom), zoom, { duration: 0.9 });
+    } catch {
+      /* hidden or resized mid-flight: the selection still shows, the view just stays */
+    }
   }, [map, fly]);
   return null;
 }
@@ -384,8 +476,10 @@ export interface MapViewProps {
 export function MapView({ zones, grey = false, mask, meta = null, title = 'Naryn oblast', focus = null, tiles = null, footprint = null, overview = null, outline, poly }: MapViewProps) {
   return (
     <MapContainer
-      bounds={meta?.bounds && meta.dataset !== 'naryn' ? L.latLngBounds(meta.bounds) : START_BOUNDS}
-      boundsOptions={{ paddingBottomRight: [DRAWER_PAD, 0] }}
+      // A fixed first view (no padded fit at mount, which yields a NaN zoom in a container without size);
+      // Boundaries fits the study area as soon as the outline is loaded and the container has a size.
+      center={(meta?.bounds && meta.dataset !== 'naryn' ? L.latLngBounds(meta.bounds) : START_BOUNDS).getCenter()}
+      zoom={meta?.dataset === 'ca' ? 4 : 7}
       minZoom={5}
       maxZoom={11}
       zoomSnap={0.1}
