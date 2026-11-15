@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useApp, queueFor, selectionKey } from '../store';
 import { resolveAnswer } from '../lib/selection';
 import { buildDimGeoJSON, buildZoneGeoJSON, smoothPolygon } from '../lib/zones';
-import { overviewActive, pixelCorners, pixelRowCol, tileUrl } from '../lib/px';
+import { hasResid, overviewActive, pixelCorners, pixelRowCol, tileUrl } from '../lib/px';
 import { Rail } from '../components/map/Rail';
 import { HeadlineStrip } from '../components/map/HeadlineStrip';
 import { MapView, type MapFocus, type Overview } from '../components/map/MapView';
@@ -85,12 +85,13 @@ export function MapRoute() {
         : null,
     [data, px, layer, matrix, district, country],
   );
+  const resid = useApp((s) => s.resid) && hasResid(px);
   const tiles = useMemo(
     () =>
       px
-        ? { url: tileUrl(px, layer), bounds: px.meta.tiles.bounds, minZoom: px.meta.tiles.minZoom, maxNativeZoom: px.meta.tiles.maxNativeZoom }
+        ? { url: tileUrl(px, resid ? 'resid' : layer), bounds: px.meta.tiles.bounds, minZoom: px.meta.tiles.minZoom, maxNativeZoom: px.meta.tiles.maxNativeZoom }
         : null,
-    [px, layer],
+    [px, layer, resid],
   );
   const mapZoom = useApp((s) => s.mapZoom);
   const overviewKind = useApp((s) => s.overviewKind);
@@ -102,8 +103,8 @@ export function MapRoute() {
     filtered: !!matrix || !!district,
   });
   const overview = useMemo<Overview | null>(
-    () => (showOverview && px?.regions && mask ? { features: mask.districts, stats: px.regions, kind: overviewKind, country } : null),
-    [showOverview, px, mask, overviewKind, country],
+    () => (showOverview && px?.regions && mask ? { features: mask.districts, stats: px.regions, kind: overviewKind, country, resid } : null),
+    [showOverview, px, mask, overviewKind, country, resid],
   );
   const footprint = useMemo(() => {
     if (!px || !pixel) return null;

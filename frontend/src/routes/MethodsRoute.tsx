@@ -5,11 +5,14 @@ import { runChecks } from '../lib/checks';
 import { NOT_ACCOUNTED } from '../lib/labels';
 import { dataInfo } from '../data/info';
 import { CELL_KM, COLS, DLAT, DLON, ROWS } from '../lib/geo';
+import { num } from '../lib/format';
+import type { PxMl, PxSkill } from '../lib/px';
 
 const ALL_SECTIONS = [
   { id: 'measure', title: 'What we measure' },
   { id: 'answer', title: 'How the answer is built' },
   { id: 'formula', title: 'The formula' },
+  { id: 'ml', title: 'Expected greenness from weather' },
   { id: 'checks', title: 'Checks' },
   { id: 'sources', title: 'Data sources and versions' },
   { id: 'limits', title: 'What this does not know' },
@@ -25,6 +28,79 @@ const SOURCE_LABEL: Record<string, string> = {
   boundaries: 'Boundaries',
   note: 'Note',
 };
+
+/** Labels for ml.json cells_by_source keys. */
+const SOURCE_NAME: Record<string, string> = {
+  oof: 'out-of-fold predictions (a model that did not train on that cell)',
+  production_model_unseen_cell: 'the production model (re-included mountain cells, which the model did not train on)',
+};
+
+const skill = (x: PxSkill) => `${x.point.toFixed(3)} [${x.ci_lo.toFixed(3)} to ${x.ci_hi.toFixed(3)}], ${num(x.units)} test units`;
+
+/** Section from px/ml.json only: what the model does, the release gate, skill, coverage, cells by source, links. */
+function MlSection({ ml, n }: { ml: PxMl; n: number }) {
+  const wording = (ml.wording ?? 'Change not explained by precipitation, air temperature, snow and soil moisture').replace(/^./, (c) => c.toLowerCase());
+  const total = ml.cells_by_source ? Object.values(ml.cells_by_source).reduce((a, b) => a + b, 0) : 0;
+  return (
+    <Section id="ml" n={n} title="Expected greenness from weather">
+      <p>
+        A machine-learning model ({ml.model}, {ml.version}{ml.gate.shipped_model ? `, ${ml.gate.shipped_model}` : ''}) predicts the
+        greenness each summer’s weather would lead to. The <b className="font-semibold">Beyond weather</b> layer is the trend of the
+        {ml.residual_season ? ` ${ml.residual_season.replace('-', '–')}` : ''} residuals, observed minus expected: {wording}.
+      </p>
+      <p>
+        Release gate: {ml.gate.rule.replace(/_/g, ' ')}. <b className="font-semibold">{ml.gate.passed ? 'Passed.' : 'Not passed.'}</b>
+      </p>
+      <div className="card overflow-hidden">
+        <table className="w-full text-sm">
+          <caption className="sr-only-label">Model skill on held-out data, point estimate with interval</caption>
+          <thead className="border-b border-hairline bg-surface text-left text-xs text-text-2">
+            <tr>
+              <th scope="col" className="px-3 py-2 font-medium">Skill</th>
+              <th scope="col" className="px-3 py-2 font-medium">Temporal test</th>
+              <th scope="col" className="px-3 py-2 font-medium">Spatial test</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ['vs ridge regression', ml.skill_vs_ridge],
+              ['vs climatology', ml.skill_vs_climatology],
+            ].map(([name, v]) => (
+              <tr key={name as string} className="border-b border-hairline last:border-0">
+                <td className="px-3 py-2 align-top font-medium">{name as string}</td>
+                <td className="px-3 py-2 align-top">{skill((v as PxMl['skill_vs_ridge']).temporal)}</td>
+                <td className="px-3 py-2 align-top">{skill((v as PxMl['skill_vs_ridge']).spatial)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-sm text-text-2">
+        Above 0 means the model predicts held-out data better than the reference. The 10th–90th percentile band contains{' '}
+        {Math.round(ml.coverage_p10_p90 * 100)}% of observed values (an ideal 80% band would contain 80%).
+      </p>
+      {ml.cells_by_source && total > 0 && (
+        <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
+          {Object.entries(ml.cells_by_source).map(([k, v]) => (
+            <li key={k}>
+              {num(v)} cells ({((100 * v) / total).toFixed(1)}%): {SOURCE_NAME[k] ?? k.replace(/_/g, ' ')}.
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-sm">
+        <a href={ml.url} className="font-medium underline underline-offset-2" target="_blank" rel="noreferrer">
+          Model repository
+        </a>
+        {' · '}
+        <a href={ml.training_log} className="font-medium underline underline-offset-2" target="_blank" rel="noreferrer">
+          Training log
+        </a>
+        {ml.git_commit ? <span className="text-text-2"> · commit {ml.git_commit}</span> : null}
+      </p>
+    </Section>
+  );
+}
 
 const flowReal = (km: number): { title: string; body: string }[] => [
   { title: 'Summer greenness', body: `NASA MODIS MOD13A3 monthly NDVI (1 km): the mean of clear May–September months, each year 2000–2025, averaged over the pasture part of each ${km} km cell.` },
@@ -82,7 +158,8 @@ export function MethodsRoute() {
   const naryn = dataset === 'naryn';
   const checks = useMemo(() => (data && naryn ? runChecks(data) : null), [data, naryn]);
   const mismatches = checks?.filter((c) => !c.match).length ?? 0;
-  const SECTIONS = ALL_SECTIONS.filter((x) => naryn || x.id !== 'checks');
+  const ml = px?.ml ?? null;
+  const SECTIONS = ALL_SECTIONS.filter((x) => (naryn || x.id !== 'checks') && (ml || x.id !== 'ml'));
   /** Section numbers by position, so hiding Checks keeps them in order. */
   const no = (id: string) => SECTIONS.findIndex((x) => x.id === id) + 1;
   // Central Asia uses the production method; its sample export only stands in for the real numbers.
@@ -229,6 +306,8 @@ export function MethodsRoute() {
               averages the yearly values of every cell whose centre falls inside it and fits one slope to that average.
             </p>
           </Section>
+
+          {ml && <MlSection ml={ml} n={no('ml')} />}
 
           {naryn && <Section id="checks" n={no('checks')} title="Checks">
             <p>

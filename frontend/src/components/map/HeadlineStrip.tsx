@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { useApp } from '../../store';
 import { headline, scopeCells } from '../../lib/stats';
 import { countryName, regionLabel, regionName, studyTitle } from '../../lib/regions';
-import { inlineLabel, pxScope, TIER_CODE, tierPercents, type PxInfo, type PxStats, type TierKey } from '../../lib/px';
+import { hasResid, inlineLabel, layerInlineLabel, pxScope, sharesFor, TIER_CODE, tierPercents, type PxInfo, type PxStats, type TierKey } from '../../lib/px';
 import { LEVEL_NAME, TREND_SHORT } from '../../lib/labels';
 import { num } from '../../lib/format';
 
@@ -33,15 +33,19 @@ export function HeadlineStrip({ loading = false }: { loading?: boolean }) {
   const setCountry = useApp((s) => s.setCountry);
   const h = useMemo(() => (data ? headline(scopeCells(data.past, district, country)) : null), [data, district, country]);
   const px = useApp((s) => s.px);
-  const pxStats = pxScope(px?.regions, district, country);
+  const resid = useApp((s) => s.resid) && hasResid(px);
+  const pxStats0 = pxScope(px?.regions, district, country);
+  const pxStats = pxStats0 ? sharesFor(pxStats0, resid) : null;
   return (
     <div className="z-[4] flex h-strip flex-none items-center gap-4 overflow-hidden whitespace-nowrap border-b border-hairline bg-white px-6 text-sm text-text-2">
       {h && !loading ? (
         <>
           {px && pxStats ? (
             // The share list gives way first, so the scope and the filter chips (with their clear buttons) stay visible.
-            <span className="flex min-w-0 shrink items-center gap-4 overflow-hidden">
-              <PxShares px={px} st={pxStats} />
+            // Items wrap into a hidden second line instead of being cut mid-word; the remainders come last.
+            <span className="flex h-5 min-w-0 shrink flex-wrap items-center gap-x-4 overflow-hidden">
+              {resid && <span className="flex h-5 flex-none items-center font-medium text-text">Beyond weather:</span>}
+              <PxShares px={px} st={pxStats} resid={resid} />
             </span>
           ) : (
             <>
@@ -99,20 +103,20 @@ export function HeadlineStrip({ loading = false }: { loading?: boolean }) {
 const STRIP: TierKey[] = ['decline', 'early_decline', 'early_growth', 'growth', 'stable', 'insufficient'];
 
 /** Shares of pasture area by trend tier, from the 1 km pixels (px/regions.json). */
-function PxShares({ px, st }: { px: PxInfo; st: PxStats }) {
+function PxShares({ px, st, resid = false }: { px: PxInfo; st: PxStats; resid?: boolean }) {
   const pc = tierPercents(st);
   const keys = STRIP.filter((k) => k !== 'insufficient' || st.trend.insufficient > 0);
   return (
     <>
       {keys.map((k) => (
-        <span key={k} className="flex items-center">
+        <span key={k} className="flex h-5 items-center">
           <span>
             <span
               aria-hidden="true"
               className="mr-1.5 inline-block h-2.5 w-2.5 rounded-[3px] border border-hairline align-[-1px]"
               style={{ background: px.meta.codes[String(TIER_CODE[k])]?.color }}
             />
-            <b className="font-medium text-text">{pc[k]}%</b> {inlineLabel(px.meta, TIER_CODE[k])}
+            <b className="font-medium text-text">{pc[k]}%</b> {layerInlineLabel(px.meta, TIER_CODE[k], resid)}
           </span>
         </span>
       ))}
@@ -126,14 +130,17 @@ export function HeadlineSummary() {
   const district = useApp((s) => s.district);
   const country = useApp((s) => s.country);
   const px = useApp((s) => s.px);
+  const resid = useApp((s) => s.resid) && hasResid(px);
   const h = useMemo(() => (data ? headline(scopeCells(data.past, district, country)) : null), [data, district, country]);
   if (!h) return null;
-  const st = pxScope(px?.regions, district, country);
+  const st0 = pxScope(px?.regions, district, country);
+  const st = st0 ? sharesFor(st0, resid) : null;
   if (px && st) {
     const pc = tierPercents(st);
     const l = (k: TierKey) => inlineLabel(px.meta, TIER_CODE[k]);
     return (
       <p className="text-sm text-text-2">
+        {resid ? 'Beyond weather: ' : ''}
         <b className="font-medium text-text">{pc.decline}%</b> {l('decline')} · <b className="font-medium text-text">{pc.early_decline}%</b> {l('early_decline')} ·{' '}
         <b className="font-medium text-text">{pc.early_growth}%</b> {l('early_growth')} · <b className="font-medium text-text">{pc.growth}%</b> {l('growth')}.{' '}
         {district ? regionName(district) : country ? countryName(country) : studyTitle()} · {num(Math.round(st.pasture_km2))} km² of pasture (1 km pixels).

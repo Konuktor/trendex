@@ -94,6 +94,9 @@ interface AppState {
 
   layer: Layer;
   setLayer: (l: Layer) => void;
+  /** 1 km "beyond weather" view: the trend layer with the weather model's residual trend as tiles and shares */
+  resid: boolean;
+  setResid: () => void;
   matrix: MatrixFilter | null;
   toggleMatrix: (f: MatrixFilter) => void;
   district: District | null;
@@ -190,6 +193,7 @@ export const useApp = create<AppState>((set, get) => ({
           mask,
           meta,
           px,
+          resid: s.resid && !!px?.meta.tiles.layers?.includes('resid'),
           country,
           real: isReal(),
           loadError: null,
@@ -206,7 +210,9 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   layer: 'trend',
-  setLayer: (layer) => set({ layer }),
+  setLayer: (layer) => set({ layer, resid: false }),
+  resid: false,
+  setResid: () => set({ layer: 'trend', resid: true }),
   matrix: null,
   toggleMatrix: (f) =>
     set((s) => ({

@@ -108,18 +108,108 @@ def write_tiles(code_grid: np.ndarray, src_transform, out: Path, layer: str, bou
     return count
 
 
+def _yearly_band(df, key):
+    """Summer (May–Sep) means per key-year of observed/expected/p10/p90, weighted by n (cells)."""
+    df = df[(df["month"] >= 5) & (df["month"] <= 9)]
+    w = df["n"].to_numpy(dtype=float)
+    g = df.assign(wo=df["observed"] * w, we=df["expected"] * w, w10=df["p10"] * w, w90=df["p90"] * w, w=w)
+    a = g.groupby([key, "year"])[["wo", "we", "w10", "w90", "w"]].sum()
+    return pd.DataFrame({"observed": a.wo / a.w, "expected": a.we / a.w, "p10": a.w10 / a.w, "p90": a.w90 / a.w}).reset_index()
+
+
+def _series_entry(sub):
+    sub = sub.sort_values("year")
+    yrs = sub["year"].astype(int).tolist()
+    res = (sub["observed"] - sub["expected"]).to_numpy()
+    last, hist = res[-1], res[:-1]
+    pct = float(100 * (np.sum(hist < last) + 0.5 * np.sum(hist == last)) / max(len(hist), 1))
+    cls = "below" if pct < 33.3 else ("above" if pct > 66.7 else "within")
+    r4 = lambda v: [None if not np.isfinite(x) else round(float(x), 4) for x in v]  # noqa: E731
+    return {"years": yrs, "observed": r4(sub["observed"]), "expected": r4(sub["expected"]), "p10": r4(sub["p10"]),
+            "p90": r4(sub["p90"]), "season": {"year": yrs[-1], "residual": round(float(last), 4), "percentile": round(pct, 1),
+                                             "class": cls}}
+
+
+def ml_side_files(a, prod, out, c, reg, ridx, regions, country, pasture, rs):
+    """expected-vs-observed per region/country/all (into regions.json), whatif.json and ml.json."""
+    # --- observed vs weather-expected yearly series ---
+    if a.dataset == "ca":
+        eb = pd.read_parquet(prod / "expected_block.parquet", columns=["block_id", "year", "month", "observed", "expected", "p10", "p90", "n_cells"])
+        eb = eb.rename(columns={"n_cells": "n"})
+        lab = pd.DataFrame({"block_id": c["block_label"].astype(str).to_numpy(), "reg": reg})
+        lab = lab[lab["reg"] > 0].groupby("block_id")["reg"].agg(lambda s: s.value_counts().index[0])
+        eb["reg"] = eb["block_id"].map(lab).fillna(0).astype(int)
+    else:
+        eo = pd.read_parquet(prod / "expected_oof.parquet", columns=["cell_id", "year", "month", "observed", "expected", "p10", "p90"])
+        cmap = pd.Series(reg, index=c["cell_id"].astype(str).to_numpy())
+        eo["reg"] = cmap.reindex(eo["cell_id"].astype(str).to_numpy()).fillna(0).astype(int).to_numpy()
+        eb = eo.assign(n=1.0)
+    eb = eb[eb["reg"] > 0]
+    per_reg = _yearly_band(eb, "reg")
+    for d in regions:
+        sub = per_reg[per_reg["reg"] == ridx[d]]
+        if len(sub):
+            rs["regions"][d]["expected"] = _series_entry(sub)
+    rs["all"]["expected"] = _series_entry(_yearly_band(eb.assign(k=1), "k"))
+    if country is not None:
+        inv = {i: d for d, i in ridx.items()}
+        ccode = {i: country[np.flatnonzero(reg == i)[0]] for i in inv if (reg == i).any()}
+        eb["cty"] = eb["reg"].map(ccode)
+        per_c = _yearly_band(eb.dropna(subset=["cty"]), "cty")
+        for k in rs.get("countries", {}):
+            sub = per_c[per_c["cty"] == k]
+            if len(sub):
+                rs["countries"][k]["expected"] = _series_entry(sub)
+
+    # --- what-if (model sensitivity) mapped to our region codes ---
+    w = json.loads((prod / "scenarios" / "what_if.json").read_text())
+    wi = {k: w[k] for k in ("model", "units", "months", "precip_pct", "temp_c", "layout") if k in w}
+    wi["label"] = "Model sensitivity, not a causal effect"
+    wi["meaning"] = w.get("meaning", "")
+    if a.dataset == "ca":
+        from trendex_core.io.regions import regions as RR
+        name2code = {x["name"]: x["code"] for x in RR()}
+        wi["all"] = w["all"]
+        wi["countries"] = w.get("countries", {})
+        wi["regions"] = {name2code[n]: v for n, v in w.get("regions", {}).items() if n in name2code}
+    else:
+        nmap = {"Naryn": "NA", "At-Bashy": "AT", "Jumgal": "JU", "Kochkor": "KO", "Ak-Talaa": "AK"}
+        wi["all"] = w.get("oblast") or w.get("all")
+        wi["regions"] = {nmap[n]: v for n, v in w.get("districts", {}).items() if n in nmap}
+    (out / "whatif.json").write_text(json.dumps(wi))
+
+    # --- model card numbers for Methods (read from metrics.json, never typed) ---
+    m = json.loads((prod / "metrics.json").read_text())
+    summ = json.loads((prod / "products_summary.json").read_text()) if (prod / "products_summary.json").exists() else {}
+    tt, st = m.get("temporal_test", {}), m.get("spatial_test", {})
+    repo = "TrendeX90/expected-greenness-ca" if a.dataset == "ca" else "TrendeX90/expected-greenness"
+    ml = {"model": repo, "version": "v2-ca" if a.dataset == "ca" else "v1",
+          "url": f"https://huggingface.co/{repo}/tree/" + ("v2-ca" if a.dataset == "ca" else "v1"),
+          "training_log": f"https://huggingface.co/{repo}/blob/main/TRAINING_LOG.md",
+          "gate": m.get("gate"), "skill_vs_ridge": {"temporal": tt.get("skill_xgb_vs_ridge"), "spatial": st.get("skill_xgb_vs_ridge")},
+          "skill_vs_climatology": {"temporal": tt.get("skill_xgb_vs_clim"), "spatial": st.get("skill_xgb_vs_clim")},
+          "coverage_p10_p90": tt.get("conformal_coverage_p10_p90"), "cells_by_source": summ.get("cells_by_source"),
+          "residual_season": "Jun-Aug", "git_commit": m.get("git_commit"),
+          "wording": "Change not explained by precipitation, air temperature, snow and soil moisture"}
+    (out / "ml.json").write_text(json.dumps(ml, indent=1))
+    print("ml side files: whatif.json, ml.json, expected series for", sum(1 for d in regions if "expected" in rs["regions"][d]), "regions")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--art", required=True)
     ap.add_argument("--dataset", choices=["naryn", "ca"], required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--products", help="ML products dir (residual_trend.parquet, expected_*, scenarios/what_if.json, metrics.json)")
     a = ap.parse_args()
     t0 = time.time()
     art, out = Path(a.art), Path(a.out) / "px"
     core = json.loads((art / "core.json").read_text())
     g = core["grid"]
-    cols = ["r", "c", "status", "level_class", "score", "trend_slope", "trend_p", "trend_q", "trend_n",
+    cols = ["cell_id", "r", "c", "status", "level_class", "score", "trend_slope", "trend_p", "trend_q", "trend_n",
             "trend_pct_decade", "district", "area_km2", "lon", "lat"]
+    if a.dataset == "ca":
+        cols.append("block_label")
     c = pd.read_parquet(art / "cells.parquet", columns=cols)
     S = np.load(art / "S.npy", mmap_mode="r")
     N = len(c)
@@ -166,6 +256,28 @@ def main():
     tier[reg == 0] = 0
     level[reg == 0] = 0
 
+    # ---- ML "beyond weather": residual trend tiers (same tier rules), joined by cell_id ----
+    resid = rslope = None
+    if a.products:
+        prod = Path(a.products)
+        rt = pd.read_parquet(prod / "residual_trend.parquet", columns=["cell_id", "slope_per_decade", "p", "q"])
+        rows = pd.Index(c["cell_id"].astype(str).to_numpy()).get_indexer(rt["cell_id"].astype(str).to_numpy())
+        keep = rows >= 0
+        rows = rows[keep]
+        rsl = np.full(N, np.nan); rp = np.full(N, np.nan); rq = np.full(N, np.nan)
+        rsl[rows] = rt["slope_per_decade"].to_numpy()[keep]; rp[rows] = rt["p"].to_numpy()[keep]; rq[rows] = rt["q"].to_numpy()[keep]
+        resid = tier.copy()
+        rp_ok = pasture & np.isfinite(rp)
+        resid[pasture & (reg > 0)] = 6
+        m3 = rp_ok & (reg > 0)
+        resid[m3] = 3
+        resid[m3 & (rp < 0.05) & (rsl < 0)] = 2
+        resid[m3 & (rp < 0.05) & (rsl > 0)] = 4
+        resid[m3 & np.isfinite(rq) & (rq < 0.05) & (rsl < 0)] = 1
+        resid[m3 & np.isfinite(rq) & (rq < 0.05) & (rsl > 0)] = 5
+        rslope = np.where(np.isfinite(rsl), np.clip(np.round(rsl * 1000), -32000, 32000), -32768).astype(np.int16)
+        print(f"residual trend joined for {int(m3.sum())} pasture pixels")
+
     if out.exists():
         shutil.rmtree(out)
     (out / "tiles").mkdir(parents=True)
@@ -183,6 +295,12 @@ def main():
     nt = write_tiles(tgrid, src_t, out / "tiles", "trend", bounds)
     nl = write_tiles(lgrid, src_t, out / "tiles", "level", bounds)
     del tgrid, lgrid
+    if resid is not None:
+        rgrid = np.zeros((H, W), dtype=np.uint8)
+        rgrid[r, cc] = resid
+        nr = write_tiles(rgrid, src_t, out / "tiles", "resid", bounds)
+        del rgrid
+        print(f"tiles: resid {nr}")
     print(f"tiles: trend {nt}, level {nl} ({time.time() - t0:.0f}s)")
 
     # ---- chunks (struct of arrays, 64 x 64 local cells) ----
@@ -217,8 +335,13 @@ def main():
         sv = sv[srt]
         sq = np.where(np.isfinite(sv), np.clip(np.round((sv + 0.2) / 1.2 * 254), 0, 254), 255).astype(np.uint8)
         A_ser[:, local] = sq.T
-        blob = b"".join([A_t.tobytes(), A_l.tobytes(), A_s.tobytes(), A_slope.tobytes(), A_p.tobytes(),
-                         A_q.tobytes(), A_r.tobytes(), A_ser.tobytes()])
+        parts = [A_t.tobytes(), A_l.tobytes(), A_s.tobytes(), A_slope.tobytes(), A_p.tobytes(),
+                 A_q.tobytes(), A_r.tobytes(), A_ser.tobytes()]
+        if resid is not None:
+            A_rt, A_rs = arr(np.uint8, 0), arr(np.int16, -32768)
+            A_rt[local], A_rs[local] = resid[idx], rslope[idx]
+            parts += [A_rt.tobytes(), A_rs.tobytes()]
+        blob = b"".join(parts)
         (out / "chunks" / f"{kr}_{kc}.bin").write_bytes(blob)
         n_chunks += 1
         total += len(blob)
@@ -235,15 +358,21 @@ def main():
                 "matrix": {LEVELS[lk][0]: {TIERS[tk][0]: (float(area[pm & (level == lk) & (tier == tk)].sum()) / pa if pa else 0.0)
                                            for tk in range(1, 7)} for lk in LEVELS},
                 "excluded_km2": {MASKS[k][0]: round(float(area[m & (tier == k)].sum()), 1) for k in MASKS if k != 47}}
+        if resid is not None:
+            out_["resid"] = {TIERS[k][0]: (float(area[pm & (resid == k)].sum()) / pa if pa else 0.0) for k in range(1, 7)}
         return out_
     inreg = reg > 0
     rs = {"all": stats(inreg), "regions": {d: stats(reg == ridx[d]) for d in regions}}
     if country is not None:
         rs["countries"] = {k: stats(country == k) for k in sorted({x for x in country if x})}
+    if a.products:
+        ml_side_files(a, Path(a.products), out, c, reg, ridx, regions, country, pasture, rs)
     (out / "regions.json").write_text(json.dumps(rs, indent=1))
 
     layout = [("tier", "uint8", 1), ("level", "uint8", 1), ("score", "uint8", 1), ("slope_pct_decade_x10", "int16", 2),
               ("p_x250", "uint8", 1), ("q_x250", "uint8", 1), ("region", "uint8", 1), ("series", "uint8", YEARS)]
+    if resid is not None:
+        layout += [("resid", "uint8", 1), ("resid_slope_ndvi_x1000_per_decade", "int16", 2)]
     off = 0
     lay = []
     for name, dt, size in layout:
@@ -259,8 +388,10 @@ def main():
             "slope_decode": "pct per decade = v/10 (v=-32768 missing)", "p_decode": "p = v/250 (255 missing)",
             "regions": regions,
             "codes": {str(k): {"key": v[0], "label": v[1], "color": v[2]} for k, v in {**TIERS, **LEVELS, **MASKS}.items()},
-            "legend": {"trend": [1, 2, 3, 4, 5, 6] + list(MASKS)[:-1], "level": [23, 22, 21] + list(MASKS)[:-1]},
-            "tiles": {"url": "px/tiles/{layer}/{z}/{x}/{y}.png", "layers": ["trend", "level"], "minZoom": min(ZOOMS),
+            "legend": {"trend": [1, 2, 3, 4, 5, 6] + list(MASKS)[:-1], "level": [23, 22, 21] + list(MASKS)[:-1],
+                       **({"resid": [1, 2, 3, 4, 5, 6] + list(MASKS)[:-1]} if resid is not None else {})},
+            "resid_decode": "resid slope (NDVI per decade) = v/1000 (v=-32768 missing); tier codes as trend, 6 = no model output",
+            "tiles": {"url": "px/tiles/{layer}/{z}/{x}/{y}.png", "layers": ["trend", "level"] + (["resid"] if resid is not None else []), "minZoom": min(ZOOMS),
                       "maxNativeZoom": max(ZOOMS), "bounds": [[bounds[1], bounds[0]], [bounds[3], bounds[2]]]},
             "method": {"reliable": "Benjamini-Hochberg FDR q < 0.05 across all pasture pixels (Hamed-Rao Mann-Kendall)",
                        "possible": "per-pixel Mann-Kendall p < 0.05 but not FDR-significant (the per-pixel significance convention of Trends.Earth / SDG 15.3.1); labelled possible, not the Trends.Earth LPD class 'early signs of decline'",

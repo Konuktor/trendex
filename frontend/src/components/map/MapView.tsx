@@ -8,7 +8,7 @@ import { useApp } from '../../store';
 import { cellAt, type ZoneFeature } from '../../lib/zones';
 import { DLON } from '../../lib/geo';
 import type { BoundaryFeature, DatasetMeta, LonLat, StudyMask } from '../../lib/types';
-import { choroplethBin, CHORO_OPACITY, type OverviewKind, type PxRegions } from '../../lib/px';
+import { choroplethBin, CHORO_OPACITY, sharesFor, type OverviewKind, type PxRegions } from '../../lib/px';
 import { countryOfRegion } from '../../lib/regions';
 import { C, DOTS_ID, HATCH_ID, zoneFill } from '../../theme';
 
@@ -232,6 +232,8 @@ export interface Overview {
   kind: OverviewKind;
   /** only this country's regions (Central Asia country choice) */
   country: string | null;
+  /** shade by the beyond-weather shares instead of the trend shares */
+  resid?: boolean;
 }
 
 /**
@@ -249,7 +251,8 @@ function Choropleth({ overview }: { overview: Overview | null }) {
       style: (f) => {
         const code = String((f?.properties as { code?: string } | undefined)?.code ?? '');
         const inside = !overview.country || countryOfRegion(code) === overview.country;
-        const bin = inside ? choroplethBin(overview.stats.regions[code], overview.kind) : null;
+        const st = overview.stats.regions[code];
+        const bin = inside && st ? choroplethBin(sharesFor(st, !!overview.resid), overview.kind) : null;
         return bin === null
           ? { stroke: false, fill: false }
           : { stroke: false, fillColor: color, fillOpacity: CHORO_OPACITY[bin], className: 'choropleth' };

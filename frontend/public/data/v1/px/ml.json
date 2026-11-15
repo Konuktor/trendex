@@ -1,0 +1,44 @@
+{
+ "model": "TrendeX90/expected-greenness",
+ "version": "v1",
+ "url": "https://huggingface.co/TrendeX90/expected-greenness/tree/v1",
+ "training_log": "https://huggingface.co/TrendeX90/expected-greenness/blob/main/TRAINING_LOG.md",
+ "gate": {
+  "rule": "CI lower bound of skill_xgb_vs_ridge > 0 on temporal AND spatial tests",
+  "passed": true,
+  "shipped_model": "xgb"
+ },
+ "skill_vs_ridge": {
+  "temporal": {
+   "point": 0.11259126663208008,
+   "ci_lo": 0.0890129804611206,
+   "ci_hi": 0.13281476497650146,
+   "units": 6
+  },
+  "spatial": {
+   "point": 0.18016520234683842,
+   "ci_lo": 0.16931476346897326,
+   "ci_hi": 0.1921305862591789,
+   "units": 76
+  }
+ },
+ "skill_vs_climatology": {
+  "temporal": {
+   "point": 0.1905218060292877,
+   "ci_lo": 0.15966808101130808,
+   "ci_hi": 0.21508542508221518,
+   "units": 6
+  },
+  "spatial": {
+   "point": 0.28552584752017784,
+   "ci_lo": 0.25587941077953436,
+   "ci_hi": 0.31732067499447747,
+   "units": 76
+  }
+ },
+ "coverage_p10_p90": 0.7434184519716865,
+ "cells_by_source": null,
+ "residual_season": "Jun-Aug",
+ "git_commit": "92ed159",
+ "wording": "Change not explained by precipitation, air temperature, snow and soil moisture"
+}

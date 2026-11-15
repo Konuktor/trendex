@@ -2,6 +2,7 @@
  * Native 1 km pixel layers (px/): palette tiles for the map, 64 × 64 binary chunks for a clicked pixel, and
  * share-of-pasture statistics per region. Pure helpers; fetching lives in data/px.ts.
  */
+import { ord } from './format';
 import type { Level, Trend } from './types';
 
 export interface PxCode {
@@ -40,7 +41,7 @@ export interface PxMeta {
   /** region codes; a chunk's region byte is a 1-based index into this list (0 = none) */
   regions: string[];
   codes: Record<string, PxCode>;
-  legend: { trend: number[]; level: number[] };
+  legend: { trend: number[]; level: number[]; resid?: number[] };
   tiles: { url: string; layers: string[]; minZoom: number; maxNativeZoom: number; bounds: [[number, number], [number, number]] };
   method?: Record<string, string>;
 }
@@ -51,7 +52,20 @@ export type TierKey = (typeof TIER_KEYS)[number];
 export const TIER_CODE: Record<TierKey, number> = { decline: 1, early_decline: 2, stable: 3, early_growth: 4, growth: 5, insufficient: 6 };
 export const LEVEL_KEYS = ['low', 'moderate', 'good'] as const;
 
+/** Summer (May–Sep) observed greenness against the weather-expected value, for one scope. */
+export interface PxExpected {
+  years: number[];
+  observed: number[];
+  expected: number[];
+  p10: number[];
+  p90: number[];
+  season?: { year: number; residual: number; percentile: number; class: 'below' | 'within' | 'above' };
+}
+
 export interface PxStats {
+  /** share of pasture area per "beyond weather" tier (trend of Jun–Aug residuals), when the model covers it */
+  resid?: Record<TierKey, number>;
+  expected?: PxExpected;
   pasture_km2: number;
   n_pasture_px: number;
   /** share of pasture area per trend tier (sums to 1) */
@@ -70,12 +84,59 @@ export interface PxRegions {
   countries?: Record<string, PxStats>;
 }
 
+export interface WhatIfEntry {
+  n_cells?: number;
+  /** typical NDVI per month */
+  typical: number[];
+  /** change[month][precip][temp], NDVI */
+  change: number[][][];
+}
+
+/** Model sensitivity table (px/whatif.json): expected = typical[m] + change[m][p][t]. */
+export interface PxWhatIf {
+  model?: string;
+  months: number[];
+  precip_pct: number[];
+  temp_c: number[];
+  label: string;
+  meaning: string;
+  all: WhatIfEntry;
+  countries?: Record<string, WhatIfEntry>;
+  regions: Record<string, WhatIfEntry>;
+}
+
+export interface PxSkill {
+  point: number;
+  ci_lo: number;
+  ci_hi: number;
+  /** number of test units the score was computed over */
+  units: number;
+}
+
+/** Model card facts for Methods (px/ml.json). */
+export interface PxMl {
+  model: string;
+  version: string;
+  url: string;
+  training_log: string;
+  gate: { rule: string; passed: boolean; shipped_model?: string };
+  skill_vs_ridge: { temporal: PxSkill; spatial: PxSkill };
+  skill_vs_climatology: { temporal: PxSkill; spatial: PxSkill };
+  coverage_p10_p90: number;
+  cells_by_source: Record<string, number> | null;
+  residual_season?: string;
+  git_commit?: string;
+  wording?: string;
+}
+
 /** The 1 km layer of one dataset: its folder, meta and statistics. */
 export interface PxInfo {
   /** dataset folder, e.g. "/data/v1" */
   base: string;
   meta: PxMeta;
   regions: PxRegions | null;
+  whatif?: PxWhatIf | null;
+  ml?: PxMl | null;
 }
 
 /** True for a usable px/meta.json (an HTML fallback page or a partial file is not). */
@@ -95,7 +156,7 @@ export function isPxMeta(m: unknown): m is PxMeta {
 }
 
 /** Tile URL template for a layer: "/data/v1/px/tiles/trend/{z}/{x}/{y}.png". */
-export function tileUrl(px: PxInfo, layer: 'trend' | 'level'): string {
+export function tileUrl(px: PxInfo, layer: 'trend' | 'level' | 'resid'): string {
   return `${px.base}/${px.meta.tiles.url.replace('{layer}', layer)}`;
 }
 
@@ -141,6 +202,10 @@ export interface PixelInfo {
   region: string | null;
   /** NDVI per year (null where missing) */
   series: (number | null)[];
+  /** "beyond weather" tier (codes as trend, 6 = no model output); undefined when the export has no model layer */
+  resid?: number;
+  /** trend of the Jun–Aug residuals, NDVI per decade */
+  residSlope?: number | null;
 }
 
 function field(meta: PxMeta, name: string): PxLayoutEntry {
@@ -167,7 +232,11 @@ export function decodePixel(buf: ArrayBuffer, i: number, meta: PxMeta): PixelInf
     const v = u8[so + y * n + i];
     series.push(v === 255 ? null : (v / 254) * 1.2 - 0.2);
   }
+  const rf = meta.layout.find((x) => x.name === 'resid');
+  const rs = meta.layout.find((x) => x.name === 'resid_slope_ndvi_x1000_per_decade');
+  const rv = rs ? dv.getInt16(rs.offset + 2 * i, true) : null;
   return {
+    ...(rf ? { resid: u8[rf.offset + i], residSlope: rv === null || rv === -32768 ? null : rv / 1000 } : {}),
     code: b('tier'),
     levelCode: b('level'),
     score: score === 255 ? null : score,
@@ -230,7 +299,7 @@ export function pxMatrixShare(s: PxStats | null, level: Level, trend: Trend): nu
 }
 
 /** Legend codes for a layer, without classes that cover no area here (keeps the five trend tiers). */
-export function legendCodes(meta: PxMeta, layer: 'trend' | 'level', all: PxStats | null): number[] {
+export function legendCodes(meta: PxMeta, layer: 'trend' | 'level' | 'resid', all: PxStats | null): number[] {
   const keep = (code: number) => {
     if (!all) return true;
     const c = meta.codes[String(code)];
@@ -427,4 +496,58 @@ export const CHORO_LABELS = ['under 5%', '5–10%', '10–20%', '20% or more'] a
 /** Whether the overview shading shows: Central Asia (several countries) with 1 km statistics, Trend layer, low zoom, no region or matrix filter. */
 export function overviewActive(o: { hasStats: boolean; multi: boolean; layer: 'trend' | 'level'; zoom: number; filtered: boolean }): boolean {
   return o.hasStats && o.multi && o.layer === 'trend' && o.zoom > 0 && o.zoom <= OVERVIEW_MAX_ZOOM && !o.filtered;
+}
+
+/* ---------- weather model: beyond weather, expected greenness, what-if ---------- */
+
+/** Whether the export has the "beyond weather" layer. */
+export const hasResid = (px: PxInfo | null | undefined): boolean => !!px?.meta.tiles.layers?.includes('resid');
+
+/** Statistics with the trend shares swapped for the "beyond weather" shares (when shown and available). */
+export function sharesFor(st: PxStats, resid: boolean): PxStats {
+  return resid && st.resid ? { ...st, trend: st.resid } : st;
+}
+
+/** Label of a class on a layer: code 6 reads "No model output" on the beyond-weather layer. */
+export function layerLabel(meta: PxMeta, code: number, resid: boolean): string {
+  if (resid && code === 6) return 'No model output';
+  return meta.codes[String(code)]?.label ?? '';
+}
+
+export function layerInlineLabel(meta: PxMeta, code: number, resid: boolean): string {
+  if (resid && code === 6) return 'no model output';
+  return inlineLabel(meta, code);
+}
+
+/** "Summer 2025 vs weather: below usual (21st percentile)". */
+export function seasonLine(season: PxExpected['season']): string | null {
+  if (!season) return null;
+  const word = season.class === 'below' ? 'below usual' : season.class === 'above' ? 'above usual' : 'within the usual range';
+  return `Summer ${season.year} vs weather: ${word} (${ord(Math.round(season.percentile))} percentile)`;
+}
+
+/** What-if table for the scope: a region, else a country, else all. */
+export function whatifScope(w: PxWhatIf | null | undefined, district: string | null, country: string | null): WhatIfEntry | null {
+  if (!w) return null;
+  if (district) return w.regions[district] ?? null;
+  if (country) return w.countries?.[country] ?? null;
+  return w.all;
+}
+
+/** Expected NDVI for a month under a precipitation (%) and temperature (°C) change; null off the table. */
+export function whatifValue(
+  w: PxWhatIf,
+  e: WhatIfEntry,
+  month: number,
+  precipPct: number,
+  tempC: number,
+): { typical: number; change: number; expected: number } | null {
+  const m = w.months.indexOf(month);
+  const p = w.precip_pct.indexOf(precipPct);
+  const t = w.temp_c.indexOf(tempC);
+  if (m < 0 || p < 0 || t < 0) return null;
+  const typical = e.typical[m];
+  const change = e.change[m]?.[p]?.[t];
+  if (typical === undefined || change === undefined) return null;
+  return { typical, change, expected: typical + change };
 }

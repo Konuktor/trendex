@@ -1,0 +1,47 @@
+{
+ "model": "TrendeX90/expected-greenness-ca",
+ "version": "v2-ca",
+ "url": "https://huggingface.co/TrendeX90/expected-greenness-ca/tree/v2-ca",
+ "training_log": "https://huggingface.co/TrendeX90/expected-greenness-ca/blob/main/TRAINING_LOG.md",
+ "gate": {
+  "rule": "CI lower bound of skill_xgb_vs_ridge > 0 on temporal AND spatial tests",
+  "passed": true,
+  "shipped_model": "xgb"
+ },
+ "skill_vs_ridge": {
+  "temporal": {
+   "point": 0.05526524782180786,
+   "ci_lo": 0.03597217798233032,
+   "ci_hi": 0.07688862085342407,
+   "units": 6
+  },
+  "spatial": {
+   "point": 0.11963582038879395,
+   "ci_lo": 0.11683060228824615,
+   "ci_hi": 0.12261748313903809,
+   "units": 4115
+  }
+ },
+ "skill_vs_climatology": {
+  "temporal": {
+   "point": 0.2510329484939575,
+   "ci_lo": 0.1736202985048294,
+   "ci_hi": 0.32145172357559204,
+   "units": 6
+  },
+  "spatial": {
+   "point": 0.3332679867744446,
+   "ci_lo": 0.3277331292629242,
+   "ci_hi": 0.3389349579811096,
+   "units": 4115
+  }
+ },
+ "coverage_p10_p90": 0.7649012811496195,
+ "cells_by_source": {
+  "oof": 3432538,
+  "production_model_unseen_cell": 39070
+ },
+ "residual_season": "Jun-Aug",
+ "git_commit": "1bc6ed3",
+ "wording": "Change not explained by precipitation, air temperature, snow and soil moisture"
+}

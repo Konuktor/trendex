@@ -1,6 +1,7 @@
 import { isReal } from '../data/info';
 import { useEffect, useId, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { WeatherSection } from '../components/weather/WeatherPanel';
 import { ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { useApp } from '../store';
 import { countryName, countryOf, countryOfRegion, isRegion, regionGroups, regionLabelPlural, regionName, regionOrder, studyTitle } from '../lib/regions';
@@ -33,6 +34,8 @@ export function TrendsRoute() {
   const dataset = useApp((s) => s.dataset);
   const country = useApp((s) => s.country);
   const setCountry = useApp((s) => s.setCountry);
+  const px = useApp((s) => s.px);
+  const location = useLocation();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const raw = params.get('scope');
@@ -46,6 +49,11 @@ export function TrendsRoute() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Links from the map open the weather section (#weather) once the data is on the page.
+  useEffect(() => {
+    if (location.hash === '#weather' && data && px) document.getElementById('weather')?.scrollIntoView({ block: 'start' });
+  }, [location.hash, data, px]);
 
   const setScope = (d: District | null) => {
     const next = new URLSearchParams(params);
@@ -171,6 +179,10 @@ export function TrendsRoute() {
                 <TrendChart model={v.t.model} trend={v.t.trend} width={chartW} height={280} title={`Average ${isReal() ? 'summer' : 'peak-season'} greenness, ${scopeName},`} />
               </div>
             </section>
+
+            {px && (px.whatif || px.regions?.all.expected) && (
+              <WeatherSection px={px} district={scope} country={scope ? null : country} scopeName={scopeName} />
+            )}
 
             <div className="grid gap-6 lg:grid-cols-2">
               <section className="card flex flex-col gap-4 p-6">

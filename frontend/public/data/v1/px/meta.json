@@ -5,7 +5,7 @@
   2025
  ],
  "chunk": 64,
- "chunkBytes": 139264,
+ "chunkBytes": 151552,
  "grid": {
   "crs": "MODIS sinusoidal",
   "R": 6371007.181,
@@ -66,6 +66,18 @@
    "dtype": "uint8",
    "offset": 32768,
    "count": 106496
+  },
+  {
+   "name": "resid",
+   "dtype": "uint8",
+   "offset": 139264,
+   "count": 4096
+  },
+  {
+   "name": "resid_slope_ndvi_x1000_per_decade",
+   "dtype": "int16",
+   "offset": 143360,
+   "count": 4096
   }
  ],
  "series_decode": "ndvi = v/254*1.2 - 0.2 (v=255 missing)",
@@ -193,13 +205,30 @@
    44,
    45,
    46
+  ],
+  "resid": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   40,
+   41,
+   42,
+   43,
+   44,
+   45,
+   46
   ]
  },
+ "resid_decode": "resid slope (NDVI per decade) = v/1000 (v=-32768 missing); tier codes as trend, 6 = no model output",
  "tiles": {
   "url": "px/tiles/{layer}/{z}/{x}/{y}.png",
   "layers": [
    "trend",
-   "level"
+   "level",
+   "resid"
   ],
   "minZoom": 3,
   "maxNativeZoom": 8,

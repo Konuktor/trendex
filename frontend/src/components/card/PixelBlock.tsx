@@ -60,6 +60,15 @@ export function tierSentence(p: PixelInfo, meta?: PxMeta): string {
   }
 }
 
+/** "Beyond weather (Jun–Aug): Possible decline, −0.012 NDVI per decade." */
+export function residLine(p: PixelInfo, meta: PxMeta): string {
+  if (p.resid === undefined) return '';
+  if (p.resid === 6 || !isPastureCode(p.resid)) return 'Beyond weather (Jun–Aug): no model output for this pixel.';
+  const label = shortLabel(meta, p.resid);
+  const slope = p.residSlope === null || p.residSlope === undefined ? '' : `, ${p.residSlope > 0 ? '+' : p.residSlope < 0 ? '−' : '±'}${Math.abs(p.residSlope).toFixed(3)} NDVI per decade`;
+  return `Beyond weather (Jun–Aug): ${label}${slope}.`;
+}
+
 function Swatch({ color }: { color?: string }) {
   return <span aria-hidden="true" className="h-3 w-3 flex-none rounded-[3px] border border-hairline" style={{ background: color }} />;
 }
@@ -112,6 +121,7 @@ function Body({ px, p, width }: { px: PxInfo; p: PixelInfo; width: number }) {
         {p.region ? ` · ${regionName(p.region)}` : ''}
       </span>
       <p className="text-sm">{tierSentence(p, px.meta)}</p>
+      {p.resid !== undefined && <p className="text-sm" data-testid="pixel-resid">{residLine(p, px.meta)}</p>}
       {chart && (
         <TrendChart
           model={chart.model}

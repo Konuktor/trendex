@@ -1,6 +1,8 @@
 import { useId, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '../../store';
+import { Link } from 'react-router-dom';
+import { useDatasetSearch } from '../TopBar';
 import { LEVEL_NAME, TREND_SHORT } from '../../lib/labels';
 import { areaNoun, countries, multiCountry, regionGroups, regionLabelPlural, regionName, regionOrder, regionsOf, studyTitle } from '../../lib/regions';
 import { countryRow, districtRows, matrixShare, scopeCells, type DistrictRow } from '../../lib/stats';
@@ -10,8 +12,12 @@ import {
   inlineLabel,
   legendCodes,
   OVERVIEW_MAX_ZOOM,
+  hasResid,
+  layerLabel,
   overviewActive,
   pxMatrixShare,
+  seasonLine,
+  sharesFor,
   pxScope,
   shortLabel,
   TIER_CODE,
@@ -33,19 +39,33 @@ const TREND_COL: Record<Trend, string> = { dec: 'Decline', nr: 'Not reliable', i
 export function LayerSwitch() {
   const layer = useApp((s) => s.layer);
   const setLayer = useApp((s) => s.setLayer);
+  const resid = useApp((s) => s.resid);
+  const setResid = useApp((s) => s.setResid);
+  const px = useApp((s) => s.px);
+  // With the weather model in the 1 km export: a third view, the trend beyond weather.
+  const three = hasResid(px);
+  const opts: { key: string; label: string; on: boolean; pick: () => void }[] = [
+    { key: 'trend', label: 'Trend', on: layer === 'trend' && !(three && resid), pick: () => setLayer('trend') },
+    { key: 'level', label: 'Level', on: layer === 'level', pick: () => setLayer('level') },
+    ...(three ? [{ key: 'resid', label: 'Beyond weather', on: resid, pick: setResid }] : []),
+  ];
   return (
-    <div role="group" aria-label="Map layer" className="grid h-control grid-cols-2 gap-0.5 rounded border border-hairline bg-seg p-0.5">
-      {(['trend', 'level'] as const).map((l) => (
+    <div
+      role="group"
+      aria-label="Map layer"
+      className={`grid h-control gap-0.5 rounded border border-hairline bg-seg p-0.5 ${three ? 'grid-cols-[1fr_1fr_1.7fr]' : 'grid-cols-2'}`}
+    >
+      {opts.map((o) => (
         <button
-          key={l}
+          key={o.key}
           type="button"
-          aria-pressed={layer === l}
-          onClick={() => setLayer(l)}
-          className={`rounded-sm text-sm font-medium transition-colors ${
-            layer === l ? 'bg-white text-text shadow-hair' : 'text-text-2 hover:text-text'
+          aria-pressed={o.on}
+          onClick={o.pick}
+          className={`whitespace-nowrap rounded-sm text-sm font-medium transition-colors ${
+            o.on ? 'bg-white text-text shadow-hair' : 'text-text-2 hover:text-text'
           }`}
         >
-          {l === 'trend' ? 'Trend' : 'Level'}
+          {o.label}
         </button>
       ))}
     </div>
@@ -55,6 +75,7 @@ export function LayerSwitch() {
 /** Central Asia at low zoom: what the region shading means, with a decline / growth toggle. */
 function OverviewLegend() {
   const kind = useApp((s) => s.overviewKind);
+  const resid = useApp((s) => s.resid);
   const setKind = useApp((s) => s.setOverviewKind);
   const color = kind === 'decline' ? C.decStrong : C.incStrong;
   return (
@@ -84,7 +105,8 @@ function OverviewLegend() {
         ))}
       </ul>
       <span className="text-xs text-text-2">
-        Share of pasture with {kind === 'decline' ? 'a reliable or possible decline' : 'reliable or possible growth'}. Zoom in past level{' '}
+        Share of pasture with {kind === 'decline' ? 'a reliable or possible decline' : 'reliable or possible growth'}
+        {resid ? ' beyond weather' : ''}. Zoom in past level{' '}
         {OVERVIEW_MAX_ZOOM} for the 1 km pixels.
       </span>
     </div>
@@ -94,26 +116,47 @@ function OverviewLegend() {
 /** Legend of the 1 km layer: real class labels and colours from px/meta.json; masks that cover no area are left out. */
 function PxLegend({ px }: { px: PxInfo }) {
   const layer = useApp((s) => s.layer);
+  const resid = useApp((s) => s.resid) && hasResid(px);
   const data = useApp((s) => s.data);
   const zoom = useApp((s) => s.mapZoom);
+  const district = useApp((s) => s.district);
+  const country = useApp((s) => s.country);
   const filtered = useApp((s) => !!s.matrix || !!s.district);
+  const search = useDatasetSearch();
   const showOverview = overviewActive({ hasStats: !!px.regions, multi: !!data && multiCountry(), layer, zoom, filtered });
-  const codes = legendCodes(px.meta, layer, px.regions?.all ?? null);
+  const codes = legendCodes(px.meta, resid ? 'resid' : layer, px.regions?.all ?? null);
   const item = (code: number) => {
     const c = px.meta.codes[String(code)];
     return (
       <li key={code} className="flex items-center gap-1.5 text-xs text-text-2">
         <span aria-hidden="true" className="h-3 w-3 flex-none rounded-[3px] border border-hairline" style={{ background: c.color }} />
-        {c.label}
+        {layerLabel(px.meta, code, resid)}
       </li>
     );
   };
+  const season = seasonLine(pxScope(px.regions, district, country)?.expected?.season);
+  const weatherHref = `/trends${search}${district ? `${search ? '&' : '?'}scope=${encodeURIComponent(district)}` : ''}#weather`;
   const dataCodes = codes.filter((c) => c < 40);
   const masks = codes.filter((c) => c >= 40);
   return (
     <div className="flex flex-col gap-2" data-testid="px-legend">
       {showOverview && <OverviewLegend />}
       <ul className="flex flex-col gap-1">{dataCodes.map(item)}</ul>
+      {resid && (
+        <div className="flex flex-col gap-1 text-xs text-text-2">
+          <span className="font-medium text-text">Beyond weather (Jun–Aug)</span>
+          <span>
+            Trend of June–August greenness minus the greenness expected from that summer’s weather:{' '}
+            {(px.ml?.wording ?? 'change not explained by precipitation, air temperature, snow and soil moisture').replace(/^./, (c) => c.toLowerCase())}.
+          </span>
+          {season && <span className="text-text">{season}.</span>}
+          {px.whatif && (
+            <Link to={weatherHref} className="font-medium text-text underline underline-offset-2">
+              Observed vs expected and what-if
+            </Link>
+          )}
+        </div>
+      )}
       {layer === 'trend' ? (
         <div className="text-xs text-text-2">
           {shortLabel(px.meta, 2)} or {inlineLabel(px.meta, 4)}: the pixel’s own test passes (p &lt; 0.05), but not the
@@ -311,7 +354,8 @@ function cellView(row: Pick<DistrictRow, 'km2' | 'dec' | 'nr' | 'inc'>, extra = 
   };
 }
 
-function pxView(st: PxStats, px: PxInfo, extra = ''): RowView {
+function pxView(st0: PxStats, px: PxInfo, resid = false, extra = ''): RowView {
+  const st = sharesFor(st0, resid);
   const pc = tierPercents(st);
   const keys = TIER_KEYS.filter((k) => k !== 'insufficient' || st.trend.insufficient > 0);
   return {
@@ -346,11 +390,12 @@ export function DistrictList({ loading = false }: { loading?: boolean }) {
   const country = useApp((s) => s.country);
   const toggle = useApp((s) => s.toggleDistrict);
   const px = useApp((s) => s.px);
+  const resid = useApp((s) => s.resid) && hasResid(px);
   const rows = useMemo(() => (data ? districtRows(data.past) : null), [data]);
   /** a region's row: 1 km pixel shares when px/regions.json has it, else its 10/20 km cells */
   const viewOf = (d: string): RowView | null => {
     const st = px?.regions?.regions[d];
-    if (px && st) return pxView(st, px);
+    if (px && st) return pxView(st, px, resid);
     const row = rows?.get(d);
     return row ? cellView(row) : null;
   };
@@ -388,8 +433,8 @@ export function DistrictList({ loading = false }: { loading?: boolean }) {
         const list = g.codes.map((d) => rows.get(d)).filter((r): r is DistrictRow => !!r);
         if (!list.length) return null;
         const cst = px?.regions?.countries?.[g.key];
-        const total = px && cst ? pxView(cst, px) : cellView(countryRow(list));
-        const pc = px && cst ? tierPercents(cst) : null;
+        const total = px && cst ? pxView(cst, px, resid) : cellView(countryRow(list));
+        const pc = px && cst ? tierPercents(sharesFor(cst, resid)) : null;
         const expanded = open[g.key] ?? (!!district && g.codes.includes(district));
         const Icon = expanded ? ChevronDown : ChevronRight;
         const listId = `regions-${g.key}`;

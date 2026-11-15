@@ -11,7 +11,9 @@ import {
   type OutlineStats,
   type PixelInfo,
   type PxInfo,
+  type PxMl,
   type PxRegions,
+  type PxWhatIf,
 } from '../lib/px';
 import { ringHas } from '../lib/geo';
 
@@ -27,9 +29,21 @@ async function json<T>(url: string): Promise<T | null> {
 
 /** The dataset's 1 km layer, or null when its export has no px/ folder yet (the map then draws the 10/20 km zones). */
 export async function loadPx(base: string): Promise<PxInfo | null> {
-  const [meta, regions] = await Promise.all([json<unknown>(`${base}/px/meta.json`), json<PxRegions>(`${base}/px/regions.json`)]);
+  const [meta, regions, whatif, ml] = await Promise.all([
+    json<unknown>(`${base}/px/meta.json`),
+    json<PxRegions>(`${base}/px/regions.json`),
+    json<PxWhatIf>(`${base}/px/whatif.json`),
+    json<PxMl>(`${base}/px/ml.json`),
+  ]);
   if (!isPxMeta(meta)) return null;
-  return { base, meta, regions: regions && regions.all ? regions : null };
+  return {
+    base,
+    meta,
+    regions: regions && regions.all ? regions : null,
+    // the weather model's files are optional (exports from before the model have none)
+    whatif: whatif && Array.isArray(whatif.months) && whatif.all ? whatif : null,
+    ml: ml && ml.gate && ml.skill_vs_ridge ? ml : null,
+  };
 }
 
 /** Recently used chunks (~140 KB each; 64 ≈ 9 MB). A missing chunk is cached as null. */
