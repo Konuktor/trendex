@@ -9,6 +9,8 @@ Pastures of Naryn region (Kyrgyzstan), 2000–2025, from NASA satellite data. Fo
 
 NASA Space Apps Challenge 2026, Bishkek.
 
+**Live:** https://trendex.space (Naryn 1 km pilot and Central Asia; mirror https://trendex-z02.pages.dev)
+
 | Folder | What |
 |---|---|
 | `frontend/` | React + Vite static site (map, answer card, trends, inspection queue, methods). Reads `public/data/v1/*.json`. |
